@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title>Jake Goulding</title>
+  <link href="http://jakegoulding.com/atom.xml" rel="self"/>
+  <link href="http://jakegoulding.com/"/>
+  <updated>2011-09-11T23:33:51-04:00</updated>
+  <id>http://jakegoulding.com/</id>
+  <author>
+    <name>Jake Goulding</name>
+    
+  </author>
+
+  
+  <entry>
+    <title>Beautiful Code and Reality</title>
+    <link href="http://jakegoulding.com/blog/2011/09/11/beautiful-code-and-reality/"/>
+    <updated>2011-09-11T22:39:00-04:00</updated>
+    <id>http://jakegoulding.com/blog/2011/09/11/beautiful-code-and-reality</id>
+    <content type="html">&lt;p&gt;I think a mark of any good programmer is the drive to create beautiful
+code. Like anything subjective, the meaning and interpretation of
+beautiful varies from programmer to programmer, but there are a few
+components that could be considered universal.&lt;/p&gt;
+
+&lt;!&#8211; more &#8211;&gt;
+
+
+&lt;p&gt;There are entire books dedicated to the concept of beautiful code - a
+cursory search on Amazon yields one aptly titled &lt;a href=&quot;http://www.amazon.com/gp/product/0596510047/ref=as_li_qf_sp_asin_il_tl?ie=UTF8&amp;amp;tag=jakgousblo-20&amp;amp;linkCode=as2&amp;amp;camp=1789&amp;amp;creative=9325&amp;amp;creativeASIN=0596510047&quot;&gt;Beautiful Code&lt;/a&gt;,
+another &lt;a href=&quot;http://www.amazon.com/gp/product/0596157118/ref=as_li_qf_sp_asin_il_tl?ie=UTF8&amp;amp;tag=jakgousblo-20&amp;amp;linkCode=as2&amp;amp;camp=1789&amp;amp;creative=9325&amp;amp;creativeASIN=0596157118&quot;&gt;Beautiful Data&lt;/a&gt;. I haven&amp;#8217;t read either of these yet, and
+&lt;a href=&quot;http://www.codinghorror.com/blog/2008/02/code-isnt-beautiful.html&quot;&gt;Jeff Atwood&amp;#8217;s review of Beautiful Code&lt;/a&gt; wasn&amp;#8217;t very glowing,
+but the mere existence of these books points to the yearning of
+programmers to create something fufilling.&lt;/p&gt;
+
+&lt;p&gt;The problem arises when you bring the real-world into the picture.&lt;/p&gt;
+
+&lt;p&gt;&lt;img class=&#8221; src=&#8217;http://jakegoulding.com/images/blog/ideal.png&#8217; width=&#8221; height=&#8221; alt=&#8217;The ideal software&#8217; title=&#8217;The ideal software&#8217;&gt;&lt;/p&gt;
+
+&lt;p&gt;This is how a programmer views a potential piece of software: a nice,
+perfect circle. Each class, function and line of code has a place and
+&lt;em&gt;raison d&amp;#8217;etre&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img class=&#8221; src=&#8217;http://jakegoulding.com/images/blog/real.png&#8217; width=&#8221; height=&#8221; alt=&#8217;Real-world software&#8217; title=&#8217;Real-world software&#8217;&gt;&lt;/p&gt;
+
+&lt;p&gt;This is what the real world gives us: a messy blob. Maybe the data
+doesn&amp;#8217;t fit right, or the maybe user wants the output to be emailed, but
+there is just something that doesn&amp;#8217;t fit with the designed software.&lt;/p&gt;
+
+&lt;p&gt;&lt;img class=&#8221; src=&#8217;http://jakegoulding.com/images/blog/method1a.png&#8217; width=&#8221; height=&#8221; alt=&#8221; title=&#8221;&gt;&lt;/p&gt;
+
+&lt;p&gt;One possible interaction of these two realities involves the beautiful
+code being a subset of the problem at hand. The most obvious issue
+with this &amp;#8220;solution&amp;#8221; is that the user&amp;#8217;s problem isn&amp;#8217;t solved. The
+typical programmer&amp;#8217;s response to this situtation is &amp;#8220;why is this my
+problem?&amp;#8221;. Shamefully, I have to fully admit to falling into this camp
+more than I should. While there are cases where this is the correct
+answer, we programmers use this excuse too often.&lt;/p&gt;
+
+&lt;p&gt;&lt;img class=&#8221; src=&#8217;http://jakegoulding.com/images/blog/method1b.png&#8217; width=&#8221; height=&#8221; alt=&#8221; title=&#8221;&gt;&lt;/p&gt;
+
+&lt;p&gt;An improvement on this arrangement is to add more islands of beautiful
+code. Sometimes this new code is part of the original program, extending
+the capabilities in directions that the original version didn&amp;#8217;t
+have. The additional code might be a completely different program, with
+every program doing one task exceptionally well. This is the case for
+UNIX-style programs connected via pipes. Unfortunately, there will still
+be some parts of the problem that are not addressed by this solution,
+forcing the user to do some of the work by hand.&lt;/p&gt;
+
+&lt;p&gt;&lt;img class=&#8221; src=&#8217;http://jakegoulding.com/images/blog/method2a.png&#8217; width=&#8221; height=&#8221; alt=&#8221; title=&#8221;&gt;&lt;/p&gt;
+
+&lt;p&gt;Another path that could be chosen is to completely subsume the
+real-world problem within the solution. The downside is that there will
+be some amount of code that is unused by any given user. At the very
+least, code that is written but unused is a waste. In worse cases,
+unused code gets in the way of the user and might even lead to bugs in
+the software.&lt;/p&gt;
+
+&lt;p&gt;&lt;img class=&#8221; src=&#8217;http://jakegoulding.com/images/blog/method2b.png&#8217; width=&#8221; height=&#8221; alt=&#8221; title=&#8221;&gt;&lt;/p&gt;
+
+&lt;p&gt;One possible long-term outcome of following this philosophy is the
+&lt;em&gt;uberprogram&lt;/em&gt;. Anyone who has used Microsoft Word has experienced a
+uberprogram. 90% of the features will be unused by a user, but the
+specific 10% used might vary wildly from user to user.&lt;/p&gt;
+</content>
+  </entry>
+  
+</feed>
