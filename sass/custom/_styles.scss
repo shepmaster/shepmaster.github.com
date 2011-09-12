@@ -1,2 +1,14 @@
 // This File is imported last, and will override other styles in the cascade
 // Add styles here to make changes without digging in too much
+
+.image_with_caption {
+  margin-bottom: 1.5em; // same as p
+
+  * {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 70%;
+    text-align: center;
+  }
+}
