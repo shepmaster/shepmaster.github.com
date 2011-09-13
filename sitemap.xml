@@ -2,44 +2,44 @@
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
         <loc>http://jakegoulding.com/blog/2011/01/02/why-posterous/</loc>
-        <lastmod>2011-09-12T20:57:05-04:00</lastmod>
+        <lastmod>2011-09-12T22:14:56-04:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/blog/2011/01/09/the-meh-programmer/</loc>
-        <lastmod>2011-09-12T20:57:06-04:00</lastmod>
+        <lastmod>2011-09-12T22:16:21-04:00</lastmod>
     </url>
     <url>
         <loc>
             http://jakegoulding.com/blog/2011/01/27/uninitialized-variable-warnings-and-compiler-optimizations/
         </loc>
-        <lastmod>2011-09-12T20:57:06-04:00</lastmod>
+        <lastmod>2011-09-12T22:16:45-04:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/blog/2011/02/05/the-psychology-of-computer-programming/</loc>
-        <lastmod>2011-09-12T20:57:06-04:00</lastmod>
+        <lastmod>2011-09-12T22:17:13-04:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/blog/2011/02/06/sqlite-64-bit-integers/</loc>
-        <lastmod>2011-09-12T20:57:06-04:00</lastmod>
+        <lastmod>2011-09-12T22:17:44-04:00</lastmod>
     </url>
     <url>
         <loc>
             http://jakegoulding.com/blog/2011/02/26/using-named-routes-in-actionmailer-tests-with-rails-3/
         </loc>
-        <lastmod>2011-09-12T20:57:06-04:00</lastmod>
+        <lastmod>2011-09-12T22:18:19-04:00</lastmod>
     </url>
     <url>
         <loc>
             http://jakegoulding.com/blog/2011/02/27/how-mock-objects-make-gantt-charts-more-useless/
         </loc>
-        <lastmod>2011-09-12T20:57:07-04:00</lastmod>
+        <lastmod>2011-09-12T22:18:40-04:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/blog/archives/</loc>
-        <lastmod>2011-09-12T20:57:07-04:00</lastmod>
+        <lastmod>2011-09-12T22:18:40-04:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/</loc>
-        <lastmod>2011-09-12T20:57:07-04:00</lastmod>
+        <lastmod>2011-09-12T22:18:40-04:00</lastmod>
     </url>
 </urlset>
