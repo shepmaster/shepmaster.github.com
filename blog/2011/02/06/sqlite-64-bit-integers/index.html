@@ -1,0 +1,413 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>SQLite, 64-bit integers, and the impossible number - Jake Goulding</title>
+  <meta name="author" content="Jake Goulding">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+
+  <link rel="canonical" href="http://jakegoulding.com/blog/2011/02/06/sqlite-64-bit-integers/"/>
+  <link href="/favicon.png" rel="shortcut icon" />
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="http://s3.amazonaws.com/ender-js/jeesh.min.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml"/>
+  <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
+<link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body  >
+  <header><hgroup>
+  <h1><a href="/">Jake Goulding</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role=navigation><ul role=subscription data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+<form action="http://google.com/search" method="get">
+  <fieldset role="site-search">
+    <input type="hidden" name="q" value="site:jakegoulding.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+<ul role=main-navigation>
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry">
+  
+  <header>
+    
+      <h1 class="entry-title">SQLite, 64-bit Integers, and the Impossible Number</h1>
+    
+    
+      <p class="meta">
+
+
+
+
+
+  
+
+
+
+<time datetime="2011-02-06T12:00:00-05:00" pubdate  data-updated="true" >Feb 6<span>th</span>, 2011</time></p>
+    
+  </header>
+
+
+<div class="entry-content"><p>We recently tackled an issue that seemed rather impossible - an
+unsigned 64-bit value was <em>greater than</em> the maximum value that a
+64-bit value can hold. What unfolded was a dark, gritty look at the
+underbelly of everything we hold dear (or a normal debugging session,
+as we like to call them).</p>
+
+<!--more-->
+
+
+<h2>SQLite3 and 64-bit integers</h2>
+
+<p>First off, lets create a table with some big numbers:</p>
+
+<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
+<span class='line'>2</span>
+<span class='line'>3</span>
+</pre></td><td class='code' width='100%'><pre><code class='sql'><div class='line'><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">big_numbers</span> <span class="p">(</span><span class="n">i</span> <span class="nb">INTEGER</span><span class="p">,</span> <span class="n">r</span> <span class="nb">REAL</span><span class="p">,</span> <span class="n">t</span> <span class="nb">TEXT</span><span class="p">,</span> <span class="n">b</span> <span class="nb">BLOB</span><span class="p">);</span>
+</div><div class='line'><span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">big_numbers</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">9223372036854775807</span><span class="p">,</span> <span class="mi">9223372036854775807</span><span class="p">,</span> <span class="mi">9223372036854775807</span><span class="p">,</span> <span class="mi">9223372036854775807</span><span class="p">);</span> <span class="c1">-- 2^63 - 1</span>
+</div><div class='line'><span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">big_numbers</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">9223372036854775808</span><span class="p">,</span> <span class="mi">9223372036854775808</span><span class="p">,</span> <span class="mi">9223372036854775808</span><span class="p">,</span> <span class="mi">9223372036854775808</span><span class="p">);</span> <span class="c1">-- 2^63</span>
+</div></code></pre></td></tr></table></div></figure>
+
+
+<p>Let&#8217;s sanity check our data to make sure it looks like what we would
+expect:</p>
+
+<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
+<span class='line'>2</span>
+<span class='line'>3</span>
+<span class='line'>4</span>
+<span class='line'>5</span>
+</pre></td><td class='code' width='100%'><pre><code class='sql'><div class='line'><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">big_numbers</span><span class="p">;</span>
+</div><div class='line'><span class="n">i</span>                     <span class="n">r</span>                     <span class="n">t</span>                     <span class="n">b</span>
+</div><div class='line'><span class="c1">--------------------  --------------------  --------------------  --------------------</span>
+</div><div class='line'><span class="mi">9223372036854775807</span>   <span class="mi">9</span><span class="p">.</span><span class="mi">22337203685478</span><span class="n">e</span><span class="o">+</span><span class="mi">18</span>  <span class="mi">9223372036854775807</span>   <span class="mi">9223372036854775807</span>
+</div><div class='line'><span class="mi">9</span><span class="p">.</span><span class="mi">22337203685478</span><span class="n">e</span><span class="o">+</span><span class="mi">18</span>  <span class="mi">9</span><span class="p">.</span><span class="mi">22337203685478</span><span class="n">e</span><span class="o">+</span><span class="mi">18</span>  <span class="mi">9</span><span class="p">.</span><span class="mi">22337203685478</span><span class="n">e</span><span class="o">+</span><span class="mi">18</span>  <span class="mi">9</span><span class="p">.</span><span class="mi">22337203685478</span><span class="n">e</span><span class="o">+</span><span class="mi">18</span>
+</div></code></pre></td></tr></table></div></figure>
+
+
+<p>Huh. We definitely were not expecting most of those floating point
+numbers, so let&#8217;s see what types are being returned:</p>
+
+<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
+<span class='line'>2</span>
+<span class='line'>3</span>
+<span class='line'>4</span>
+<span class='line'>5</span>
+</pre></td><td class='code' width='100%'><pre><code class='sql'><div class='line'><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="n">typeof</span><span class="p">(</span><span class="n">i</span><span class="p">),</span><span class="n">typeof</span><span class="p">(</span><span class="n">r</span><span class="p">),</span><span class="n">typeof</span><span class="p">(</span><span class="n">t</span><span class="p">),</span><span class="n">typeof</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="k">FROM</span> <span class="n">big_numbers</span><span class="p">;</span>
+</div><div class='line'><span class="n">typeof</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>   <span class="n">typeof</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>   <span class="n">typeof</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>   <span class="n">typeof</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+</div><div class='line'><span class="c1">----------  ----------  ----------  ----------</span>
+</div><div class='line'><span class="nb">integer</span>     <span class="nb">real</span>        <span class="nb">text</span>        <span class="nb">integer</span>
+</div><div class='line'><span class="nb">real</span>        <span class="nb">real</span>        <span class="nb">text</span>        <span class="nb">real</span>
+</div></code></pre></td></tr></table></div></figure>
+
+
+<p>Sure enough, the numeric types in the second row are all reals. Let&#8217;s
+do a nice simple addition operation on our data:</p>
+
+<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
+<span class='line'>2</span>
+<span class='line'>3</span>
+<span class='line'>4</span>
+<span class='line'>5</span>
+</pre></td><td class='code' width='100%'><pre><code class='sql'><div class='line'><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">r</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">t</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">b</span><span class="o">+</span><span class="mi">1</span> <span class="k">FROM</span> <span class="n">big_numbers</span><span class="p">;</span>
+</div><div class='line'><span class="n">i</span><span class="o">+</span><span class="mi">1</span>                   <span class="n">r</span><span class="o">+</span><span class="mi">1</span>                   <span class="n">t</span><span class="o">+</span><span class="mi">1</span>                   <span class="n">b</span><span class="o">+</span><span class="mi">1</span>
+</div><div class='line'><span class="c1">--------------------  --------------------  --------------------  --------------------</span>
+</div><div class='line'><span class="o">-</span><span class="mi">9223372036854775808</span>  <span class="mi">9</span><span class="p">.</span><span class="mi">22337203685478</span><span class="n">e</span><span class="o">+</span><span class="mi">18</span>  <span class="o">-</span><span class="mi">9223372036854775808</span>  <span class="o">-</span><span class="mi">9223372036854775808</span>
+</div><div class='line'><span class="mi">9</span><span class="p">.</span><span class="mi">22337203685478</span><span class="n">e</span><span class="o">+</span><span class="mi">18</span>  <span class="mi">9</span><span class="p">.</span><span class="mi">22337203685478</span><span class="n">e</span><span class="o">+</span><span class="mi">18</span>  <span class="mi">9</span><span class="p">.</span><span class="mi">22337203685478</span><span class="n">e</span><span class="o">+</span><span class="mi">18</span>  <span class="mi">9</span><span class="p">.</span><span class="mi">22337203685478</span><span class="n">e</span><span class="o">+</span><span class="mi">18</span>
+</div></code></pre></td></tr></table></div></figure>
+
+
+<p>Woah, what happened here? Those familiar with signed and unsigned
+integers are already nodding and going &#8220;Mmm-hmm&#8221;. For everyone else, I
+suggest brushing up on <a href="http://en.wikipedia.org/wiki/Two's_complement">two&#8217;s compliment</a> notation. Suffice it to
+say that integers are usually represented by a fixed number of bits,
+and once you run out of bits you roll over back to the beginning, in
+this case a large negative number.</p>
+
+<p>As it turns out, SQLite is pretty straight-forward about this. From
+the <a href="http://www.sqlite.org/datatype3.html">datatype reference</a> in SQLite (emphasis mine):</p>
+
+<blockquote><p>INTEGER. The value is a <strong>signed</strong> integer, stored in 1, 2, 3, 4, 6,
+or 8 bytes depending on the magnitude of the value.</p></blockquote>
+
+<p>That is, you can only store values from -2**63 to (2**63-1). What
+does SQLite do for a value outside of this range? As we saw earlier,
+it switches over into floating point. Again, quoting from the SQLite
+reference:</p>
+
+<blockquote><p>REAL. The value is a floating point value, stored as an 8-byte IEEE
+floating point number.</p></blockquote>
+
+<p>Many programmers are familiar with this type under the name
+<a href="http://en.wikipedia.org/wiki/Double_precision_floating-point_format">double</a>.</p>
+
+<h2>Are you smarter than a SQLite engineer?</h2>
+
+<p>In our case, we are trying to store an unsigned 64-bit integer. For
+reasons now lost to the past, we marshall native C types to strings
+ourselves before handing them off to SQLite, rather than using the
+appropriate <a href="http://www.sqlite.org/capi3ref.html">SQLite API</a> functions.</p>
+
+<p>An unrelated issue elsewhere caused this value to go negative. Similar
+to the issue above when we overflow a integer type, when you underflow
+you get a very large positive number. Since we have an <em>unsigned</em>
+number, the resultant number is far over the maximum of a <em>signed</em>
+64-bit integer. This causes SQLite to switch into floating-point mode
+when the value is saved to the database.</p>
+
+<p>Of course, our particular tale of woe doesn&#8217;t end there. Indeed, we
+need to report this value in a status response. As an example of what
+I can only assume is premature optimization, we simply grab the string
+value from SQLite and report that. This causes another part of the
+application to choke when trying to parse the value, as it can no
+longer fit within a 64-bit type.</p>
+
+<h2>Wait, what?</h2>
+
+<p>How did we go from simply over- or under-flowing a 64-bit value to
+exceeding the range of the datatype? It shouldn&#8217;t even be possible to
+have a 64-bit value that is larger than a 64-bit value, by definition!
+As a coworker said: &#8220;It would violate the logic of the reality of the
+number&#8221;. The answer stems from how the value is converted into a
+double by SQLite.</p>
+
+<p>Here is a simple example that shows what happens when you mess around
+with 64-bit integer types and doubles the wrong way:</p>
+
+<pre><code>#!C
+</code></pre>
+
+<figure role=code><figcaption><span> (64bit-integer-float.c)</span> <a href='/downloads/code/64bit-integer-float.c'>download</a></figcaption>
+ <div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
+<span class='line'>2</span>
+<span class='line'>3</span>
+<span class='line'>4</span>
+<span class='line'>5</span>
+<span class='line'>6</span>
+<span class='line'>7</span>
+<span class='line'>8</span>
+<span class='line'>9</span>
+<span class='line'>10</span>
+<span class='line'>11</span>
+<span class='line'>12</span>
+<span class='line'>13</span>
+</pre></td><td class='code' width='100%'><pre><code class='c'><div class='line'><span class="cp">#include &lt;stdio.h&gt;</span>
+</div><div class='line'><span class="cp">#include &lt;stdlib.h&gt;</span>
+</div><div class='line'>
+</div><div class='line'><span class="kt">int</span>
+</div><div class='line'><span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span>
+</div><div class='line'><span class="p">{</span>
+</div><div class='line'>  <span class="kt">unsigned</span> <span class="kt">long</span> <span class="kt">long</span> <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+</div><div class='line'>  <span class="kt">double</span> <span class="n">d</span> <span class="o">=</span> <span class="n">i</span><span class="p">;</span>
+</div><div class='line'>  <span class="kt">unsigned</span> <span class="kt">long</span> <span class="kt">long</span> <span class="kt">int</span> <span class="n">i2</span> <span class="o">=</span> <span class="n">d</span><span class="p">;</span>
+</div><div class='line'>
+</div><div class='line'>  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;%llu</span><span class="se">\n</span><span class="s">%.20g</span><span class="se">\n</span><span class="s">%llu</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">i2</span><span class="p">);</span>
+</div><div class='line'>  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</div><div class='line'><span class="p">}</span>
+</div></code></pre></td></tr></table></div></figure>
+
+
+<p>On Windows (Microsoft (R) C/C++ Optimizing Compiler Version
+14.00.50727.762 for x64), we see:</p>
+
+<pre><code>18446744073709551615
+18446744073709552000
+18446744073709551615
+</code></pre>
+
+<p>On Linux (gcc (Gentoo 4.4.4-r2 p1.2, pie-0.4.5) 4.4.4), we get
+different but equally surprising output:</p>
+
+<pre><code>18446744073709551615
+18446744073709551616
+0
+</code></pre>
+
+<p>In both cases, the intermediate double representation is greater than
+the original integral representation. The double value is much greater
+than the original on Windows, but the cast back to an integer has the
+same value as the original. On Linux, the double value is just a
+little bit greater, but casting back rolls all the way back to
+zero. Floating point numbers are <strong>hard</strong>, and we programmers far too
+often forget exactly how hard they are.</p>
+
+<p>When we grabbed the string value directly from the database, there was
+no cast back to a 64-bit type to truncate the value. This causes
+<a href="http://www.youtube.com/watch?v=KFLq7cyHKMg">the rest of the dominoes to fall like a house of cards</a>.</p>
+
+<h2>Lessons learned</h2>
+
+<p><strong>Be careful when you need to store large numbers in SQLite.</strong> If you
+really need to support unsigned 64-bit numbers, you could always shift
+your numbers down by 2**63. Of course, this means that you will
+need to massage any access to that column to correct for the
+offset. If you don&#8217;t need to perform any calculations or sorting on
+that column inside of SQLite, it&#8217;s possible that you could give the
+column a text affinity, preventing SQLite from messing with the
+data.</p>
+
+<p><strong>Don&#8217;t write your own marshaling code unless you really need it.</strong> If
+we had used the actual SQLite C API for storing and retrieving our
+values, I assume (but have not verified) that this wouldn&#8217;t have
+happened, not to mention we would have likely realized that SQLite
+only natively supports <strong>signed</strong> 64-bit integers. This would have led
+us to test the edge cases that were more obvious.</p>
+
+<p><strong>Test maximal and minimal values.</strong> This is such a basic testing
+strategy that it is surprising that we forget it so
+much. I&#8217;mdefinitely in the camp of people that don&#8217;t do this kind of
+testing as much as I should.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Jake Goulding</span></span>
+
+      
+
+
+
+
+
+  
+
+
+
+<time datetime="2011-02-06T12:00:00-05:00" pubdate  data-updated="true" >Feb 6<span>th</span>, 2011</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/sqlite/'>SQLite</a>, <a class='category' href='/blog/categories/debugging/'>debugging</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2011/02/06/sqlite-64-bit-integers/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2011/02/06/sqlite-64-bit-integers/" >Tweet</a>
+  
+  
+</div>
+
+    
+  </footer>
+</article>
+
+</div>
+
+<aside role=sidebar>
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2011/02/27/how-mock-objects-make-gantt-charts-more-useless/">How Mock Objects Make Gantt Charts (More) Useless</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2011/02/26/using-named-routes-in-actionmailer-tests-with-rails-3/">Using named routes in ActionMailer tests with Rails 3</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2011/02/06/sqlite-64-bit-integers/">SQLite, 64-bit integers, and the impossible number</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2011/02/05/the-psychology-of-computer-programming/">The Psychology of Computer Programming</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2011/01/27/uninitialized-variable-warnings-and-compiler-optimizations/">Uninitialized variable warnings and compiler optimizations</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("jakegoulding", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @jakegoulding</a>
+  
+</section>
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer><p>
+  Copyright &copy; 2011 - Jake Goulding -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+  
+
+  
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+</body>
+</html>

@@ -1,0 +1,393 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Uninitialized variable warnings and compiler optimizations - Jake Goulding</title>
+  <meta name="author" content="Jake Goulding">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+
+  <link rel="canonical" href="http://jakegoulding.com/blog/2011/01/27/uninitialized-variable-warnings-and-compiler-optimizations/"/>
+  <link href="/favicon.png" rel="shortcut icon" />
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="http://s3.amazonaws.com/ender-js/jeesh.min.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml"/>
+  <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
+<link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body  >
+  <header><hgroup>
+  <h1><a href="/">Jake Goulding</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role=navigation><ul role=subscription data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+<form action="http://google.com/search" method="get">
+  <fieldset role="site-search">
+    <input type="hidden" name="q" value="site:jakegoulding.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+<ul role=main-navigation>
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry">
+  
+  <header>
+    
+      <h1 class="entry-title">Uninitialized Variable Warnings and Compiler Optimizations</h1>
+    
+    
+      <p class="meta">
+
+
+
+
+
+  
+
+
+
+<time datetime="2011-01-27T12:00:00-05:00" pubdate  data-updated="true" >Jan 27<span>th</span>, 2011</time></p>
+    
+  </header>
+
+
+<div class="entry-content"><p>A coworker recently got the <code>may be used uninitialized in this
+function</code> warning from GCC and asked me to take a look at it to see if
+the warning was spurious or if he was missing something. While trying
+to boil his code down to a concise example, we found an example where
+the warning got flipped - we no longer got a warning even though we
+both expected one.</p>
+
+<!--more-->
+
+
+<p>Here is the example code we ended up with. <code>foo</code> is a function that
+should set <code>value</code> when the parameter is true. If the parameter is not
+set, then <code>value</code> is undefined. The main simply calls <code>foo</code>, using the
+command-line argument count to control what is passed to the function.</p>
+
+<figure role=code><figcaption><span> (uninit-warning.c)</span> <a href='/downloads/code/uninit-warning.c'>download</a></figcaption>
+ <div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
+<span class='line'>2</span>
+<span class='line'>3</span>
+<span class='line'>4</span>
+<span class='line'>5</span>
+<span class='line'>6</span>
+<span class='line'>7</span>
+<span class='line'>8</span>
+<span class='line'>9</span>
+<span class='line'>10</span>
+<span class='line'>11</span>
+<span class='line'>12</span>
+<span class='line'>13</span>
+<span class='line'>14</span>
+<span class='line'>15</span>
+<span class='line'>16</span>
+<span class='line'>17</span>
+<span class='line'>18</span>
+<span class='line'>19</span>
+<span class='line'>20</span>
+<span class='line'>21</span>
+<span class='line'>22</span>
+<span class='line'>23</span>
+</pre></td><td class='code' width='100%'><pre><code class='c'><div class='line'><span class="cp">#include &lt;stdio.h&gt;</span>
+</div><div class='line'><span class="cp">#include &lt;stdlib.h&gt;</span>
+</div><div class='line'>
+</div><div class='line'><span class="kt">void</span>
+</div><div class='line'><span class="nf">foo</span><span class="p">(</span><span class="kt">int</span> <span class="n">do_it</span><span class="p">)</span> <span class="p">{</span>
+</div><div class='line'>  <span class="kt">int</span> <span class="n">value</span><span class="p">;</span>
+</div><div class='line'>
+</div><div class='line'>  <span class="k">if</span> <span class="p">(</span><span class="n">do_it</span><span class="p">)</span> <span class="p">{</span>
+</div><div class='line'>    <span class="n">value</span> <span class="o">=</span> <span class="mi">7</span><span class="p">;</span>
+</div><div class='line'>  <span class="p">}</span>
+</div><div class='line'>
+</div><div class='line'>  <span class="k">if</span> <span class="p">(</span><span class="mi">7</span> <span class="o">==</span> <span class="n">value</span><span class="p">)</span> <span class="p">{</span>
+</div><div class='line'>    <span class="n">printf</span><span class="p">(</span><span class="s">&quot;It is 7</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+</div><div class='line'>  <span class="p">}</span>
+</div><div class='line'><span class="p">}</span>
+</div><div class='line'>
+</div><div class='line'><span class="kt">int</span>
+</div><div class='line'><span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span>
+</div><div class='line'><span class="p">{</span>
+</div><div class='line'>  <span class="n">foo</span><span class="p">(</span><span class="n">argc</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">);</span>
+</div><div class='line'>
+</div><div class='line'>  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</div><div class='line'><span class="p">}</span>
+</div></code></pre></td></tr></table></div></figure>
+
+
+<p>We compiled it with GCC, expecting to see a warning.</p>
+
+<pre><code>$ gcc --version
+gcc (Gentoo 4.4.4-r2 p1.2, pie-0.4.5) 4.4.4
+$ gcc -o uninit-gcc uninit.c -O3 -Wall -pedantic
+</code></pre>
+
+<p>Strange, no warning. What does Clang say?</p>
+
+<pre><code>$ clang --version
+clang version 2.8 (branches/release_28)
+$ clang -o uninit-clang uninit.c -O3 -Wall -pedantic
+</code></pre>
+
+<p>Neither compilation produces warnings! We tried compiling with -O0 and
+-Os, in case some optimization was being applied, but the results were
+the same. Curiosity piqued, we dropped down to the next most logical
+level - assembly.</p>
+
+<h2>GCC disassembly</h2>
+
+<pre><code>0000000000400570 &lt;foo&gt;:
+  400570:       be 9c 06 40 00          mov    $0x40069c,%esi
+  400575:       bf 01 00 00 00          mov    $0x1,%edi
+  40057a:       31 c0                   xor    %eax,%eax
+  40057c:       e9 d7 fe ff ff          jmpq   400458 &lt;__printf_chk@plt&gt;
+  400581:       66 66 66 66 66 66 2e    nopw   %cs:0x0(%rax,%rax,1)
+  400588:       0f 1f 84 00 00 00 00 
+  40058f:       00 
+</code></pre>
+
+<p>If you want to follow along, I used the <a href="http://support.amd.com/us/Processor_TechDocs/24592.pdf">AMD64 Architecture Programmer&#8217;s Manual</a> as an assembly reference.</p>
+
+<p>GCC starts out by loading the address of the string into <code>%esi</code>, then
+loads 1 into <code>%edi</code> and <code>%eax</code> is then XORed against itself, which
+sets <code>%eax</code> to 0. According to <a href="http://en.wikipedia.org/wiki/X86_calling_conventions#System_V_AMD64_ABI_convention">the X86_64 calling convention</a>,
+<code>%edi</code> and <code>%esi</code> are the first and second integral parameters to the
+function about to be called and <code>%eax</code> is used as the return value
+from the current function. Since we only have one parameter to printf,
+and <code>foo</code> is a void function, I think that <code>%edi</code> and <code>%eax</code> must have
+something to do with calling a variadic function. <em>The code
+<strong>unconditionally</strong> jumps to printf.</em> The function finishes off with
+nopw, a <a href="http://john.freml.in/amd64-nopl">fancy way of using a NOP</a> to pad out to a nice even
+boundary.</p>
+
+<h2>Clang disassembly</h2>
+
+<pre><code>0000000000400540 &lt;foo&gt;:
+  400540:       55                      push   %rbp
+  400541:       48 89 e5                mov    %rsp,%rbp
+  400544:       bf 5c 06 40 00          mov    $0x40065c,%edi
+  400549:       5d                      pop    %rbp
+  40054a:       e9 e1 fe ff ff          jmpq   400430 &lt;puts@plt&gt;
+  40054f:       90                      nop
+</code></pre>
+
+<p>Clang produces pretty much the same code, but does some different
+gyrations. The contents of <code>%rpb</code> are pushed onto the stack, then
+<code>%rsp</code> is moved to <code>%rpb</code>. The address of the string is loaded into
+<code>%edi</code> and <code>%rbp</code> is restored - never having been used. Clang has
+optimized the call to <code>printf</code> to instead use the simpler <code>puts</code>
+function, so we don&#8217;t see the same mucking about with <code>%edi</code> and
+<code>%eax</code>. However, it is still an <strong>unconditional</strong> jump!</p>
+
+<h2>Clang LLVM output</h2>
+
+<p>Clang has an interesting feature that lets you dump the abstract
+syntax tree just like assembly.</p>
+
+<pre><code>define void @foo(i32 %do_it) nounwind {
+  %puts = tail call i32 @puts(i8* getelementptr inbounds ([8 x i8]* @str, i64 0, i64 0))
+  ret void
+}
+</code></pre>
+
+<p>We can see that it ignores the parameter <code>do_it</code>.</p>
+
+<h2>Visual Studio 2010</h2>
+
+<p>Reddit user DeliciouslyMoist <a href="http://www.reddit.com/r/programming/comments/fag84/uninitialized_variable_warnings_and_compiler/c1eht39">shows</a> that Visual Studio 2010 does
+have a warning.</p>
+
+<pre><code>cl -c -Ox -W4 test.cpp
+test.cpp
+test.cpp(18) : warning C4100: 'argv' : unreferenced formal parameter
+test.cpp(12) : warning C4701: potentially uninitialized local variable 'value' used
+</code></pre>
+
+<p>Along with the generated assembly. Note this is Windows assembly, so
+the Linux calling conventions above don&#8217;t apply.</p>
+
+<pre><code>?foo@@YAXH@Z (void __cdecl foo(int)):
+  00000000: 83 7C 24 04 00     cmp         dword ptr [esp+4],0
+  00000005: 75 07              jne         0000000E
+  00000007: 83 7C 24 04 07     cmp         dword ptr [esp+4],7
+  0000000C: 75 0D              jne         0000001B
+  0000000E: C7 44 24 04 00 00  mov         dword ptr [esp+4],offset $SG4825
+        00 00
+  00000016: E9 00 00 00 00     jmp         _printf
+</code></pre>
+
+<h2>Clang static analyzer</h2>
+
+<p>As Reddit user masklinn <a href="http://www.reddit.com/r/programming/comments/fag84/uninitialized_variable_warnings_and_compiler/c1eixa9">points out</a>, the clang static analyzer
+<em>does</em> output a warning, even though the clang compiler does not.</p>
+
+<pre><code>$ clang --analyze uninit.c 
+uninit.c:12:9: warning: The right operand of '==' is a garbage value
+  if (7 == value) {
+      ^  ~~~~~
+1 warning generated.
+</code></pre>
+
+<h2>Lessons</h2>
+
+<p>The behavior and generated code of the compilers is interesting, but I
+think they are allowed to do whatever they want when optimizing
+undefined code, so I can&#8217;t fault them for that.</p>
+
+<p>What both my coworker and I were surprised was the lack of warning. In
+general, we have come to rely on GCC to be overly zealous about
+providing warnings. I&#8217;d much rather have an extraneous warning that I
+can silence instead of no warning at all.</p>
+
+<p><strong>Edit 2010-01-28</strong> - added Visual Studio and clang analyzer output from reddit.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Jake Goulding</span></span>
+
+      
+
+
+
+
+
+  
+
+
+
+<time datetime="2011-01-27T12:00:00-05:00" pubdate  data-updated="true" >Jan 27<span>th</span>, 2011</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/c/'>C</a>, <a class='category' href='/blog/categories/gcc/'>GCC</a>, <a class='category' href='/blog/categories/clang/'>clang</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2011/01/27/uninitialized-variable-warnings-and-compiler-optimizations/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2011/01/27/uninitialized-variable-warnings-and-compiler-optimizations/" >Tweet</a>
+  
+  
+</div>
+
+    
+  </footer>
+</article>
+
+</div>
+
+<aside role=sidebar>
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2011/02/27/how-mock-objects-make-gantt-charts-more-useless/">How Mock Objects Make Gantt Charts (More) Useless</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2011/02/26/using-named-routes-in-actionmailer-tests-with-rails-3/">Using named routes in ActionMailer tests with Rails 3</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2011/02/06/sqlite-64-bit-integers/">SQLite, 64-bit integers, and the impossible number</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2011/02/05/the-psychology-of-computer-programming/">The Psychology of Computer Programming</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2011/01/27/uninitialized-variable-warnings-and-compiler-optimizations/">Uninitialized variable warnings and compiler optimizations</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("jakegoulding", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @jakegoulding</a>
+  
+</section>
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer><p>
+  Copyright &copy; 2011 - Jake Goulding -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+  
+
+  
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+</body>
+</html>

@@ -1,0 +1,361 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>How Mock Objects Make Gantt Charts (More) Useless - Jake Goulding</title>
+  <meta name="author" content="Jake Goulding">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+
+  <link rel="canonical" href="http://jakegoulding.com/blog/2011/02/27/how-mock-objects-make-gantt-charts-more-useless/"/>
+  <link href="/favicon.png" rel="shortcut icon" />
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="http://s3.amazonaws.com/ender-js/jeesh.min.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml"/>
+  <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
+<link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body  >
+  <header><hgroup>
+  <h1><a href="/">Jake Goulding</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role=navigation><ul role=subscription data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+<form action="http://google.com/search" method="get">
+  <fieldset role="site-search">
+    <input type="hidden" name="q" value="site:jakegoulding.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+<ul role=main-navigation>
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry">
+  
+  <header>
+    
+      <h1 class="entry-title">How Mock Objects Make Gantt Charts (More) Useless</h1>
+    
+    
+      <p class="meta">
+
+
+
+
+
+  
+
+
+
+<time datetime="2011-02-27T12:00:00-05:00" pubdate  data-updated="true" >Feb 27<span>th</span>, 2011</time></p>
+    
+  </header>
+
+
+<div class="entry-content"><p>At work, we are embarking on a grand new project, one that promises to
+involve quite a few engineers and take a good chunk of time. It is the
+quintessential <strong>Next Big Thing</strong>. So far, one or two
+prototypes of the new product have been developed (and demonstrated
+with positive feedback), but now it is time to <em>really</em> get our
+hands dirty.</p>
+
+<p>Of course, by &#8220;hands dirty&#8221;, I mean that it is time to generate reams
+and reams of project plans and software designs, both of which will
+take an inordinate amount of time to create and then be underused and
+under-maintained. One old friend that popped up during project
+planning was the ever-popular <a href="http://en.wikipedia.org/wiki/Gantt_chart">Gantt chart</a>.</p>
+
+<!--more-->
+
+
+<h2>A simple Gantt chart</h2>
+
+<p>If you are unacquainted with Gantt charts, they are pretty
+straight-forward (as far as I have been able to determine). Gantt
+charts show how multiple components of a project can be scheduled
+together, accounting for dependencies between tasks as well as how
+long those tasks are expected to take.</p>
+
+<div class="image_with_caption">
+  <img src="/images/blog/gantt-1.png" alt="simple Gantt chart" />
+  <span>A very simple Gantt chart</span>
+</div>
+
+
+<p>As you see, each step requires completion of <strong>all</strong> previous steps
+before you can start on the next step. In this case, the project can
+be done in seven weeks (the <em>critical path</em>). Obviously, this is a
+highly simplified example, and bears no relation to reality,
+especially as I completely made it up. However, the astute reader can
+see how real-world projects might be coerced into Gantt chart form.</p>
+
+<h2>Mock objects to the rescue</h2>
+
+<p><a href="http://en.wikipedia.org/wiki/Mock_object">Mock objects</a> are simple pieces of code that stand in for other
+pieces of code. The most common times I have used a mock object has
+been when the real object is too complicated or slow to use in a
+test. However, there are other cases when they can be used, such as
+when the real object &#8220;does not yet exist or may change behavior&#8221;.</p>
+
+<div class="image_with_caption">
+  <img src="/images/blog/gantt-2.png" alt="Gantt chart using mock objects" />
+  <span>Previous Gantt chart modified to fully leverage mock objects</span>
+</div>
+
+
+<p>The heavy-handed dependencies of the first chart are gone, replaced by
+time to create suitable mock objects for the application logic and UI
+teams (represented by the gradients at left). For example purposes, I
+hand-wavingly say that creating these objects will take one week for
+each team. In addition, there is an extra week of &#8220;integration&#8221; after
+each team thinks they are done.</p>
+
+<p>If this reorganization is to be believed, then we have reduced the
+time from start to finish for the project from seven weeks down to
+four. Obviously, this will save millions of dollars and allow the
+product to get to market that much faster.</p>
+
+<h3>Integration</h3>
+
+<p>Depending on how your teams work together, an after-the-fact
+integration step may or may not be needed. If each team works
+completely in isolation, then you will probably need a sizable chunk
+of time to make sure all the pieces fit together correctly. If your
+teams communicate and work together, then most thorny integration
+needs will have been hammered out along the way, and time spent purely
+on integration could be reduced.</p>
+
+<p>In addition, if your teams <em>have</em> been working together, the
+interfaces between components are probably more ideal than if each
+group had developed sequentially. As the UI team realizes they need
+lower-level support to complete some feature, they can add that
+functionality to a mock object on-demand. In return, the application
+team can then look at the created mock objects to know exactly what
+interface and functionality is required, without worrying that they
+are writing code that won&#8217;t be used.</p>
+
+<h3>Not a panacea</h3>
+
+<p>Of course, mock objects are not a development silver bullet.</p>
+
+<p><strong>You need to be able to take advantage of the parallelization.</strong> If
+you only have one team or just one developer, it&#8217;s safe to say you
+wont see any time benefit from this process. For the moment, I am
+ignoring any additional benefits that mock objects might bring, such
+as reduction in testing or debugging time.</p>
+
+<p><strong>The total amount of development time is greater.</strong> The cumulative
+time for the sequential method is seven developer-weeks, but the
+parallel method takes ten developer-weeks. The counterargument here is
+that the start-to-finish time is less and your developer efficiency is
+much higher. If you have two teams sitting idle at any given time, you
+only have an efficiency of 33%. If everyone is working at the same
+time, the efficiency will be closer to 100%. This assumes that working
+100% of the time is a good thing, which is debatable.</p>
+
+<p><strong>Teams in the middle of the dependency graph need to interact with
+other groups more.</strong> In the example above, the application logic team
+will need to communicate with both the database and UI teams, which
+can reduce the time available to work on the actual application
+logic. Even if you develop sequentially, this time still needs to be
+spent: when the application logic team is using the database, and then
+again when the UI team is using the application logic. The difference
+when working in parallel is that the time required is more obvious and
+the teams still view the code as mutable.</p>
+
+<p><strong>The programmers on each team need to be competent.</strong> This means they
+need to be able to think one abstraction level up and down, at a
+minimum. Your UI team has to be able to think similar to the
+application logic team sometimes, and the application logic team has
+to think like the UI team sometimes. Otherwise, the created mock
+objects could be completely fictional and impossible to create. If
+your developers do not meet this condition, you have bigger
+problems. Developers should always be aware of what goes on around
+them, and ideally everyone aims to be a <a href="http://www.facebook.com/note.php?note_id=461505383919">full-stack</a>
+developer.</p>
+
+<h2>Summary</h2>
+
+<p><strong>Benefits</strong></p>
+
+<ul>
+<li>Allows parallelization of &#8220;dependent&#8221; tasks</li>
+<li>Create more ideal interfaces</li>
+</ul>
+
+
+<p><strong>Potential problems</strong></p>
+
+<ul>
+<li>Requires multiple teams that can work in parallel</li>
+<li>Total amount of work increases</li>
+<li>Teams in the middle must interact more</li>
+<li>Requires competent programmers</li>
+</ul>
+
+
+<h2>A note to the terminology-minded</h2>
+
+<p>I use the term &#8220;mock object&#8221; interchangeably with the more generic
+term &#8220;test double&#8221;. Martin Fowler has an <a href="http://martinfowler.com/articles/mocksArentStubs.html">excellent
+article</a> that details some of the differences between different
+types of test doubles. Any type of test double should be able to help
+break the dependency chain; it is up to each team to decide which
+double is appropriate for a given situation.</p>
+
+<h2>Community feedback</h2>
+
+<p><strong>EDIT 3:42 PM</strong> <a href="http://news.ycombinator.com/item?id=2268686">Groxx</a> over at Hacker News points out that I
+am unfairly attacking the Gantt chart itself, and that realistically
+the problem is one of &#8220;organizational abuse&#8221;. In addition, the Gantt
+chart is quite capable of handling my second example. In my
+experience, most Gantt charts have looked more like my first
+example, so I tend to conflate the chart with the act of
+serialization of tasks.</p>
+
+<p>My real point is that project planning often devolves into the concept
+of &#8220;we must code A before B before C&#8221;, but that by using techniques
+such as mock objects, we can break the (artificial) dependency graph.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Jake Goulding</span></span>
+
+      
+
+
+
+
+
+  
+
+
+
+<time datetime="2011-02-27T12:00:00-05:00" pubdate  data-updated="true" >Feb 27<span>th</span>, 2011</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2011/02/27/how-mock-objects-make-gantt-charts-more-useless/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2011/02/27/how-mock-objects-make-gantt-charts-more-useless/" >Tweet</a>
+  
+  
+</div>
+
+    
+  </footer>
+</article>
+
+</div>
+
+<aside role=sidebar>
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2011/02/27/how-mock-objects-make-gantt-charts-more-useless/">How Mock Objects Make Gantt Charts (More) Useless</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2011/02/26/using-named-routes-in-actionmailer-tests-with-rails-3/">Using named routes in ActionMailer tests with Rails 3</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2011/02/06/sqlite-64-bit-integers/">SQLite, 64-bit integers, and the impossible number</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2011/02/05/the-psychology-of-computer-programming/">The Psychology of Computer Programming</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2011/01/27/uninitialized-variable-warnings-and-compiler-optimizations/">Uninitialized variable warnings and compiler optimizations</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("jakegoulding", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @jakegoulding</a>
+  
+</section>
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer><p>
+  Copyright &copy; 2011 - Jake Goulding -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+  
+
+  
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+</body>
+</html>

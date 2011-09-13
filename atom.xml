@@ -4,7 +4,7 @@
   <title>Jake Goulding</title>
   <link href="http://jakegoulding.com/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2011-09-12T18:46:16-04:00</updated>
+  <updated>2011-09-12T20:58:19-04:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name>Jake Goulding</name>
@@ -13,75 +13,865 @@
 
   
   <entry>
-    <title>Beautiful Code and Reality</title>
-    <link href="http://jakegoulding.com/blog/2011/09/11/beautiful-code-and-reality/"/>
-    <updated>2011-09-11T22:39:00-04:00</updated>
-    <id>http://jakegoulding.com/blog/2011/09/11/beautiful-code-and-reality</id>
-    <content type="html">&lt;p&gt;I think a mark of any good programmer is the drive to create beautiful
-code. Like anything subjective, the meaning and interpretation of
-beautiful varies from programmer to programmer, but there are a few
-components that could be considered universal.&lt;/p&gt;
+    <title>How Mock Objects Make Gantt Charts (More) Useless</title>
+    <link href="http://jakegoulding.com/blog/2011/02/27/how-mock-objects-make-gantt-charts-more-useless/"/>
+    <updated>2011-02-27T12:00:00-05:00</updated>
+    <id>http://jakegoulding.com/blog/2011/02/27/how-mock-objects-make-gantt-charts-more-useless</id>
+    <content type="html">&lt;p&gt;At work, we are embarking on a grand new project, one that promises to
+involve quite a few engineers and take a good chunk of time. It is the
+quintessential &lt;strong&gt;Next Big Thing&lt;/strong&gt;. So far, one or two
+prototypes of the new product have been developed (and demonstrated
+with positive feedback), but now it is time to &lt;em&gt;really&lt;/em&gt; get our
+hands dirty.&lt;/p&gt;
 
-&lt;!&#8211; more &#8211;&gt;
+&lt;p&gt;Of course, by &amp;#8220;hands dirty&amp;#8221;, I mean that it is time to generate reams
+and reams of project plans and software designs, both of which will
+take an inordinate amount of time to create and then be underused and
+under-maintained. One old friend that popped up during project
+planning was the ever-popular &lt;a href=&quot;http://en.wikipedia.org/wiki/Gantt_chart&quot;&gt;Gantt chart&lt;/a&gt;.&lt;/p&gt;
+
+&lt;!&#8211;more&#8211;&gt;
 
 
-&lt;p&gt;There are entire books dedicated to the concept of beautiful code - a
-cursory search on Amazon yields one aptly titled &lt;a href=&quot;http://www.amazon.com/gp/product/0596510047/ref=as_li_qf_sp_asin_il_tl?ie=UTF8&amp;amp;tag=jakgousblo-20&amp;amp;linkCode=as2&amp;amp;camp=1789&amp;amp;creative=9325&amp;amp;creativeASIN=0596510047&quot;&gt;Beautiful Code&lt;/a&gt;,
-another &lt;a href=&quot;http://www.amazon.com/gp/product/0596157118/ref=as_li_qf_sp_asin_il_tl?ie=UTF8&amp;amp;tag=jakgousblo-20&amp;amp;linkCode=as2&amp;amp;camp=1789&amp;amp;creative=9325&amp;amp;creativeASIN=0596157118&quot;&gt;Beautiful Data&lt;/a&gt;. I haven&amp;#8217;t read either of these yet, and
-&lt;a href=&quot;http://www.codinghorror.com/blog/2008/02/code-isnt-beautiful.html&quot;&gt;Jeff Atwood&amp;#8217;s review of Beautiful Code&lt;/a&gt; wasn&amp;#8217;t very glowing,
-but the mere existence of these books points to the yearning of
-programmers to create something fufilling.&lt;/p&gt;
+&lt;h2&gt;A simple Gantt chart&lt;/h2&gt;
 
-&lt;p&gt;The problem arises when you bring the real-world into the picture.&lt;/p&gt;
+&lt;p&gt;If you are unacquainted with Gantt charts, they are pretty
+straight-forward (as far as I have been able to determine). Gantt
+charts show how multiple components of a project can be scheduled
+together, accounting for dependencies between tasks as well as how
+long those tasks are expected to take.&lt;/p&gt;
 
-&lt;p&gt;&lt;img class=&#8221; src=&#8217;http://jakegoulding.com/images/blog/ideal.png&#8217; width=&#8221; height=&#8221; alt=&#8217;The ideal software&#8217; title=&#8217;The ideal software&#8217;&gt;&lt;/p&gt;
+&lt;div class=&quot;image_with_caption&quot;&gt;
+  &lt;img src=&quot;http://jakegoulding.com/images/blog/gantt-1.png&quot; alt=&quot;simple Gantt chart&quot; /&gt;
+  &lt;span&gt;A very simple Gantt chart&lt;/span&gt;
+&lt;/div&gt;
 
-&lt;p&gt;This is how a programmer views a potential piece of software: a nice,
-perfect circle. Each class, function and line of code has a place and
-&lt;em&gt;raison d&amp;#8217;etre&lt;/em&gt;.&lt;/p&gt;
 
-&lt;p&gt;&lt;img class=&#8221; src=&#8217;http://jakegoulding.com/images/blog/real.png&#8217; width=&#8221; height=&#8221; alt=&#8217;Real-world software&#8217; title=&#8217;Real-world software&#8217;&gt;&lt;/p&gt;
+&lt;p&gt;As you see, each step requires completion of &lt;strong&gt;all&lt;/strong&gt; previous steps
+before you can start on the next step. In this case, the project can
+be done in seven weeks (the &lt;em&gt;critical path&lt;/em&gt;). Obviously, this is a
+highly simplified example, and bears no relation to reality,
+especially as I completely made it up. However, the astute reader can
+see how real-world projects might be coerced into Gantt chart form.&lt;/p&gt;
 
-&lt;p&gt;This is what the real world gives us: a messy blob. Maybe the data
-doesn&amp;#8217;t fit right, or the maybe user wants the output to be emailed, but
-there is just something that doesn&amp;#8217;t fit with the designed software.&lt;/p&gt;
+&lt;h2&gt;Mock objects to the rescue&lt;/h2&gt;
 
-&lt;p&gt;&lt;img class=&#8221; src=&#8217;http://jakegoulding.com/images/blog/method1a.png&#8217; width=&#8221; height=&#8221; alt=&#8221; title=&#8221;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;http://en.wikipedia.org/wiki/Mock_object&quot;&gt;Mock objects&lt;/a&gt; are simple pieces of code that stand in for other
+pieces of code. The most common times I have used a mock object has
+been when the real object is too complicated or slow to use in a
+test. However, there are other cases when they can be used, such as
+when the real object &amp;#8220;does not yet exist or may change behavior&amp;#8221;.&lt;/p&gt;
 
-&lt;p&gt;One possible interaction of these two realities involves the beautiful
-code being a subset of the problem at hand. The most obvious issue
-with this &amp;#8220;solution&amp;#8221; is that the user&amp;#8217;s problem isn&amp;#8217;t solved. The
-typical programmer&amp;#8217;s response to this situtation is &amp;#8220;why is this my
-problem?&amp;#8221;. Shamefully, I have to fully admit to falling into this camp
-more than I should. While there are cases where this is the correct
-answer, we programmers use this excuse too often.&lt;/p&gt;
+&lt;div class=&quot;image_with_caption&quot;&gt;
+  &lt;img src=&quot;http://jakegoulding.com/images/blog/gantt-2.png&quot; alt=&quot;Gantt chart using mock objects&quot; /&gt;
+  &lt;span&gt;Previous Gantt chart modified to fully leverage mock objects&lt;/span&gt;
+&lt;/div&gt;
 
-&lt;p&gt;&lt;img class=&#8221; src=&#8217;http://jakegoulding.com/images/blog/method1b.png&#8217; width=&#8221; height=&#8221; alt=&#8221; title=&#8221;&gt;&lt;/p&gt;
 
-&lt;p&gt;An improvement on this arrangement is to add more islands of beautiful
-code. Sometimes this new code is part of the original program, extending
-the capabilities in directions that the original version didn&amp;#8217;t
-have. The additional code might be a completely different program, with
-every program doing one task exceptionally well. This is the case for
-UNIX-style programs connected via pipes. Unfortunately, there will still
-be some parts of the problem that are not addressed by this solution,
-forcing the user to do some of the work by hand.&lt;/p&gt;
+&lt;p&gt;The heavy-handed dependencies of the first chart are gone, replaced by
+time to create suitable mock objects for the application logic and UI
+teams (represented by the gradients at left). For example purposes, I
+hand-wavingly say that creating these objects will take one week for
+each team. In addition, there is an extra week of &amp;#8220;integration&amp;#8221; after
+each team thinks they are done.&lt;/p&gt;
 
-&lt;p&gt;&lt;img class=&#8221; src=&#8217;http://jakegoulding.com/images/blog/method2a.png&#8217; width=&#8221; height=&#8221; alt=&#8221; title=&#8221;&gt;&lt;/p&gt;
+&lt;p&gt;If this reorganization is to be believed, then we have reduced the
+time from start to finish for the project from seven weeks down to
+four. Obviously, this will save millions of dollars and allow the
+product to get to market that much faster.&lt;/p&gt;
 
-&lt;p&gt;Another path that could be chosen is to completely subsume the
-real-world problem within the solution. The downside is that there will
-be some amount of code that is unused by any given user. At the very
-least, code that is written but unused is a waste. In worse cases,
-unused code gets in the way of the user and might even lead to bugs in
-the software.&lt;/p&gt;
+&lt;h3&gt;Integration&lt;/h3&gt;
 
-&lt;p&gt;&lt;img class=&#8221; src=&#8217;http://jakegoulding.com/images/blog/method2b.png&#8217; width=&#8221; height=&#8221; alt=&#8221; title=&#8221;&gt;&lt;/p&gt;
+&lt;p&gt;Depending on how your teams work together, an after-the-fact
+integration step may or may not be needed. If each team works
+completely in isolation, then you will probably need a sizable chunk
+of time to make sure all the pieces fit together correctly. If your
+teams communicate and work together, then most thorny integration
+needs will have been hammered out along the way, and time spent purely
+on integration could be reduced.&lt;/p&gt;
 
-&lt;p&gt;One possible long-term outcome of following this philosophy is the
-&lt;em&gt;uberprogram&lt;/em&gt;. Anyone who has used Microsoft Word has experienced a
-uberprogram. 90% of the features will be unused by a user, but the
-specific 10% used might vary wildly from user to user.&lt;/p&gt;
+&lt;p&gt;In addition, if your teams &lt;em&gt;have&lt;/em&gt; been working together, the
+interfaces between components are probably more ideal than if each
+group had developed sequentially. As the UI team realizes they need
+lower-level support to complete some feature, they can add that
+functionality to a mock object on-demand. In return, the application
+team can then look at the created mock objects to know exactly what
+interface and functionality is required, without worrying that they
+are writing code that won&amp;#8217;t be used.&lt;/p&gt;
+
+&lt;h3&gt;Not a panacea&lt;/h3&gt;
+
+&lt;p&gt;Of course, mock objects are not a development silver bullet.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;You need to be able to take advantage of the parallelization.&lt;/strong&gt; If
+you only have one team or just one developer, it&amp;#8217;s safe to say you
+wont see any time benefit from this process. For the moment, I am
+ignoring any additional benefits that mock objects might bring, such
+as reduction in testing or debugging time.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;The total amount of development time is greater.&lt;/strong&gt; The cumulative
+time for the sequential method is seven developer-weeks, but the
+parallel method takes ten developer-weeks. The counterargument here is
+that the start-to-finish time is less and your developer efficiency is
+much higher. If you have two teams sitting idle at any given time, you
+only have an efficiency of 33%. If everyone is working at the same
+time, the efficiency will be closer to 100%. This assumes that working
+100% of the time is a good thing, which is debatable.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Teams in the middle of the dependency graph need to interact with
+other groups more.&lt;/strong&gt; In the example above, the application logic team
+will need to communicate with both the database and UI teams, which
+can reduce the time available to work on the actual application
+logic. Even if you develop sequentially, this time still needs to be
+spent: when the application logic team is using the database, and then
+again when the UI team is using the application logic. The difference
+when working in parallel is that the time required is more obvious and
+the teams still view the code as mutable.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;The programmers on each team need to be competent.&lt;/strong&gt; This means they
+need to be able to think one abstraction level up and down, at a
+minimum. Your UI team has to be able to think similar to the
+application logic team sometimes, and the application logic team has
+to think like the UI team sometimes. Otherwise, the created mock
+objects could be completely fictional and impossible to create. If
+your developers do not meet this condition, you have bigger
+problems. Developers should always be aware of what goes on around
+them, and ideally everyone aims to be a &lt;a href=&quot;http://www.facebook.com/note.php?note_id=461505383919&quot;&gt;full-stack&lt;/a&gt;
+developer.&lt;/p&gt;
+
+&lt;h2&gt;Summary&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;Benefits&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Allows parallelization of &amp;#8220;dependent&amp;#8221; tasks&lt;/li&gt;
+&lt;li&gt;Create more ideal interfaces&lt;/li&gt;
+&lt;/ul&gt;
+
+
+&lt;p&gt;&lt;strong&gt;Potential problems&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Requires multiple teams that can work in parallel&lt;/li&gt;
+&lt;li&gt;Total amount of work increases&lt;/li&gt;
+&lt;li&gt;Teams in the middle must interact more&lt;/li&gt;
+&lt;li&gt;Requires competent programmers&lt;/li&gt;
+&lt;/ul&gt;
+
+
+&lt;h2&gt;A note to the terminology-minded&lt;/h2&gt;
+
+&lt;p&gt;I use the term &amp;#8220;mock object&amp;#8221; interchangeably with the more generic
+term &amp;#8220;test double&amp;#8221;. Martin Fowler has an &lt;a href=&quot;http://martinfowler.com/articles/mocksArentStubs.html&quot;&gt;excellent
+article&lt;/a&gt; that details some of the differences between different
+types of test doubles. Any type of test double should be able to help
+break the dependency chain; it is up to each team to decide which
+double is appropriate for a given situation.&lt;/p&gt;
+
+&lt;h2&gt;Community feedback&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;EDIT 3:42 PM&lt;/strong&gt; &lt;a href=&quot;http://news.ycombinator.com/item?id=2268686&quot;&gt;Groxx&lt;/a&gt; over at Hacker News points out that I
+am unfairly attacking the Gantt chart itself, and that realistically
+the problem is one of &amp;#8220;organizational abuse&amp;#8221;. In addition, the Gantt
+chart is quite capable of handling my second example. In my
+experience, most Gantt charts have looked more like my first
+example, so I tend to conflate the chart with the act of
+serialization of tasks.&lt;/p&gt;
+
+&lt;p&gt;My real point is that project planning often devolves into the concept
+of &amp;#8220;we must code A before B before C&amp;#8221;, but that by using techniques
+such as mock objects, we can break the (artificial) dependency graph.&lt;/p&gt;
+</content>
+  </entry>
+  
+  <entry>
+    <title>Using named routes in ActionMailer tests with Rails 3</title>
+    <link href="http://jakegoulding.com/blog/2011/02/26/using-named-routes-in-actionmailer-tests-with-rails-3/"/>
+    <updated>2011-02-26T12:00:00-05:00</updated>
+    <id>http://jakegoulding.com/blog/2011/02/26/using-named-routes-in-actionmailer-tests-with-rails-3</id>
+    <content type="html">&lt;p&gt;The version of ActionMailer included with Rails 3.0.4 allows you to
+use named routes in the mailer view by default, but writing a
+functional test that tests those named routes isn&amp;#8217;t as out-of-the-box.&lt;/p&gt;
+
+&lt;!&#8211;more&#8211;&gt;
+
+
+&lt;p&gt;Say you had created a &amp;#8220;Notifications&amp;#8221; object with a subscribe method,
+like such:&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;5&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;6&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;ruby&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Notifications&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;ActionMailer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;Base&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;subscribe&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;    &lt;span class=&quot;n&quot;&gt;mail&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;:to&lt;/span&gt;      &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;test@example.com&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;     &lt;span class=&quot;ss&quot;&gt;:subject&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;You are now subscribed&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;The subscribe method creates a simple text email format that includes
+a link back to your application:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Thanks for subscribing. Would you like to unsubscribe?
+&amp;lt;%= unsubscribe_url(:email =&amp;gt; &#8216;test@example.com&#8217;) %&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Here is what a test that checks that the important unsubscribe link
+exists might look like:&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;5&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;6&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;7&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;8&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;ruby&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;nb&quot;&gt;require&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;test_helper&amp;#39;&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;NotificationsTest&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;ActionMailer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;TestCase&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;subscribe&amp;quot;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;    &lt;span class=&quot;n&quot;&gt;mail&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;Notifications&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;subscribe&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;    &lt;span class=&quot;n&quot;&gt;assert_match&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;unsubscribe_url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;:email&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;test@example.com&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mail&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;body&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;encoded&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;However, running that test will give you an error like:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;NoMethodError: undefined method `unsubscribe_url&#8217; for #&amp;lt;NotificationsTest:0x000001039dbe40&amp;gt;
+    test/functional/notifications_test.rb:6:in `block in &amp;lt;class:NotificationsTest&amp;gt;&#8217;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;To get around this, you need to include the URL helpers (to define
+those methods) and point to your default URL options (to define
+options such as the default host). Modify the test to look like:&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;5&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;6&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;7&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;8&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;9&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;10&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;11&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;12&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;13&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;14&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;ruby&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;nb&quot;&gt;require&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;test_helper&amp;#39;&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;NotificationsTest&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;ActionMailer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;TestCase&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;kp&quot;&gt;include&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;Rails&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;application&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;routes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;url_helpers&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;default_url_options&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;    &lt;span class=&quot;no&quot;&gt;Rails&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;application&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;action_mailer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;default_url_options&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;subscribe&amp;quot;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;    &lt;span class=&quot;n&quot;&gt;mail&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;Notifications&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;subscribe&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;    &lt;span class=&quot;n&quot;&gt;assert_match&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;unsubscribe_url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;:email&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;test@example.com&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mail&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;body&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;encoded&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+</content>
+  </entry>
+  
+  <entry>
+    <title>SQLite, 64-bit integers, and the impossible number</title>
+    <link href="http://jakegoulding.com/blog/2011/02/06/sqlite-64-bit-integers/"/>
+    <updated>2011-02-06T12:00:00-05:00</updated>
+    <id>http://jakegoulding.com/blog/2011/02/06/sqlite-64-bit-integers</id>
+    <content type="html">&lt;p&gt;We recently tackled an issue that seemed rather impossible - an
+unsigned 64-bit value was &lt;em&gt;greater than&lt;/em&gt; the maximum value that a
+64-bit value can hold. What unfolded was a dark, gritty look at the
+underbelly of everything we hold dear (or a normal debugging session,
+as we like to call them).&lt;/p&gt;
+
+&lt;!&#8211;more&#8211;&gt;
+
+
+&lt;h2&gt;SQLite3 and 64-bit integers&lt;/h2&gt;
+
+&lt;p&gt;First off, lets create a table with some big numbers:&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;3&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;sql&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;CREATE&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;TABLE&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;big_numbers&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;INTEGER&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;REAL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;t&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;TEXT&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;BLOB&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;INSERT&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;INTO&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;big_numbers&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;VALUES&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;9223372036854775807&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;9223372036854775807&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;9223372036854775807&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;9223372036854775807&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;&#8211; 2^63 - 1&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;INSERT&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;INTO&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;big_numbers&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;VALUES&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;9223372036854775808&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;9223372036854775808&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;9223372036854775808&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;9223372036854775808&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;&#8211; 2^63&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Let&amp;#8217;s sanity check our data to make sure it looks like what we would
+expect:&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;5&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;sql&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;SELECT&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;FROM&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;big_numbers&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;                     &lt;span class=&quot;n&quot;&gt;r&lt;/span&gt;                     &lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;                     &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;c1&quot;&gt;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8211;  &#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8211;  &#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8211;  &#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8211;&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;mi&quot;&gt;9223372036854775807&lt;/span&gt;   &lt;span class=&quot;mi&quot;&gt;9&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;22337203685478&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;18&lt;/span&gt;  &lt;span class=&quot;mi&quot;&gt;9223372036854775807&lt;/span&gt;   &lt;span class=&quot;mi&quot;&gt;9223372036854775807&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;mi&quot;&gt;9&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;22337203685478&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;18&lt;/span&gt;  &lt;span class=&quot;mi&quot;&gt;9&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;22337203685478&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;18&lt;/span&gt;  &lt;span class=&quot;mi&quot;&gt;9&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;22337203685478&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;18&lt;/span&gt;  &lt;span class=&quot;mi&quot;&gt;9&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;22337203685478&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;18&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Huh. We definitely were not expecting most of those floating point
+numbers, so let&amp;#8217;s see what types are being returned:&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;5&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;sql&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;SELECT&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;typeof&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;typeof&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;typeof&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;typeof&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;FROM&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;big_numbers&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;n&quot;&gt;typeof&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;   &lt;span class=&quot;n&quot;&gt;typeof&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;   &lt;span class=&quot;n&quot;&gt;typeof&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;   &lt;span class=&quot;n&quot;&gt;typeof&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;c1&quot;&gt;&#8212;&#8212;&#8212;-  &#8212;&#8212;&#8212;-  &#8212;&#8212;&#8212;-  &#8212;&#8212;&#8212;-&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;nb&quot;&gt;integer&lt;/span&gt;     &lt;span class=&quot;nb&quot;&gt;real&lt;/span&gt;        &lt;span class=&quot;nb&quot;&gt;text&lt;/span&gt;        &lt;span class=&quot;nb&quot;&gt;integer&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;nb&quot;&gt;real&lt;/span&gt;        &lt;span class=&quot;nb&quot;&gt;real&lt;/span&gt;        &lt;span class=&quot;nb&quot;&gt;text&lt;/span&gt;        &lt;span class=&quot;nb&quot;&gt;real&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Sure enough, the numeric types in the second row are all reals. Let&amp;#8217;s
+do a nice simple addition operation on our data:&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;5&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;sql&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;SELECT&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;FROM&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;big_numbers&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;                   &lt;span class=&quot;n&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;                   &lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;                   &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;c1&quot;&gt;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8211;  &#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8211;  &#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8211;  &#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8211;&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;9223372036854775808&lt;/span&gt;  &lt;span class=&quot;mi&quot;&gt;9&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;22337203685478&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;18&lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;9223372036854775808&lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;9223372036854775808&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;mi&quot;&gt;9&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;22337203685478&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;18&lt;/span&gt;  &lt;span class=&quot;mi&quot;&gt;9&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;22337203685478&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;18&lt;/span&gt;  &lt;span class=&quot;mi&quot;&gt;9&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;22337203685478&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;18&lt;/span&gt;  &lt;span class=&quot;mi&quot;&gt;9&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;22337203685478&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;18&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Woah, what happened here? Those familiar with signed and unsigned
+integers are already nodding and going &amp;#8220;Mmm-hmm&amp;#8221;. For everyone else, I
+suggest brushing up on &lt;a href=&quot;http://en.wikipedia.org/wiki/Two&#8217;s_complement&quot;&gt;two&amp;#8217;s compliment&lt;/a&gt; notation. Suffice it to
+say that integers are usually represented by a fixed number of bits,
+and once you run out of bits you roll over back to the beginning, in
+this case a large negative number.&lt;/p&gt;
+
+&lt;p&gt;As it turns out, SQLite is pretty straight-forward about this. From
+the &lt;a href=&quot;http://www.sqlite.org/datatype3.html&quot;&gt;datatype reference&lt;/a&gt; in SQLite (emphasis mine):&lt;/p&gt;
+
+&lt;blockquote&gt;&lt;p&gt;INTEGER. The value is a &lt;strong&gt;signed&lt;/strong&gt; integer, stored in 1, 2, 3, 4, 6,
+or 8 bytes depending on the magnitude of the value.&lt;/p&gt;&lt;/blockquote&gt;
+
+&lt;p&gt;That is, you can only store values from -2**63 to (2**63-1). What
+does SQLite do for a value outside of this range? As we saw earlier,
+it switches over into floating point. Again, quoting from the SQLite
+reference:&lt;/p&gt;
+
+&lt;blockquote&gt;&lt;p&gt;REAL. The value is a floating point value, stored as an 8-byte IEEE
+floating point number.&lt;/p&gt;&lt;/blockquote&gt;
+
+&lt;p&gt;Many programmers are familiar with this type under the name
+&lt;a href=&quot;http://en.wikipedia.org/wiki/Double_precision_floating-point_format&quot;&gt;double&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2&gt;Are you smarter than a SQLite engineer?&lt;/h2&gt;
+
+&lt;p&gt;In our case, we are trying to store an unsigned 64-bit integer. For
+reasons now lost to the past, we marshall native C types to strings
+ourselves before handing them off to SQLite, rather than using the
+appropriate &lt;a href=&quot;http://www.sqlite.org/capi3ref.html&quot;&gt;SQLite API&lt;/a&gt; functions.&lt;/p&gt;
+
+&lt;p&gt;An unrelated issue elsewhere caused this value to go negative. Similar
+to the issue above when we overflow a integer type, when you underflow
+you get a very large positive number. Since we have an &lt;em&gt;unsigned&lt;/em&gt;
+number, the resultant number is far over the maximum of a &lt;em&gt;signed&lt;/em&gt;
+64-bit integer. This causes SQLite to switch into floating-point mode
+when the value is saved to the database.&lt;/p&gt;
+
+&lt;p&gt;Of course, our particular tale of woe doesn&amp;#8217;t end there. Indeed, we
+need to report this value in a status response. As an example of what
+I can only assume is premature optimization, we simply grab the string
+value from SQLite and report that. This causes another part of the
+application to choke when trying to parse the value, as it can no
+longer fit within a 64-bit type.&lt;/p&gt;
+
+&lt;h2&gt;Wait, what?&lt;/h2&gt;
+
+&lt;p&gt;How did we go from simply over- or under-flowing a 64-bit value to
+exceeding the range of the datatype? It shouldn&amp;#8217;t even be possible to
+have a 64-bit value that is larger than a 64-bit value, by definition!
+As a coworker said: &amp;#8220;It would violate the logic of the reality of the
+number&amp;#8221;. The answer stems from how the value is converted into a
+double by SQLite.&lt;/p&gt;
+
+&lt;p&gt;Here is a simple example that shows what happens when you mess around
+with 64-bit integer types and doubles the wrong way:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;#!C
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt; (64bit-integer-float.c)&lt;/span&gt; &lt;a href=&#8217;http://jakegoulding.com/downloads/code/64bit-integer-float.c&#8217;&gt;download&lt;/a&gt;&lt;/figcaption&gt;
+ &lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;5&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;6&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;7&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;8&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;9&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;10&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;11&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;12&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;13&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;c&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;cp&quot;&gt;#include &amp;lt;stdio.h&amp;gt;&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;cp&quot;&gt;#include &amp;lt;stdlib.h&amp;gt;&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;nf&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;argc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;argv&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[])&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;kt&quot;&gt;unsigned&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;kt&quot;&gt;double&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;kt&quot;&gt;unsigned&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;n&quot;&gt;printf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;%llu&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;%.20g&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;%llu&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;On Windows (Microsoft (R) C/C++ Optimizing Compiler Version
+14.00.50727.762 for x64), we see:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;18446744073709551615
+18446744073709552000
+18446744073709551615
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;On Linux (gcc (Gentoo 4.4.4-r2 p1.2, pie-0.4.5) 4.4.4), we get
+different but equally surprising output:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;18446744073709551615
+18446744073709551616
+0
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;In both cases, the intermediate double representation is greater than
+the original integral representation. The double value is much greater
+than the original on Windows, but the cast back to an integer has the
+same value as the original. On Linux, the double value is just a
+little bit greater, but casting back rolls all the way back to
+zero. Floating point numbers are &lt;strong&gt;hard&lt;/strong&gt;, and we programmers far too
+often forget exactly how hard they are.&lt;/p&gt;
+
+&lt;p&gt;When we grabbed the string value directly from the database, there was
+no cast back to a 64-bit type to truncate the value. This causes
+&lt;a href=&quot;http://www.youtube.com/watch?v=KFLq7cyHKMg&quot;&gt;the rest of the dominoes to fall like a house of cards&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2&gt;Lessons learned&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;Be careful when you need to store large numbers in SQLite.&lt;/strong&gt; If you
+really need to support unsigned 64-bit numbers, you could always shift
+your numbers down by 2**63. Of course, this means that you will
+need to massage any access to that column to correct for the
+offset. If you don&amp;#8217;t need to perform any calculations or sorting on
+that column inside of SQLite, it&amp;#8217;s possible that you could give the
+column a text affinity, preventing SQLite from messing with the
+data.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Don&amp;#8217;t write your own marshaling code unless you really need it.&lt;/strong&gt; If
+we had used the actual SQLite C API for storing and retrieving our
+values, I assume (but have not verified) that this wouldn&amp;#8217;t have
+happened, not to mention we would have likely realized that SQLite
+only natively supports &lt;strong&gt;signed&lt;/strong&gt; 64-bit integers. This would have led
+us to test the edge cases that were more obvious.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Test maximal and minimal values.&lt;/strong&gt; This is such a basic testing
+strategy that it is surprising that we forget it so
+much. I&amp;#8217;mdefinitely in the camp of people that don&amp;#8217;t do this kind of
+testing as much as I should.&lt;/p&gt;
+</content>
+  </entry>
+  
+  <entry>
+    <title>The Psychology of Computer Programming</title>
+    <link href="http://jakegoulding.com/blog/2011/02/05/the-psychology-of-computer-programming/"/>
+    <updated>2011-02-05T12:00:00-05:00</updated>
+    <id>http://jakegoulding.com/blog/2011/02/05/the-psychology-of-computer-programming</id>
+    <content type="html">&lt;p&gt;Over New Year&amp;#8217;s break, we visited one of Carol&amp;#8217;s friends in New
+Orleans. While we did quite a lot of touristy things (the French
+Quarter is very exciting when the new year rolls around), we also got
+to visit the lovely used bookstore &lt;strong&gt;Beckham&amp;#8217;s Book
+Shop&lt;/strong&gt;. Unfortunately, we got there late in the day and I didn&amp;#8217;t
+realize that there was an entire second floor until very near closing
+time. I&amp;#8217;m glad I took the time to look upstairs, as that is where I
+discovered &lt;a href=&quot;http://www.geraldmweinberg.com/Site/Programming_Psychology.html&quot;&gt;&lt;em&gt;The Psychology of Computer Programming&lt;/em&gt;&lt;/a&gt; by Gerald
+M. Weinberg.&lt;/p&gt;
+
+&lt;!&#8211;more&#8211;&gt;
+
+
+&lt;p&gt;I grabbed the book from the shelf and glanced at the copyright date -
+1971. I figured that any insights from that long ago would be
+hilarious, to say the very least, so I purchased it. Upon returning
+home for the evening, I was finally able to crack it open and read a
+bit. Put simply, I was floored - an amazing amount of issues that were
+identified &lt;em&gt;40 years&lt;/em&gt; ago are still problems today.&lt;/p&gt;
+
+&lt;p&gt;When we made our way back to Pittsburgh, we had to leave our new books
+behind to be shipped separately as they wouldn&amp;#8217;t fit in our
+luggage. We finally got our package on Friday, and today I&amp;#8217;ve been
+darting in and out of chapters trying to get a feel for the
+book. Every few pages I chuckle to myself (the laughter of programmers
+is itself addressed in the book) and every blurb I&amp;#8217;ve read aloud has
+caused Carol to nod or sigh in agreement, as the case warrants.&lt;/p&gt;
+
+&lt;p&gt;My goal is to read through the book and blog about just how things
+have or haven&amp;#8217;t changed and see how my experiences relate to those of
+programmers from 40 years ago. One positive thing that has already
+happened is that I&amp;#8217;ve found out about &lt;a href=&quot;http://bensimo.qualityfrog.com/&quot;&gt;Ben Simo&lt;/a&gt;, who regularly
+tweets about programming papers from the 70&amp;#8217;s, both good and bad.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;The book itself is still available to purchase in a 25th anniversary
+edition, which contains a new forward and per-chapter reflections by
+the author. Maybe I will buy the updated version when I have made my
+way through this edition and see how the two commentaries compare.&lt;/p&gt;
+
+&lt;p&gt;Beckham&amp;#8217;s doesn&amp;#8217;t seem to have a website, so I&amp;#8217;ll just point out thier
+address and phone number in case anyone is interested.&lt;/p&gt;
+
+&lt;p&gt;Beckham&amp;#8217;s Book Shop&lt;br/&gt;
+228 Decatur St&lt;br/&gt;
+New Orleans, LA 70130&lt;br/&gt;
+(504) 522-9875&lt;/p&gt;
+</content>
+  </entry>
+  
+  <entry>
+    <title>Uninitialized variable warnings and compiler optimizations</title>
+    <link href="http://jakegoulding.com/blog/2011/01/27/uninitialized-variable-warnings-and-compiler-optimizations/"/>
+    <updated>2011-01-27T12:00:00-05:00</updated>
+    <id>http://jakegoulding.com/blog/2011/01/27/uninitialized-variable-warnings-and-compiler-optimizations</id>
+    <content type="html">&lt;p&gt;A coworker recently got the &lt;code&gt;may be used uninitialized in this
+function&lt;/code&gt; warning from GCC and asked me to take a look at it to see if
+the warning was spurious or if he was missing something. While trying
+to boil his code down to a concise example, we found an example where
+the warning got flipped - we no longer got a warning even though we
+both expected one.&lt;/p&gt;
+
+&lt;!&#8211;more&#8211;&gt;
+
+
+&lt;p&gt;Here is the example code we ended up with. &lt;code&gt;foo&lt;/code&gt; is a function that
+should set &lt;code&gt;value&lt;/code&gt; when the parameter is true. If the parameter is not
+set, then &lt;code&gt;value&lt;/code&gt; is undefined. The main simply calls &lt;code&gt;foo&lt;/code&gt;, using the
+command-line argument count to control what is passed to the function.&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt; (uninit-warning.c)&lt;/span&gt; &lt;a href=&#8217;http://jakegoulding.com/downloads/code/uninit-warning.c&#8217;&gt;download&lt;/a&gt;&lt;/figcaption&gt;
+ &lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;5&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;6&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;7&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;8&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;9&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;10&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;11&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;12&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;13&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;14&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;15&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;16&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;17&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;18&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;19&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;20&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;21&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;22&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;23&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;c&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;cp&quot;&gt;#include &amp;lt;stdio.h&amp;gt;&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;cp&quot;&gt;#include &amp;lt;stdlib.h&amp;gt;&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;nf&quot;&gt;foo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;do_it&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;do_it&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;    &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;7&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;7&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;    &lt;span class=&quot;n&quot;&gt;printf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;It is 7&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;nf&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;argc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;argv&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[])&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;n&quot;&gt;foo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;argc&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;We compiled it with GCC, expecting to see a warning.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ gcc &#8211;version
+gcc (Gentoo 4.4.4-r2 p1.2, pie-0.4.5) 4.4.4
+$ gcc -o uninit-gcc uninit.c -O3 -Wall -pedantic
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Strange, no warning. What does Clang say?&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ clang &#8211;version
+clang version 2.8 (branches/release_28)
+$ clang -o uninit-clang uninit.c -O3 -Wall -pedantic
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Neither compilation produces warnings! We tried compiling with -O0 and
+-Os, in case some optimization was being applied, but the results were
+the same. Curiosity piqued, we dropped down to the next most logical
+level - assembly.&lt;/p&gt;
+
+&lt;h2&gt;GCC disassembly&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code&gt;0000000000400570 &amp;lt;foo&amp;gt;:
+  400570:       be 9c 06 40 00          mov    $0x40069c,%esi
+  400575:       bf 01 00 00 00          mov    $0x1,%edi
+  40057a:       31 c0                   xor    %eax,%eax
+  40057c:       e9 d7 fe ff ff          jmpq   400458 &amp;lt;__printf_chk@plt&amp;gt;
+  400581:       66 66 66 66 66 66 2e    nopw   %cs:0x0(%rax,%rax,1)
+  400588:       0f 1f 84 00 00 00 00 
+  40058f:       00 
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If you want to follow along, I used the &lt;a href=&quot;http://support.amd.com/us/Processor_TechDocs/24592.pdf&quot;&gt;AMD64 Architecture Programmer&amp;#8217;s Manual&lt;/a&gt; as an assembly reference.&lt;/p&gt;
+
+&lt;p&gt;GCC starts out by loading the address of the string into &lt;code&gt;%esi&lt;/code&gt;, then
+loads 1 into &lt;code&gt;%edi&lt;/code&gt; and &lt;code&gt;%eax&lt;/code&gt; is then XORed against itself, which
+sets &lt;code&gt;%eax&lt;/code&gt; to 0. According to &lt;a href=&quot;http://en.wikipedia.org/wiki/X86_calling_conventions#System_V_AMD64_ABI_convention&quot;&gt;the X86_64 calling convention&lt;/a&gt;,
+&lt;code&gt;%edi&lt;/code&gt; and &lt;code&gt;%esi&lt;/code&gt; are the first and second integral parameters to the
+function about to be called and &lt;code&gt;%eax&lt;/code&gt; is used as the return value
+from the current function. Since we only have one parameter to printf,
+and &lt;code&gt;foo&lt;/code&gt; is a void function, I think that &lt;code&gt;%edi&lt;/code&gt; and &lt;code&gt;%eax&lt;/code&gt; must have
+something to do with calling a variadic function. &lt;em&gt;The code
+&lt;strong&gt;unconditionally&lt;/strong&gt; jumps to printf.&lt;/em&gt; The function finishes off with
+nopw, a &lt;a href=&quot;http://john.freml.in/amd64-nopl&quot;&gt;fancy way of using a NOP&lt;/a&gt; to pad out to a nice even
+boundary.&lt;/p&gt;
+
+&lt;h2&gt;Clang disassembly&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code&gt;0000000000400540 &amp;lt;foo&amp;gt;:
+  400540:       55                      push   %rbp
+  400541:       48 89 e5                mov    %rsp,%rbp
+  400544:       bf 5c 06 40 00          mov    $0x40065c,%edi
+  400549:       5d                      pop    %rbp
+  40054a:       e9 e1 fe ff ff          jmpq   400430 &amp;lt;puts@plt&amp;gt;
+  40054f:       90                      nop
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Clang produces pretty much the same code, but does some different
+gyrations. The contents of &lt;code&gt;%rpb&lt;/code&gt; are pushed onto the stack, then
+&lt;code&gt;%rsp&lt;/code&gt; is moved to &lt;code&gt;%rpb&lt;/code&gt;. The address of the string is loaded into
+&lt;code&gt;%edi&lt;/code&gt; and &lt;code&gt;%rbp&lt;/code&gt; is restored - never having been used. Clang has
+optimized the call to &lt;code&gt;printf&lt;/code&gt; to instead use the simpler &lt;code&gt;puts&lt;/code&gt;
+function, so we don&amp;#8217;t see the same mucking about with &lt;code&gt;%edi&lt;/code&gt; and
+&lt;code&gt;%eax&lt;/code&gt;. However, it is still an &lt;strong&gt;unconditional&lt;/strong&gt; jump!&lt;/p&gt;
+
+&lt;h2&gt;Clang LLVM output&lt;/h2&gt;
+
+&lt;p&gt;Clang has an interesting feature that lets you dump the abstract
+syntax tree just like assembly.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;define void @foo(i32 %do_it) nounwind {
+  %puts = tail call i32 @puts(i8* getelementptr inbounds ([8 x i8]* @str, i64 0, i64 0))
+  ret void
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We can see that it ignores the parameter &lt;code&gt;do_it&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h2&gt;Visual Studio 2010&lt;/h2&gt;
+
+&lt;p&gt;Reddit user DeliciouslyMoist &lt;a href=&quot;http://www.reddit.com/r/programming/comments/fag84/uninitialized_variable_warnings_and_compiler/c1eht39&quot;&gt;shows&lt;/a&gt; that Visual Studio 2010 does
+have a warning.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;cl -c -Ox -W4 test.cpp
+test.cpp
+test.cpp(18) : warning C4100: &#8216;argv&#8217; : unreferenced formal parameter
+test.cpp(12) : warning C4701: potentially uninitialized local variable &#8216;value&#8217; used
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Along with the generated assembly. Note this is Windows assembly, so
+the Linux calling conventions above don&amp;#8217;t apply.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;?foo@@YAXH@Z (void __cdecl foo(int)):
+  00000000: 83 7C 24 04 00     cmp         dword ptr [esp+4],0
+  00000005: 75 07              jne         0000000E
+  00000007: 83 7C 24 04 07     cmp         dword ptr [esp+4],7
+  0000000C: 75 0D              jne         0000001B
+  0000000E: C7 44 24 04 00 00  mov         dword ptr [esp+4],offset $SG4825
+        00 00
+  00000016: E9 00 00 00 00     jmp         _printf
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2&gt;Clang static analyzer&lt;/h2&gt;
+
+&lt;p&gt;As Reddit user masklinn &lt;a href=&quot;http://www.reddit.com/r/programming/comments/fag84/uninitialized_variable_warnings_and_compiler/c1eixa9&quot;&gt;points out&lt;/a&gt;, the clang static analyzer
+&lt;em&gt;does&lt;/em&gt; output a warning, even though the clang compiler does not.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ clang &#8211;analyze uninit.c 
+uninit.c:12:9: warning: The right operand of &#8216;==&#8217; is a garbage value
+  if (7 == value) {
+      ^  ~~~~~
+1 warning generated.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2&gt;Lessons&lt;/h2&gt;
+
+&lt;p&gt;The behavior and generated code of the compilers is interesting, but I
+think they are allowed to do whatever they want when optimizing
+undefined code, so I can&amp;#8217;t fault them for that.&lt;/p&gt;
+
+&lt;p&gt;What both my coworker and I were surprised was the lack of warning. In
+general, we have come to rely on GCC to be overly zealous about
+providing warnings. I&amp;#8217;d much rather have an extraneous warning that I
+can silence instead of no warning at all.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Edit 2010-01-28&lt;/strong&gt; - added Visual Studio and clang analyzer output from reddit.&lt;/p&gt;
+</content>
+  </entry>
+  
+  <entry>
+    <title>The &#8220;meh&#8221; programmer</title>
+    <link href="http://jakegoulding.com/blog/2011/01/09/the-meh-programmer/"/>
+    <updated>2011-01-09T12:00:00-05:00</updated>
+    <id>http://jakegoulding.com/blog/2011/01/09/the-meh-programmer</id>
+    <content type="html">&lt;p&gt;Do you know a &amp;#8220;meh&amp;#8221; programmer? As an example:&lt;/p&gt;
+
+&lt;blockquote&gt;&lt;p&gt;Alice: This variable name isn&amp;#8217;t very good&amp;#8230;&lt;br/&gt;
+Bob: Meh, it&amp;#8217;s just a variable name, it&amp;#8217;s good enough.&lt;/p&gt;&lt;/blockquote&gt;
+
+&lt;p&gt;Where does this lack of caring come from? If you replace &lt;em&gt;variable name&lt;/em&gt; with something else, it sounds ridiculous:&lt;/p&gt;
+
+&lt;blockquote&gt;&lt;p&gt;Alice: This algorithm isn&amp;#8217;t very good&amp;#8230;&lt;br/&gt;
+Bob: Meh, it&amp;#8217;s just an algorithm, it&amp;#8217;s good enough.&lt;/p&gt;&lt;/blockquote&gt;
+
+&lt;!&#8211;more&#8211;&gt;
+
+
+&lt;p&gt;To me, this kind of behavior is antithetical to the ideas of &lt;a href=&quot;http://manifesto.softwarecraftsmanship.org/&quot;&gt;Software
+Craftsmanship&lt;/a&gt;. An incorrect algorithm makes the program wrong, and
+most programmers detest that idea. An incorrect variable name only
+affects how well-crafted the program is, but we are usually
+all-too-willing to let that slide. There shouldn&amp;#8217;t be such a huge gulf
+between these two ideas.&lt;/p&gt;
+
+&lt;p&gt;I recently caught myself saying the following during a code review:&lt;/p&gt;
+
+&lt;blockquote&gt;&lt;p&gt;I would have named this variable &lt;em&gt;descriptive_name&lt;/em&gt; instead of
+&lt;em&gt;foo&lt;/em&gt;. Don&amp;#8217;t worry though, it doesn&amp;#8217;t really matter since the code
+works.&lt;/p&gt;&lt;/blockquote&gt;
+
+&lt;p&gt;Fortunately, I know exactly why I said this - I was too afraid to be
+truly confrontational. Not everyone buys-in to Software Craftsmanship in
+to the extent that I strive to. Even if they did, craftsmanship is a
+softer science, providing many ways to be right.&lt;/p&gt;
+
+&lt;p&gt;I don&amp;#8217;t know which I think is worse, &lt;strong&gt;not caring&lt;/strong&gt; about the
+craftsmanship of the code you write, or being &lt;strong&gt;too scared&lt;/strong&gt; to
+evangelize good practices to others. I bet master woodworkers don&amp;#8217;t have
+to deal with these kinds of problems.&lt;/p&gt;
+</content>
+  </entry>
+  
+  <entry>
+    <title>Why Posterous?</title>
+    <link href="http://jakegoulding.com/blog/2011/01/02/why-posterous/"/>
+    <updated>2011-01-02T12:00:00-05:00</updated>
+    <id>http://jakegoulding.com/blog/2011/01/02/why-posterous</id>
+    <content type="html">&lt;p&gt;Since I need something to start a blog with, why not start with why I
+chose Posterous?&lt;/p&gt;
+
+&lt;p&gt;Over the Christmas holidays, I&amp;#8217;ve been reading through back entries in
+&lt;a href=&quot;http://michaelfeathers.typepad.com/&quot;&gt;Michael Feather&amp;#8217;s blog&lt;/a&gt;. Reading through his posts (among many
+other blogs) was one of the reasons I thought to start a blog, so I
+figured I could start there.&lt;/p&gt;
+
+&lt;!&#8211;more&#8211;&gt;
+
+
+&lt;p&gt;Michael uses &lt;a href=&quot;http://www.typepad.com/&quot;&gt;Typepad&lt;/a&gt;, but the basic blog there costs money (there
+is a &lt;a href=&quot;http://www.typepad.com/micro/&quot;&gt;Micro service&lt;/a&gt;, but why restrict myself?). I&amp;#8217;m not sure that
+blogging is my thing, so I didn&amp;#8217;t want to put my money where my mouth
+is, so to speak.&lt;/p&gt;
+
+&lt;p&gt;Next, I checked out &lt;a href=&quot;http://www.tumblr.com/&quot;&gt;Tumblr&lt;/a&gt;. Tumblr is an interesting case, as I
+know the lead developer there, &lt;a href=&quot;http://www.marco.org/&quot;&gt;Marco Arment&lt;/a&gt;. Not that knowing him
+would really affect the quality of my blogging experience, but it&amp;#8217;s one
+of those little things one can use to namedrop. The landing page for
+Tumblr is amazingly clean and inviting, but what really threw me was the
+&lt;strong&gt;URL&lt;/strong&gt; field. I wasn&amp;#8217;t sure exactly what was supposed to
+go there, so I clicked though to the &lt;strong&gt;Help&lt;/strong&gt; page.&lt;/p&gt;
+
+&lt;div class=&quot;image_with_caption&quot;&gt;
+   &lt;img src=&quot;http://jakegoulding.com/images/blog/tumblr-signup.png&quot; alt=&quot;Tumblr signup&quot; /&gt;
+   &lt;span&gt;Tumblr signup - simple but ultimately confusing.&lt;/span&gt;
+&lt;/div&gt;
+
+
+&lt;p&gt;At least that&amp;#8217;s what I would have done, but I didn&amp;#8217;t see one. &lt;strong&gt;About
+Tumblr&lt;/strong&gt; was the closest, so I tried that. While I was looking around, I
+got distracted and wanted to know how I could export my data from
+Tumblr, should the need arise. I was a little worried about the safety
+of my posts, as the recent Tumblr outages have been very prominent. Not
+like I expect the loss of my blog to be important, but I hate losing
+anything. During my search interlude, Carol pointed out a tweet from
+today about another Tumblr outage, so that seemed like a sign.&lt;/p&gt;
+
+&lt;p&gt;Conveniently, I did find a &lt;a href=&quot;http://techcrunch.com/2010/09/18/stuff-white-person-doesnt-like/&quot;&gt;post on TechCrunch&lt;/a&gt; about switching to
+Tumblr. Reading that article pointed me towards towards Posterous, which
+had the ring of &amp;#8220;all the cool kids are doing it&amp;#8221;, which is music to my
+ears. The signup was almost as clean as Tumblr&amp;#8217;s, but most importantly,
+it had immediate feedback for each field. In the &lt;strong&gt;URL&lt;/strong&gt; field, for
+example, it clearly showed that it was asking for the &lt;em&gt;subdomain&lt;/em&gt; of my
+future blog. Clicking on the field even shows if that domain is
+available, as you type. Good UX for the win!&lt;/p&gt;
+
+&lt;div class=&quot;image_with_caption&quot;&gt;
+   &lt;img src=&quot;http://jakegoulding.com/images/blog/posterous-signup.png&quot; alt=&quot;Posterous signup&quot; /&gt;
+   &lt;span&gt;Posterous signup - still simple, but a bit more useful. The URL field clearly shows you are creating a subdomain.&lt;/span&gt;
+&lt;/div&gt;
+
+
+
+
+&lt;div class=&quot;image_with_caption&quot;&gt;
+   &lt;img src=&quot;http://jakegoulding.com/images/blog/posterous-signup-detail.png&quot; alt=&quot;Posterous signup detail&quot; /&gt;
+   &lt;span&gt;Once you&amp;#8217;ve clicked on a field, you are provided with more information.&lt;/span&gt;
+&lt;/div&gt;
+
+
+&lt;p&gt;Reading through the help also indicated that the site operators have
+their shit together, so I went for it. I didn&amp;#8217;t even think about
+checking to see if I would be able to get my data back out (I did just
+now, and they say you can &lt;a href=&quot;http://help.posterous.com/can-i-export-my-site&quot;&gt;use the API to export your data&lt;/a&gt;).&lt;/p&gt;
 </content>
   </entry>
   
