@@ -4,6 +4,8 @@ title: 'The "meh" programmer'
 date: 2011-01-09 12:00
 comments: true
 categories: craftsmanship
+redirects:
+- /the-meh-programmer
 ---
 Do you know a "meh" programmer? As an example:
 

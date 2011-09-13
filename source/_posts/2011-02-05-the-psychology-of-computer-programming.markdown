@@ -4,6 +4,8 @@ title: "The Psychology of Computer Programming"
 date: 2011-02-05 12:00
 comments: true
 categories: TPCP
+redirects:
+- /the-psychology-of-computer-programming
 ---
 Over New Year's break, we visited one of Carol's friends in New
 Orleans. While we did quite a lot of touristy things (the French

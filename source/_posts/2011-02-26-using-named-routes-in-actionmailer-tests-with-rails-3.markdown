@@ -4,6 +4,8 @@ title: "Using named routes in ActionMailer tests with Rails 3"
 date: 2011-02-26 12:00
 comments: true
 categories: rails
+redirects:
+- /using-named-routes-in-actionmailer-tests-with
 ---
 The version of ActionMailer included with Rails 3.0.4 allows you to
 use named routes in the mailer view by default, but writing a

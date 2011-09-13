@@ -79,3 +79,9 @@ disqus_short_name:
 
 # Google Analytics
 google_analytics_tracking_id: UA-20521797-2
+
+# ------------------- #
+#   Custom Settings   #
+# ------------------- #
+
+redirects: yes

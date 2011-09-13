@@ -4,6 +4,8 @@ title: "How Mock Objects Make Gantt Charts (More) Useless"
 date: 2011-02-27 12:00
 comments: true
 categories:
+redirects:
+- /how-mock-objects-make-gantt-charts-more-usele
 ---
 
 At work, we are embarking on a grand new project, one that promises to

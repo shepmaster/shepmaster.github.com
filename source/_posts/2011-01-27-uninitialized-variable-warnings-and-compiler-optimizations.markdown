@@ -4,6 +4,8 @@ title: "Uninitialized variable warnings and compiler optimizations"
 date: 2011-01-27 12:00
 comments: true
 categories: [C, GCC, clang]
+redirects:
+- /uninitialized-variable-warnings-and-compiler-0
 ---
 
 A coworker recently got the `may be used uninitialized in this

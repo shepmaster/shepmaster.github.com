@@ -4,6 +4,8 @@ title: "Why Posterous?"
 date: 2011-01-02 12:00
 comments: true
 categories: meta
+redirects:
+- /why-posterous
 ---
 Since I need something to start a blog with, why not start with why I
 chose Posterous?

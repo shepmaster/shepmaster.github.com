@@ -4,6 +4,8 @@ title: "SQLite, 64-bit integers, and the impossible number"
 date: 2011-02-06 12:00
 comments: true
 categories: [SQLite, debugging]
+redirects:
+- /sqlite-64-bit-integers-and-the-impossible-num
 ---
 We recently tackled an issue that seemed rather impossible - an
 unsigned 64-bit value was _greater than_ the maximum value that a
