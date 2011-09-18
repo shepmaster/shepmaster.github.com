@@ -4,7 +4,7 @@
   <title>Jake Goulding</title>
   <link href="http://jakegoulding.com/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2011-09-18T12:47:50-04:00</updated>
+  <updated>2011-09-18T12:49:41-04:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name>Jake Goulding</name>
@@ -17,16 +17,17 @@
     <link href="http://jakegoulding.com/blog/2011/09/18/game-of-life-in-clojure/"/>
     <updated>2011-09-18T11:22:00-04:00</updated>
     <id>http://jakegoulding.com/blog/2011/09/18/game-of-life-in-clojure</id>
-    <content type="html">&lt;p&gt;I&amp;#8217;ve been playing with &lt;a href=&quot;http://clojure.org&quot;&gt;Clojure&lt;/a&gt; recently, so I write
+    <content type="html">&lt;p&gt;I&amp;#8217;ve been trying to learn &lt;a href=&quot;http://clojure.org&quot;&gt;Clojure&lt;/a&gt; recently, so I wrote
 &lt;a href=&quot;http://en.wikipedia.org/wiki/Conway&#8217;s_Game_of_Life&quot;&gt;Conway&amp;#8217;s Game of Life&lt;/a&gt;. I&amp;#8217;m sure that the code is highly
-non-idiomatic, but it&amp;#8217;s better to get it out into the wild, rather
-than sit on my disk.&lt;/p&gt;
+non-idiomatic, but I&amp;#8217;d rather get it out into the wild, instead of
+sitting on my disk.&lt;/p&gt;
 
 &lt;!&#8211; more &#8211;&gt;
 
 
-&lt;p&gt;I have inline tests (the simple &lt;code&gt;println&lt;/code&gt; statements) mostly because I
-wasn&amp;#8217;t trying to figure out how to properly test in Clojure (yet).&lt;/p&gt;
+&lt;p&gt;Note that I have inline tests (the simple &lt;code&gt;println&lt;/code&gt; statements) mostly
+because I wasn&amp;#8217;t trying to figure out how to properly test in Clojure
+(yet).&lt;/p&gt;
 
 &lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt; (life.clj)&lt;/span&gt; &lt;a href=&#8217;http://jakegoulding.com/downloads/code/life.clj&#8217;&gt;download&lt;/a&gt;&lt;/figcaption&gt;
  &lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
