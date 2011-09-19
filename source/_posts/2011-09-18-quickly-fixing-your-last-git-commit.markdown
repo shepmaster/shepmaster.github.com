@@ -35,3 +35,13 @@ you could alias it as `git fixup`.
 
     $ git add README.txt
     $ git fixup
+
+#### Update - 8:30 PM EDT
+
+[Nick Rutherford][nr] reminded me to caution everyone that you should
+never amend your commit *after* you have pushed it or made it public
+in some fashion. This is for the same reason that you should never
+rebase commits that are already public: you are changing history that
+other people may have already grabbed a copy of.
+
+[nr]: http://twitter.com/nick_rutherford
