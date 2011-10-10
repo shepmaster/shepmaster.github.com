@@ -1,0 +1,621 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>What I've learned about testing over the last year - Jake Goulding</title>
+  <meta name="author" content="Jake Goulding">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+
+  <link rel="canonical" href="http://jakegoulding.com/blog/2011/10/10/learned-about-testing-last-year/"/>
+  <link href="/favicon.png" rel="shortcut icon" />
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="http://s3.amazonaws.com/ender-js/jeesh.min.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml"/>
+  <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
+<link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body  >
+  <header><hgroup>
+  <h1><a href="/">Jake Goulding</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role=navigation><ul role=subscription data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+<form action="http://google.com/search" method="get">
+  <fieldset role="site-search">
+    <input type="hidden" name="q" value="site:jakegoulding.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+<ul role=main-navigation>
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry">
+  
+  <header>
+    
+      <h1 class="entry-title">What I've Learned About Testing Over the Last Year</h1>
+    
+    
+      <p class="meta">
+
+
+
+
+
+  
+
+
+
+<time datetime="2011-10-10T19:15:00-04:00" pubdate  data-updated="true" >Oct 10<span>th</span>, 2011</time></p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Over the last year or so, I&#8217;ve been trying to learn about various
+types and methodologies of testing. The Ruby community is pretty vocal
+about testing, so I felt out of place not knowing even the most basic
+of things. This post is intended to organize my current thoughts and
+hopefully provide some guidance for people on the same journey.</p>
+
+<!-- more -->
+
+
+<h2>Who should read this?</h2>
+
+<p>I had to realize two things before I could start on my learning
+journey:</p>
+
+<ol>
+<li>I don&#8217;t know enough about testing.</li>
+<li>I need to know more about testing.</li>
+</ol>
+
+
+<p>If you don&#8217;t fit into both of these categories, you probably aren&#8217;t
+reading this post.</p>
+
+<p>If you know what &#8220;mockist&#8221; and &#8220;classicist&#8221; mean and you know which
+you are, you probably already know everything here. If you care, I
+generally take the &#8220;mockist&#8221; approach, and this post reflects that.</p>
+
+<p>Otherwise, feel free to continue!</p>
+
+<h2>Why should I test?</h2>
+
+<p>The obvious answer is that testing allows you know have some degree of
+confidence that the code as written is right.</p>
+
+<p>Less obvious is the fact that tests give you confidence to change
+code. Eventually, some part of the software will need to change
+while everything else should stay constant. For me, this point really
+hit home when I read <a href="http://www.amazon.com/gp/product/0131177052/ref=as_li_ss_tl?ie=UTF8&amp;tag=jakgousblo-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399369&amp;creativeASIN=0131177052">Working Effectively with Legacy Code</a> by Michael Feathers. I deal with lots of code that
+needs to be changed and I&#8217;m usually worried that my change might
+affect some conceptually remote piece of the software.</p>
+
+<p>Maybe the hardest thing for people to believe is that tests can
+provide feedback on the design of the code. This is a core concept
+behind Test-Driven Design: if you listen to what your tests tell you
+about your code, you can make your code better.</p>
+
+<p>Note that these three things cover the entire life cycle of code;
+correctness applies to the <em>present</em> of the feature, confidence comes
+into play when the feature is in the <em>past</em>, and design feedback sheds
+light into the <em>future</em> of your code.</p>
+
+<h2>What flavors of test exist?</h2>
+
+<p>Here is a list of the types of tests that I can think of purely off the top
+of my head, I&#8217;m sure there are lots more.</p>
+
+<ul>
+<li><a href="http://en.wikipedia.org/wiki/Unit_testing">Unit testing</a></li>
+<li><a href="http://en.wikipedia.org/wiki/Integration_testing">Integration testing</a></li>
+<li><a href="http://en.wikipedia.org/wiki/Functional_testing">Functional testing</a></li>
+<li><a href="http://en.wikipedia.org/wiki/Acceptance_testing">Acceptance testing</a></li>
+<li><a href="http://en.wikipedia.org/wiki/Load_testing">Load testing</a></li>
+<li><a href="http://en.wikipedia.org/wiki/Performance_testing">Performance testing</a></li>
+<li><a href="http://en.wikipedia.org/wiki/Fuzz_testing">Fuzz testing</a></li>
+</ul>
+
+
+<p>Those are all links to corresponding Wikipedia page; I don&#8217;t agree
+with every nuance listed on those pages, and some pages are
+unfortunately short, but the links provide the barest minimum of
+a start if you would like to learn more about each type of test.</p>
+
+<p>I don&#8217;t tend to draw a hard line between integration, functional, and
+acceptance tests. If you need to know the difference, this
+<a href="http://stackoverflow.com/questions/4904096/whats-the-difference-between-unit-functional-acceptance-and-integration-tests">Stack Overflow question</a> has a pretty good breakdown. I
+think of acceptance tests as a superset of functional tests, which
+are themselves supersets of integration tests.</p>
+
+<p>All I care to talk about in this post are unit and acceptance tests. I
+am <em>not</em> saying the other types of testing are not important. I am
+saying that I think that unit and acceptance tests are the most
+useful types of tests to start with.</p>
+
+<p>I am nominally a programmer, and this post will exhibit that
+bias. I certainly hope that people approaching testing from a
+different angle can benefit from this post, but no guarantees are
+made.</p>
+
+<h2>How do acceptance and unit tests fit together?</h2>
+
+<p>A great way to understand how acceptance and unit tests work in
+concert is to read <a href="http://www.amazon.com/gp/product/1934356379/ref=as_li_ss_tl?ie=UTF8&amp;tag=jakgousblo-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399369&amp;creativeASIN=1934356379">The RSpec Book</a>. If you are too lazy
+and/or cheap to read it, here&#8217;s one extremely salient picture:</p>
+
+<p><img src="/images/blog/bdd-cycle.png" alt="The BDD test/develop cycle" /></p>
+
+<p>The extremely abridged version is that you write an <strong>acceptance
+test</strong> for the feature you want. This test should be written from the
+point-of-view of the user and using terms that a user would use.</p>
+
+<p>As you try to make the acceptance test pass, you will realize that you
+need to write smaller components to solve the larger problem. In an
+object-oriented language, these components will probably be
+objects. The test for each component is a <strong>unit test</strong>.</p>
+
+<h2>Acceptance tests</h2>
+
+<p>Acceptance tests tell you that the software as a whole does what it is
+supposed to do. It&#8217;s important to write acceptance tests as if you
+were the user. This makes it so that the test exposes the actual
+<em>value</em> of the code, explaining <em>why</em> the code even exists.</p>
+
+<p>To write proper acceptance tests, you need to have complete control
+over the entire environment your software runs in. If you interact
+with a database, you must be able to change data in the database. If
+you need to be able to parse an empty RSS feed, then you must be able
+to create an empty RSS feed to test that functionality.</p>
+
+<p>Because acceptance tests exercise the entire system, it&#8217;s very easy
+for them to be slow, but there are a few techniques that you can use
+to help keep your total time down.</p>
+
+<p>Acceptance tests should cover the &#8220;happy path&#8221; of your software. If
+there are any extremely important failure cases, then cover those with
+acceptance tests as well. However, you don&#8217;t need to cover every
+possible case. For example, use unit tests to ensure that things that
+generate errors do so consistently, and then use one acceptance test
+to make sure errors are shown correctly.</p>
+
+<p>Make sure that you minimize what data you need for an acceptance
+test. You probably don&#8217;t need to load 10,000 rows into your database
+just to make sure that a user can view their profile. Use the smallest
+amount of data you can get away with.</p>
+
+<p>Don&#8217;t get lazy and reuse one giant piece of setup code for every
+test. This is an example of the tests telling you that your design is
+painful to use. In this case, a user would have to duplicate all of
+the steps in the setup in order to use the function you are
+testing. Maybe that&#8217;s the way it has to be, but try to make it
+easier on the user.</p>
+
+<h2>Unit tests</h2>
+
+<p>Unit tests have some exciting qualities for a developer. Generally,
+unit tests are <em>fast</em> and can isolate exactly the one thing that is
+broken. Achieving these goals takes hard work.</p>
+
+<p>Limiting each unit test to one assertion enables isolation of
+faults. If a test fails, the name of the test by itself should serve
+to tell you exactly what went wrong. If you have multiple assertions,
+then you have to look at the failing line number to determine the real
+issue.</p>
+
+<h3>Mock objects</h3>
+
+<p>One way to achieve isolation and speed in your unit tests is to
+introduce <em>mock objects</em>. Mock objects are <em>test doubles</em> that
+surround the real code under test and assert on the messages sent
+between objects. Since they aren&#8217;t real objects, they can&#8217;t affect
+your test correctness, and they are extremely lightweight so they will
+be fast.</p>
+
+<p>Seems easy to use mocks, right? Just create some dummy objects that
+responds to the necessary methods and returns values as needed. Then
+point the object under test at the mock objects, run the code, and
+assert that tested object has used any returned values correctly.</p>
+
+<p>Here&#8217;s an example of doing that in Ruby (I&#8217;m eschewing using any
+libraries in an attempt to make the code as obvious as possible):</p>
+
+<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
+<span class='line'>2</span>
+<span class='line'>3</span>
+<span class='line'>4</span>
+<span class='line'>5</span>
+<span class='line'>6</span>
+<span class='line'>7</span>
+<span class='line'>8</span>
+<span class='line'>9</span>
+<span class='line'>10</span>
+<span class='line'>11</span>
+<span class='line'>12</span>
+<span class='line'>13</span>
+<span class='line'>14</span>
+<span class='line'>15</span>
+<span class='line'>16</span>
+<span class='line'>17</span>
+</pre></td><td class='code' width='100%'><pre><code class='ruby'><div class='line'><span class="k">class</span> <span class="nc">Foo</span>
+</div><div class='line'>  <span class="kp">attr_reader</span> <span class="n">foo</span>
+</div><div class='line'>
+</div><div class='line'>  <span class="k">def</span> <span class="nf">calculate_foo</span><span class="p">(</span><span class="n">bar</span><span class="p">)</span>
+</div><div class='line'>    <span class="vi">@foo</span> <span class="o">=</span> <span class="n">bar</span><span class="o">.</span><span class="n">quux</span> <span class="o">*</span> <span class="mi">2</span>
+</div><div class='line'>  <span class="k">end</span>
+</div><div class='line'><span class="k">end</span>
+</div><div class='line'>
+</div><div class='line'><span class="k">class</span> <span class="nc">BarDouble</span>
+</div><div class='line'>  <span class="k">def</span> <span class="nf">quux</span>
+</div><div class='line'>    <span class="mi">100</span>
+</div><div class='line'>  <span class="k">end</span>
+</div><div class='line'><span class="k">end</span>
+</div><div class='line'>
+</div><div class='line'><span class="n">f</span> <span class="o">=</span> <span class="no">Foo</span><span class="o">.</span><span class="n">new</span>
+</div><div class='line'><span class="n">f</span><span class="o">.</span><span class="n">calculate_foo</span><span class="p">(</span><span class="no">BarDouble</span><span class="o">.</span><span class="n">new</span><span class="p">)</span>
+</div><div class='line'><span class="nb">puts</span> <span class="n">f</span><span class="o">.</span><span class="n">foo</span> <span class="o">==</span> <span class="mi">200</span>
+</div></code></pre></td></tr></table></div></figure>
+
+
+<p>Sorry, I lied to you; that last example was <em>not</em> a mock - although I
+thought it was for the longest time. The double shown is actually a
+<em>stub</em>. The key point is that a mock <strong>asserts messages are
+sent</strong>. The example above asserts a state.</p>
+
+<p>Here is a test that correctly uses a mock:</p>
+
+<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
+<span class='line'>2</span>
+<span class='line'>3</span>
+<span class='line'>4</span>
+<span class='line'>5</span>
+<span class='line'>6</span>
+<span class='line'>7</span>
+<span class='line'>8</span>
+<span class='line'>9</span>
+<span class='line'>10</span>
+<span class='line'>11</span>
+<span class='line'>12</span>
+<span class='line'>13</span>
+<span class='line'>14</span>
+<span class='line'>15</span>
+<span class='line'>16</span>
+<span class='line'>17</span>
+<span class='line'>18</span>
+<span class='line'>19</span>
+<span class='line'>20</span>
+<span class='line'>21</span>
+</pre></td><td class='code' width='100%'><pre><code class='ruby'><div class='line'><span class="k">class</span> <span class="nc">Foo</span>
+</div><div class='line'>  <span class="k">def</span> <span class="nf">calculate_foo</span><span class="p">(</span><span class="n">bar</span><span class="p">)</span>
+</div><div class='line'>    <span class="vi">@foo</span> <span class="o">=</span> <span class="n">bar</span><span class="o">.</span><span class="n">quux</span> <span class="o">*</span> <span class="mi">2</span>
+</div><div class='line'>  <span class="k">end</span>
+</div><div class='line'><span class="k">end</span>
+</div><div class='line'>
+</div><div class='line'><span class="k">class</span> <span class="nc">BarMock</span>
+</div><div class='line'>  <span class="k">def</span> <span class="nf">quux_called?</span>
+</div><div class='line'>    <span class="vi">@quux_called</span>
+</div><div class='line'>  <span class="k">end</span>
+</div><div class='line'>
+</div><div class='line'>  <span class="k">def</span> <span class="nf">quux</span>
+</div><div class='line'>    <span class="vi">@quux_called</span> <span class="o">=</span> <span class="kp">true</span>
+</div><div class='line'>    <span class="mi">100</span>
+</div><div class='line'>  <span class="k">end</span>
+</div><div class='line'><span class="k">end</span>
+</div><div class='line'>
+</div><div class='line'><span class="n">f</span> <span class="o">=</span> <span class="no">Foo</span><span class="o">.</span><span class="n">new</span>
+</div><div class='line'><span class="n">b</span> <span class="o">=</span> <span class="no">BarMock</span><span class="o">.</span><span class="n">new</span>
+</div><div class='line'><span class="n">f</span><span class="o">.</span><span class="n">calculate_foo</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+</div><div class='line'><span class="nb">puts</span> <span class="n">b</span><span class="o">.</span><span class="n">quux_called?</span>
+</div></code></pre></td></tr></table></div></figure>
+
+
+<p>This last example uses a mock to assert that the right messages were
+sent. Note that we removed the <code>foo</code> accessor from the first class; we
+don&#8217;t need it anymore! The state of the object is now kept where it
+should be - inside the object.</p>
+
+<p>The difference between stubs and mocks can seem subtle, but it is
+important. For a much richer discussion, read <a href="http://martinfowler.com/articles/mocksArentStubs.html">Mocks Aren&#8217;t Stubs</a> by Martin Fowler.</p>
+
+<p>(I make no claim that this example is a <em>good</em> use of mocks, just that
+it is how mocks are to be used.)</p>
+
+<h3>Object-oriented programming and mocks</h3>
+
+<p>This is all recent information that started to worm its way into my
+brain after watching <a href="http://confreaks.net/videos/659-rubyconf2011-why-you-don-t-get-mock-objects">Why You Don&#8217;t Get Mock Objects</a>
+- you should watch it too.</p>
+
+<p>The code example above may still have a problem. The <code>Foo</code> object asks
+the <code>Bar</code> object for the value of <code>quux</code> and then manipulates the
+result. This goes against the <a href="http://pragprog.com/articles/tell-dont-as">Tell, Don&#8217;t Ask</a> principle, and
+could be a warning sign of <a href="http://c2.com/cgi/wiki?FeatureEnvySmell">Feature Envy</a>.</p>
+
+<p>You should only mock collaborators. Collaborators are objects that are
+peers of the object under test. Collaborators should not be confused
+with objects that simply serve as implementation details. If you store
+a bit of state in a string or some integers, those are internal
+details and should not be mocked out.</p>
+
+<h3>Example of applying these ideas to real code</h3>
+
+<p>This is a real (but anonymized) feature and test example. We have a
+piece of code that manipulates data retrieved via HTTP. This retrieval
+can be fairly expensive, so we want to cache the final manipulated
+result. The code that does the manipulation and caching is separated
+from the HTTP call by a few intermediate objects.</p>
+
+<p><img src="/images/blog/mock-example-current.png" alt="The current code setup" /></p>
+
+<p>Our current testing strategy is to provide fake data at the end of the
+chain, effectively short-circuiting the HTTP call. We also count the
+number of times that the HTTP call is made, and the test fails if the
+call is made more than once.</p>
+
+<p><img src="/images/blog/mock-example-current-test.png" alt="The current test setup" /></p>
+
+<p>One obvious downside is that if <em>any</em> of the intermediate objects
+decide they need to make an HTTP call themselves, our test will
+fail. What&#8217;s worse is that the failure will seem to indicate that the
+caching is not working, so we will start debugging there. When we
+finally figure out that the test is &#8220;lying&#8221; to us, we will have wasted
+time and started to distrust our tests.</p>
+
+<p>We can make the test better if we move the test double closer to the
+code under test. This lets us ignore all the other objects in the call
+chain - if one of these other objects does not behave properly, this
+test will not fail. This is no free lunch; there <strong>must</strong> be unit
+tests that focus on the other objects so you can tell when they break!</p>
+
+<p><img src="/images/blog/mock-example-next-test.png" alt="A better test setup" /></p>
+
+<p>While writing the caching tests, we should notice that there are two
+sets of unrelated tests: one that checks that the core functionality
+works, and one that checks that the caching works. This should
+influence us to split the object apart (better known as the
+<a href="http://en.wikipedia.org/wiki/Single_responsibility_principle">Single Responsibility Principle</a>).</p>
+
+<p><img src="/images/blog/mock-example-srp.png" alt="A better code setup" /></p>
+
+<p>Splitting the caching into a separate object will allow us to test the
+caching behavior in isolation.</p>
+
+<p><img src="/images/blog/mock-example-srp-test.png" alt="Even better test setup" /></p>
+
+<h2>A handful of things to learn next</h2>
+
+<p>My learning isn&#8217;t over, and hopefully never will be. Here is a sample
+of some questions currently percolating in my brain.</p>
+
+<p>Acceptance tests are often slow because they hit an external
+resource. Ruby has a gem called <a href="https://github.com/myronmarston/vcr">VCR</a> (and Java has a clone
+called <a href="https://github.com/robfletcher/betamax">Betamax</a>) that record HTTP requests and responses and
+then play them back during subsequent test runs. By definition, using
+one of these tools means you are no longer always doing true
+integration tests. However, the speedup is usually noticeable.</p>
+
+<ul>
+<li>When should you use this type of tool?</li>
+<li>What are the positives and negatives of this kind of tool?</li>
+<li>How frequently do you clear the cache of saved responses?</li>
+<li>Can the concept be easily extended to non-HTTP protocols?</li>
+</ul>
+
+
+<p>Ideally, you should never add code simply to make something
+testable. At that point, you are adding complexity to a system that
+will not benefit from that complexity. My pragmatic side says that
+sometimes you have to add hooks only to be used for testing.</p>
+
+<ul>
+<li>Do you really need to add these hooks?</li>
+<li>Is there a general type of design that avoids the need for the
+hooks?</li>
+<li>Is adding this kind of hook worth it?</li>
+</ul>
+
+
+<h2>Things you should read or watch</h2>
+
+<h5><a href="http://www.amazon.com/gp/product/1934356379/ref=as_li_ss_tl?ie=UTF8&amp;tag=jakgousblo-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399369&amp;creativeASIN=1934356379">The RSpec Book</a> (book)</h5>
+
+<p>Although the book seems like it will only be about Ruby, it actually
+covers the concepts of testing thoroughly. Introduced me to the
+{acceptance,unit}-test cycle. Also contains practical information if
+you will be testing in Ruby.</p>
+
+<h5><a href="http://martinfowler.com/articles/mocksArentStubs.html">Mocks Aren&#8217;t Stubs</a> (article)</h5>
+
+<p>Provides an overview of terms used as well as examples to help
+separate the different concepts (in Java, but don&#8217;t be
+scared). Defines &#8220;classicist&#8221; and &#8220;mockist&#8221;; you don&#8217;t need to pick
+one or the other, but understanding them is vital.</p>
+
+<h5><a href="http://confreaks.net/videos/659-rubyconf2011-why-you-don-t-get-mock-objects">Why You Don&#8217;t Get Mock Objects</a> (video)</h5>
+
+<p>Session from RubyConf 2011 that started to clarify certain aspects of
+mocking and testing. Gregory Moeck also introduced me to the term
+&#8220;secondary teacher&#8221;.</p>
+
+<h5><a href="http://www.amazon.com/gp/product/0321503627/ref=as_li_ss_tl?ie=UTF8&amp;tag=jakgousblo-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399369&amp;creativeASIN=0321503627">Growing Object-Oriented Software</a> (book)</h5>
+
+<p>On my list of books to order and read. I used to think that I
+understood Object-Oriented Programming, but recent developments have
+changed that belief.  I hope that reading this can help guide me to a
+better understanding.</p>
+
+<h5><a href="http://www.amazon.com/gp/product/0131177052/ref=as_li_ss_tl?ie=UTF8&amp;tag=jakgousblo-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399369&amp;creativeASIN=0131177052">Working Effectively with Legacy Code</a> (book)</h5>
+
+<p>Excellent information about how to take legacy code (defined as code
+without tests) and make it non-legacy. Clarified how tests let you be
+confident about changes. Provides heaps of practical advice.</p>
+
+<h2>Tell me what I&#8217;ve said wrong</h2>
+
+<p>I&#8217;m certain that I&#8217;ve said something that someone will disagree
+with. If you&#8217;d care to correct my false ideas, feel free to contact me
+via Twitter. If you think it will take longer than a tweet, create a
+blog post and let me know about it!</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Jake Goulding</span></span>
+
+      
+
+
+
+
+
+  
+
+
+
+<time datetime="2011-10-10T19:15:00-04:00" pubdate  data-updated="true" >Oct 10<span>th</span>, 2011</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/testing/'>testing</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2011/10/10/learned-about-testing-last-year/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2011/10/10/learned-about-testing-last-year/" >Tweet</a>
+  
+  
+</div>
+
+    
+  </footer>
+</article>
+
+</div>
+
+<aside role=sidebar>
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2011/10/10/learned-about-testing-last-year/">What I've learned about testing over the last year</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2011/09/18/quickly-fixing-your-last-git-commit/">Quickly fixing your last Git commit</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2011/09/18/game-of-life-in-clojure/">Game of Life in Clojure</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2011/02/27/how-mock-objects-make-gantt-charts-more-useless/">How Mock Objects Make Gantt Charts (More) Useless</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2011/02/26/using-named-routes-in-actionmailer-tests-with-rails-3/">Using named routes in ActionMailer tests with Rails 3</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("jakegoulding", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @jakegoulding</a>
+  
+</section>
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer><p>
+  Copyright &copy; 2011 - Jake Goulding -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-20521797-2']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+  
+
+  
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+</body>
+</html>

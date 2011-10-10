@@ -4,13 +4,427 @@
   <title>Jake Goulding</title>
   <link href="http://jakegoulding.com/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2011-09-18T20:40:00-04:00</updated>
+  <updated>2011-10-10T19:18:56-04:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name>Jake Goulding</name>
     
   </author>
 
+  
+  <entry>
+    <title>What I&#8217;ve learned about testing over the last year</title>
+    <link href="http://jakegoulding.com/blog/2011/10/10/learned-about-testing-last-year/"/>
+    <updated>2011-10-10T19:15:00-04:00</updated>
+    <id>http://jakegoulding.com/blog/2011/10/10/learned-about-testing-last-year</id>
+    <content type="html">&lt;p&gt;Over the last year or so, I&amp;#8217;ve been trying to learn about various
+types and methodologies of testing. The Ruby community is pretty vocal
+about testing, so I felt out of place not knowing even the most basic
+of things. This post is intended to organize my current thoughts and
+hopefully provide some guidance for people on the same journey.&lt;/p&gt;
+
+&lt;!&#8211; more &#8211;&gt;
+
+
+&lt;h2&gt;Who should read this?&lt;/h2&gt;
+
+&lt;p&gt;I had to realize two things before I could start on my learning
+journey:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;I don&amp;#8217;t know enough about testing.&lt;/li&gt;
+&lt;li&gt;I need to know more about testing.&lt;/li&gt;
+&lt;/ol&gt;
+
+
+&lt;p&gt;If you don&amp;#8217;t fit into both of these categories, you probably aren&amp;#8217;t
+reading this post.&lt;/p&gt;
+
+&lt;p&gt;If you know what &amp;#8220;mockist&amp;#8221; and &amp;#8220;classicist&amp;#8221; mean and you know which
+you are, you probably already know everything here. If you care, I
+generally take the &amp;#8220;mockist&amp;#8221; approach, and this post reflects that.&lt;/p&gt;
+
+&lt;p&gt;Otherwise, feel free to continue!&lt;/p&gt;
+
+&lt;h2&gt;Why should I test?&lt;/h2&gt;
+
+&lt;p&gt;The obvious answer is that testing allows you know have some degree of
+confidence that the code as written is right.&lt;/p&gt;
+
+&lt;p&gt;Less obvious is the fact that tests give you confidence to change
+code. Eventually, some part of the software will need to change
+while everything else should stay constant. For me, this point really
+hit home when I read &lt;a href=&quot;http://www.amazon.com/gp/product/0131177052/ref=as_li_ss_tl?ie=UTF8&amp;amp;tag=jakgousblo-20&amp;amp;linkCode=as2&amp;amp;camp=217145&amp;amp;creative=399369&amp;amp;creativeASIN=0131177052&quot;&gt;Working Effectively with Legacy Code&lt;/a&gt; by Michael Feathers. I deal with lots of code that
+needs to be changed and I&amp;#8217;m usually worried that my change might
+affect some conceptually remote piece of the software.&lt;/p&gt;
+
+&lt;p&gt;Maybe the hardest thing for people to believe is that tests can
+provide feedback on the design of the code. This is a core concept
+behind Test-Driven Design: if you listen to what your tests tell you
+about your code, you can make your code better.&lt;/p&gt;
+
+&lt;p&gt;Note that these three things cover the entire life cycle of code;
+correctness applies to the &lt;em&gt;present&lt;/em&gt; of the feature, confidence comes
+into play when the feature is in the &lt;em&gt;past&lt;/em&gt;, and design feedback sheds
+light into the &lt;em&gt;future&lt;/em&gt; of your code.&lt;/p&gt;
+
+&lt;h2&gt;What flavors of test exist?&lt;/h2&gt;
+
+&lt;p&gt;Here is a list of the types of tests that I can think of purely off the top
+of my head, I&amp;#8217;m sure there are lots more.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;http://en.wikipedia.org/wiki/Unit_testing&quot;&gt;Unit testing&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;http://en.wikipedia.org/wiki/Integration_testing&quot;&gt;Integration testing&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;http://en.wikipedia.org/wiki/Functional_testing&quot;&gt;Functional testing&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;http://en.wikipedia.org/wiki/Acceptance_testing&quot;&gt;Acceptance testing&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;http://en.wikipedia.org/wiki/Load_testing&quot;&gt;Load testing&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;http://en.wikipedia.org/wiki/Performance_testing&quot;&gt;Performance testing&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;http://en.wikipedia.org/wiki/Fuzz_testing&quot;&gt;Fuzz testing&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+
+&lt;p&gt;Those are all links to corresponding Wikipedia page; I don&amp;#8217;t agree
+with every nuance listed on those pages, and some pages are
+unfortunately short, but the links provide the barest minimum of
+a start if you would like to learn more about each type of test.&lt;/p&gt;
+
+&lt;p&gt;I don&amp;#8217;t tend to draw a hard line between integration, functional, and
+acceptance tests. If you need to know the difference, this
+&lt;a href=&quot;http://stackoverflow.com/questions/4904096/whats-the-difference-between-unit-functional-acceptance-and-integration-tests&quot;&gt;Stack Overflow question&lt;/a&gt; has a pretty good breakdown. I
+think of acceptance tests as a superset of functional tests, which
+are themselves supersets of integration tests.&lt;/p&gt;
+
+&lt;p&gt;All I care to talk about in this post are unit and acceptance tests. I
+am &lt;em&gt;not&lt;/em&gt; saying the other types of testing are not important. I am
+saying that I think that unit and acceptance tests are the most
+useful types of tests to start with.&lt;/p&gt;
+
+&lt;p&gt;I am nominally a programmer, and this post will exhibit that
+bias. I certainly hope that people approaching testing from a
+different angle can benefit from this post, but no guarantees are
+made.&lt;/p&gt;
+
+&lt;h2&gt;How do acceptance and unit tests fit together?&lt;/h2&gt;
+
+&lt;p&gt;A great way to understand how acceptance and unit tests work in
+concert is to read &lt;a href=&quot;http://www.amazon.com/gp/product/1934356379/ref=as_li_ss_tl?ie=UTF8&amp;amp;tag=jakgousblo-20&amp;amp;linkCode=as2&amp;amp;camp=217145&amp;amp;creative=399369&amp;amp;creativeASIN=1934356379&quot;&gt;The RSpec Book&lt;/a&gt;. If you are too lazy
+and/or cheap to read it, here&amp;#8217;s one extremely salient picture:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://jakegoulding.com/images/blog/bdd-cycle.png&quot; alt=&quot;The BDD test/develop cycle&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The extremely abridged version is that you write an &lt;strong&gt;acceptance
+test&lt;/strong&gt; for the feature you want. This test should be written from the
+point-of-view of the user and using terms that a user would use.&lt;/p&gt;
+
+&lt;p&gt;As you try to make the acceptance test pass, you will realize that you
+need to write smaller components to solve the larger problem. In an
+object-oriented language, these components will probably be
+objects. The test for each component is a &lt;strong&gt;unit test&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;h2&gt;Acceptance tests&lt;/h2&gt;
+
+&lt;p&gt;Acceptance tests tell you that the software as a whole does what it is
+supposed to do. It&amp;#8217;s important to write acceptance tests as if you
+were the user. This makes it so that the test exposes the actual
+&lt;em&gt;value&lt;/em&gt; of the code, explaining &lt;em&gt;why&lt;/em&gt; the code even exists.&lt;/p&gt;
+
+&lt;p&gt;To write proper acceptance tests, you need to have complete control
+over the entire environment your software runs in. If you interact
+with a database, you must be able to change data in the database. If
+you need to be able to parse an empty RSS feed, then you must be able
+to create an empty RSS feed to test that functionality.&lt;/p&gt;
+
+&lt;p&gt;Because acceptance tests exercise the entire system, it&amp;#8217;s very easy
+for them to be slow, but there are a few techniques that you can use
+to help keep your total time down.&lt;/p&gt;
+
+&lt;p&gt;Acceptance tests should cover the &amp;#8220;happy path&amp;#8221; of your software. If
+there are any extremely important failure cases, then cover those with
+acceptance tests as well. However, you don&amp;#8217;t need to cover every
+possible case. For example, use unit tests to ensure that things that
+generate errors do so consistently, and then use one acceptance test
+to make sure errors are shown correctly.&lt;/p&gt;
+
+&lt;p&gt;Make sure that you minimize what data you need for an acceptance
+test. You probably don&amp;#8217;t need to load 10,000 rows into your database
+just to make sure that a user can view their profile. Use the smallest
+amount of data you can get away with.&lt;/p&gt;
+
+&lt;p&gt;Don&amp;#8217;t get lazy and reuse one giant piece of setup code for every
+test. This is an example of the tests telling you that your design is
+painful to use. In this case, a user would have to duplicate all of
+the steps in the setup in order to use the function you are
+testing. Maybe that&amp;#8217;s the way it has to be, but try to make it
+easier on the user.&lt;/p&gt;
+
+&lt;h2&gt;Unit tests&lt;/h2&gt;
+
+&lt;p&gt;Unit tests have some exciting qualities for a developer. Generally,
+unit tests are &lt;em&gt;fast&lt;/em&gt; and can isolate exactly the one thing that is
+broken. Achieving these goals takes hard work.&lt;/p&gt;
+
+&lt;p&gt;Limiting each unit test to one assertion enables isolation of
+faults. If a test fails, the name of the test by itself should serve
+to tell you exactly what went wrong. If you have multiple assertions,
+then you have to look at the failing line number to determine the real
+issue.&lt;/p&gt;
+
+&lt;h3&gt;Mock objects&lt;/h3&gt;
+
+&lt;p&gt;One way to achieve isolation and speed in your unit tests is to
+introduce &lt;em&gt;mock objects&lt;/em&gt;. Mock objects are &lt;em&gt;test doubles&lt;/em&gt; that
+surround the real code under test and assert on the messages sent
+between objects. Since they aren&amp;#8217;t real objects, they can&amp;#8217;t affect
+your test correctness, and they are extremely lightweight so they will
+be fast.&lt;/p&gt;
+
+&lt;p&gt;Seems easy to use mocks, right? Just create some dummy objects that
+responds to the necessary methods and returns values as needed. Then
+point the object under test at the mock objects, run the code, and
+assert that tested object has used any returned values correctly.&lt;/p&gt;
+
+&lt;p&gt;Here&amp;#8217;s an example of doing that in Ruby (I&amp;#8217;m eschewing using any
+libraries in an attempt to make the code as obvious as possible):&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;5&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;6&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;7&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;8&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;9&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;10&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;11&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;12&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;13&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;14&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;15&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;16&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;17&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;ruby&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Foo&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;kp&quot;&gt;attr_reader&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;foo&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;calculate_foo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bar&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;    &lt;span class=&quot;vi&quot;&gt;@foo&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bar&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;quux&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;BarDouble&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;quux&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;    &lt;span class=&quot;mi&quot;&gt;100&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;n&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;Foo&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;new&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;n&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;calculate_foo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;BarDouble&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;new&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;nb&quot;&gt;puts&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;foo&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;200&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Sorry, I lied to you; that last example was &lt;em&gt;not&lt;/em&gt; a mock - although I
+thought it was for the longest time. The double shown is actually a
+&lt;em&gt;stub&lt;/em&gt;. The key point is that a mock &lt;strong&gt;asserts messages are
+sent&lt;/strong&gt;. The example above asserts a state.&lt;/p&gt;
+
+&lt;p&gt;Here is a test that correctly uses a mock:&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;5&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;6&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;7&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;8&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;9&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;10&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;11&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;12&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;13&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;14&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;15&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;16&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;17&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;18&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;19&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;20&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;21&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;ruby&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Foo&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;calculate_foo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bar&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;    &lt;span class=&quot;vi&quot;&gt;@foo&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bar&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;quux&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;BarMock&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;quux_called?&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;    &lt;span class=&quot;vi&quot;&gt;@quux_called&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;quux&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;    &lt;span class=&quot;vi&quot;&gt;@quux_called&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kp&quot;&gt;true&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;    &lt;span class=&quot;mi&quot;&gt;100&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;n&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;Foo&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;new&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;n&quot;&gt;b&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;BarMock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;new&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;n&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;calculate_foo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;nb&quot;&gt;puts&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;quux_called?&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;This last example uses a mock to assert that the right messages were
+sent. Note that we removed the &lt;code&gt;foo&lt;/code&gt; accessor from the first class; we
+don&amp;#8217;t need it anymore! The state of the object is now kept where it
+should be - inside the object.&lt;/p&gt;
+
+&lt;p&gt;The difference between stubs and mocks can seem subtle, but it is
+important. For a much richer discussion, read &lt;a href=&quot;http://martinfowler.com/articles/mocksArentStubs.html&quot;&gt;Mocks Aren&amp;#8217;t Stubs&lt;/a&gt; by Martin Fowler.&lt;/p&gt;
+
+&lt;p&gt;(I make no claim that this example is a &lt;em&gt;good&lt;/em&gt; use of mocks, just that
+it is how mocks are to be used.)&lt;/p&gt;
+
+&lt;h3&gt;Object-oriented programming and mocks&lt;/h3&gt;
+
+&lt;p&gt;This is all recent information that started to worm its way into my
+brain after watching &lt;a href=&quot;http://confreaks.net/videos/659-rubyconf2011-why-you-don-t-get-mock-objects&quot;&gt;Why You Don&amp;#8217;t Get Mock Objects&lt;/a&gt;
+- you should watch it too.&lt;/p&gt;
+
+&lt;p&gt;The code example above may still have a problem. The &lt;code&gt;Foo&lt;/code&gt; object asks
+the &lt;code&gt;Bar&lt;/code&gt; object for the value of &lt;code&gt;quux&lt;/code&gt; and then manipulates the
+result. This goes against the &lt;a href=&quot;http://pragprog.com/articles/tell-dont-as&quot;&gt;Tell, Don&amp;#8217;t Ask&lt;/a&gt; principle, and
+could be a warning sign of &lt;a href=&quot;http://c2.com/cgi/wiki?FeatureEnvySmell&quot;&gt;Feature Envy&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;You should only mock collaborators. Collaborators are objects that are
+peers of the object under test. Collaborators should not be confused
+with objects that simply serve as implementation details. If you store
+a bit of state in a string or some integers, those are internal
+details and should not be mocked out.&lt;/p&gt;
+
+&lt;h3&gt;Example of applying these ideas to real code&lt;/h3&gt;
+
+&lt;p&gt;This is a real (but anonymized) feature and test example. We have a
+piece of code that manipulates data retrieved via HTTP. This retrieval
+can be fairly expensive, so we want to cache the final manipulated
+result. The code that does the manipulation and caching is separated
+from the HTTP call by a few intermediate objects.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://jakegoulding.com/images/blog/mock-example-current.png&quot; alt=&quot;The current code setup&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Our current testing strategy is to provide fake data at the end of the
+chain, effectively short-circuiting the HTTP call. We also count the
+number of times that the HTTP call is made, and the test fails if the
+call is made more than once.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://jakegoulding.com/images/blog/mock-example-current-test.png&quot; alt=&quot;The current test setup&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;One obvious downside is that if &lt;em&gt;any&lt;/em&gt; of the intermediate objects
+decide they need to make an HTTP call themselves, our test will
+fail. What&amp;#8217;s worse is that the failure will seem to indicate that the
+caching is not working, so we will start debugging there. When we
+finally figure out that the test is &amp;#8220;lying&amp;#8221; to us, we will have wasted
+time and started to distrust our tests.&lt;/p&gt;
+
+&lt;p&gt;We can make the test better if we move the test double closer to the
+code under test. This lets us ignore all the other objects in the call
+chain - if one of these other objects does not behave properly, this
+test will not fail. This is no free lunch; there &lt;strong&gt;must&lt;/strong&gt; be unit
+tests that focus on the other objects so you can tell when they break!&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://jakegoulding.com/images/blog/mock-example-next-test.png&quot; alt=&quot;A better test setup&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;While writing the caching tests, we should notice that there are two
+sets of unrelated tests: one that checks that the core functionality
+works, and one that checks that the caching works. This should
+influence us to split the object apart (better known as the
+&lt;a href=&quot;http://en.wikipedia.org/wiki/Single_responsibility_principle&quot;&gt;Single Responsibility Principle&lt;/a&gt;).&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://jakegoulding.com/images/blog/mock-example-srp.png&quot; alt=&quot;A better code setup&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Splitting the caching into a separate object will allow us to test the
+caching behavior in isolation.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://jakegoulding.com/images/blog/mock-example-srp-test.png&quot; alt=&quot;Even better test setup&quot; /&gt;&lt;/p&gt;
+
+&lt;h2&gt;A handful of things to learn next&lt;/h2&gt;
+
+&lt;p&gt;My learning isn&amp;#8217;t over, and hopefully never will be. Here is a sample
+of some questions currently percolating in my brain.&lt;/p&gt;
+
+&lt;p&gt;Acceptance tests are often slow because they hit an external
+resource. Ruby has a gem called &lt;a href=&quot;https://github.com/myronmarston/vcr&quot;&gt;VCR&lt;/a&gt; (and Java has a clone
+called &lt;a href=&quot;https://github.com/robfletcher/betamax&quot;&gt;Betamax&lt;/a&gt;) that record HTTP requests and responses and
+then play them back during subsequent test runs. By definition, using
+one of these tools means you are no longer always doing true
+integration tests. However, the speedup is usually noticeable.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;When should you use this type of tool?&lt;/li&gt;
+&lt;li&gt;What are the positives and negatives of this kind of tool?&lt;/li&gt;
+&lt;li&gt;How frequently do you clear the cache of saved responses?&lt;/li&gt;
+&lt;li&gt;Can the concept be easily extended to non-HTTP protocols?&lt;/li&gt;
+&lt;/ul&gt;
+
+
+&lt;p&gt;Ideally, you should never add code simply to make something
+testable. At that point, you are adding complexity to a system that
+will not benefit from that complexity. My pragmatic side says that
+sometimes you have to add hooks only to be used for testing.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Do you really need to add these hooks?&lt;/li&gt;
+&lt;li&gt;Is there a general type of design that avoids the need for the
+hooks?&lt;/li&gt;
+&lt;li&gt;Is adding this kind of hook worth it?&lt;/li&gt;
+&lt;/ul&gt;
+
+
+&lt;h2&gt;Things you should read or watch&lt;/h2&gt;
+
+&lt;h5&gt;&lt;a href=&quot;http://www.amazon.com/gp/product/1934356379/ref=as_li_ss_tl?ie=UTF8&amp;amp;tag=jakgousblo-20&amp;amp;linkCode=as2&amp;amp;camp=217145&amp;amp;creative=399369&amp;amp;creativeASIN=1934356379&quot;&gt;The RSpec Book&lt;/a&gt; (book)&lt;/h5&gt;
+
+&lt;p&gt;Although the book seems like it will only be about Ruby, it actually
+covers the concepts of testing thoroughly. Introduced me to the
+{acceptance,unit}-test cycle. Also contains practical information if
+you will be testing in Ruby.&lt;/p&gt;
+
+&lt;h5&gt;&lt;a href=&quot;http://martinfowler.com/articles/mocksArentStubs.html&quot;&gt;Mocks Aren&amp;#8217;t Stubs&lt;/a&gt; (article)&lt;/h5&gt;
+
+&lt;p&gt;Provides an overview of terms used as well as examples to help
+separate the different concepts (in Java, but don&amp;#8217;t be
+scared). Defines &amp;#8220;classicist&amp;#8221; and &amp;#8220;mockist&amp;#8221;; you don&amp;#8217;t need to pick
+one or the other, but understanding them is vital.&lt;/p&gt;
+
+&lt;h5&gt;&lt;a href=&quot;http://confreaks.net/videos/659-rubyconf2011-why-you-don-t-get-mock-objects&quot;&gt;Why You Don&amp;#8217;t Get Mock Objects&lt;/a&gt; (video)&lt;/h5&gt;
+
+&lt;p&gt;Session from RubyConf 2011 that started to clarify certain aspects of
+mocking and testing. Gregory Moeck also introduced me to the term
+&amp;#8220;secondary teacher&amp;#8221;.&lt;/p&gt;
+
+&lt;h5&gt;&lt;a href=&quot;http://www.amazon.com/gp/product/0321503627/ref=as_li_ss_tl?ie=UTF8&amp;amp;tag=jakgousblo-20&amp;amp;linkCode=as2&amp;amp;camp=217145&amp;amp;creative=399369&amp;amp;creativeASIN=0321503627&quot;&gt;Growing Object-Oriented Software&lt;/a&gt; (book)&lt;/h5&gt;
+
+&lt;p&gt;On my list of books to order and read. I used to think that I
+understood Object-Oriented Programming, but recent developments have
+changed that belief.  I hope that reading this can help guide me to a
+better understanding.&lt;/p&gt;
+
+&lt;h5&gt;&lt;a href=&quot;http://www.amazon.com/gp/product/0131177052/ref=as_li_ss_tl?ie=UTF8&amp;amp;tag=jakgousblo-20&amp;amp;linkCode=as2&amp;amp;camp=217145&amp;amp;creative=399369&amp;amp;creativeASIN=0131177052&quot;&gt;Working Effectively with Legacy Code&lt;/a&gt; (book)&lt;/h5&gt;
+
+&lt;p&gt;Excellent information about how to take legacy code (defined as code
+without tests) and make it non-legacy. Clarified how tests let you be
+confident about changes. Provides heaps of practical advice.&lt;/p&gt;
+
+&lt;h2&gt;Tell me what I&amp;#8217;ve said wrong&lt;/h2&gt;
+
+&lt;p&gt;I&amp;#8217;m certain that I&amp;#8217;ve said something that someone will disagree
+with. If you&amp;#8217;d care to correct my false ideas, feel free to contact me
+via Twitter. If you think it will take longer than a tweet, create a
+blog post and let me know about it!&lt;/p&gt;
+</content>
+  </entry>
   
   <entry>
     <title>Quickly fixing your last Git commit</title>
