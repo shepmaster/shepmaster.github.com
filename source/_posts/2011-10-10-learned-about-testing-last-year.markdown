@@ -16,8 +16,7 @@ hopefully provide some guidance for people on the same journey.
 
 ## Who should read this?
 
-I had to realize two things before I could start on my learning
-journey:
+I had to realize two things before I could start learning:
 
 1. I don't know enough about testing.
 2. I need to know more about testing.
@@ -32,7 +31,7 @@ generally take the "mockist" approach, and this post reflects that.
 Otherwise, feel free to continue!
 
 ## Why should I test?
-The obvious answer is that testing allows you know have some degree of
+The simplest answer is that testing allows you to have some degree of
 confidence that the code as written is right. 
 
 Less obvious is the fact that tests give you confidence to change
@@ -165,8 +164,8 @@ responds to the necessary methods and returns values as needed. Then
 point the object under test at the mock objects, run the code, and
 assert that tested object has used any returned values correctly.
 
-Here's an example of doing that in Ruby (I'm eschewing using any
-libraries in an attempt to make the code as obvious as possible):
+Here's an example of doing that in Ruby. I'm eschewing using any
+libraries in an attempt to make the code as obvious as possible.
 
 ```ruby
 class Foo
@@ -228,8 +227,8 @@ The difference between stubs and mocks can seem subtle, but it is
 important. For a much richer discussion, read [Mocks Aren't Stubs]
 [fowler-mocks] by Martin Fowler.
 
-(I make no claim that this example is a *good* use of mocks, just that
-it is how mocks are to be used.)
+I make no claim that this example is a *good* use of mocks, just that
+it is how mocks are to be used.
 
 ### Object-oriented programming and mocks
 
@@ -356,6 +355,10 @@ with. If you'd care to correct my false ideas, feel free to contact me
 via Twitter. If you think it will take longer than a tweet, create a
 blog post and let me know about it!
 
+## Edits
+##### 2011-10-11 9:27 EDT
+Fixed bad link and cleaned up some poor wording.
+
 [unit-test]: http://en.wikipedia.org/wiki/Unit_testing
 [int-test]: http://en.wikipedia.org/wiki/Integration_testing
 [func-test]: http://en.wikipedia.org/wiki/Functional_testing
@@ -369,7 +372,7 @@ blog post and let me know about it!
 [srp]: http://en.wikipedia.org/wiki/Single_responsibility_principle
 [vcr]: https://github.com/myronmarston/vcr
 [betamax]: https://github.com/robfletcher/betamax
-[tda]: http://pragprog.com/articles/tell-dont-as
+[tda]: http://pragprog.com/articles/tell-dont-ask
 [feat-envy]: http://c2.com/cgi/wiki?FeatureEnvySmell
 
 [rspec-book]: http://www.amazon.com/gp/product/1934356379/ref=as_li_ss_tl?ie=UTF8&tag=jakgousblo-20&linkCode=as2&camp=217145&creative=399369&creativeASIN=1934356379
