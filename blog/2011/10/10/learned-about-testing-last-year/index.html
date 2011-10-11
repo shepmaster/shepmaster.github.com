@@ -88,8 +88,7 @@ hopefully provide some guidance for people on the same journey.</p>
 
 <h2>Who should read this?</h2>
 
-<p>I had to realize two things before I could start on my learning
-journey:</p>
+<p>I had to realize two things before I could start learning:</p>
 
 <ol>
 <li>I don&#8217;t know enough about testing.</li>
@@ -108,7 +107,7 @@ generally take the &#8220;mockist&#8221; approach, and this post reflects that.<
 
 <h2>Why should I test?</h2>
 
-<p>The obvious answer is that testing allows you know have some degree of
+<p>The simplest answer is that testing allows you to have some degree of
 confidence that the code as written is right.</p>
 
 <p>Less obvious is the fact that tests give you confidence to change
@@ -244,8 +243,8 @@ responds to the necessary methods and returns values as needed. Then
 point the object under test at the mock objects, run the code, and
 assert that tested object has used any returned values correctly.</p>
 
-<p>Here&#8217;s an example of doing that in Ruby (I&#8217;m eschewing using any
-libraries in an attempt to make the code as obvious as possible):</p>
+<p>Here&#8217;s an example of doing that in Ruby. I&#8217;m eschewing using any
+libraries in an attempt to make the code as obvious as possible.</p>
 
 <figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
 <span class='line'>2</span>
@@ -344,8 +343,8 @@ should be - inside the object.</p>
 <p>The difference between stubs and mocks can seem subtle, but it is
 important. For a much richer discussion, read <a href="http://martinfowler.com/articles/mocksArentStubs.html">Mocks Aren&#8217;t Stubs</a> by Martin Fowler.</p>
 
-<p>(I make no claim that this example is a <em>good</em> use of mocks, just that
-it is how mocks are to be used.)</p>
+<p>I make no claim that this example is a <em>good</em> use of mocks, just that
+it is how mocks are to be used.</p>
 
 <h3>Object-oriented programming and mocks</h3>
 
@@ -355,7 +354,7 @@ brain after watching <a href="http://confreaks.net/videos/659-rubyconf2011-why-y
 
 <p>The code example above may still have a problem. The <code>Foo</code> object asks
 the <code>Bar</code> object for the value of <code>quux</code> and then manipulates the
-result. This goes against the <a href="http://pragprog.com/articles/tell-dont-as">Tell, Don&#8217;t Ask</a> principle, and
+result. This goes against the <a href="http://pragprog.com/articles/tell-dont-ask">Tell, Don&#8217;t Ask</a> principle, and
 could be a warning sign of <a href="http://c2.com/cgi/wiki?FeatureEnvySmell">Feature Envy</a>.</p>
 
 <p>You should only mock collaborators. Collaborators are objects that are
@@ -483,6 +482,12 @@ confident about changes. Provides heaps of practical advice.</p>
 with. If you&#8217;d care to correct my false ideas, feel free to contact me
 via Twitter. If you think it will take longer than a tweet, create a
 blog post and let me know about it!</p>
+
+<h2>Edits</h2>
+
+<h5>2011-10-11 9:27 EDT</h5>
+
+<p>Fixed bad link and cleaned up some poor wording.</p>
 </div>
 
 

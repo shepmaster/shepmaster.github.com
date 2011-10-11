@@ -4,7 +4,7 @@
   <title>Jake Goulding</title>
   <link href="http://jakegoulding.com/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2011-10-10T19:18:56-04:00</updated>
+  <updated>2011-10-11T09:27:54-04:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name>Jake Goulding</name>
@@ -28,8 +28,7 @@ hopefully provide some guidance for people on the same journey.&lt;/p&gt;
 
 &lt;h2&gt;Who should read this?&lt;/h2&gt;
 
-&lt;p&gt;I had to realize two things before I could start on my learning
-journey:&lt;/p&gt;
+&lt;p&gt;I had to realize two things before I could start learning:&lt;/p&gt;
 
 &lt;ol&gt;
 &lt;li&gt;I don&amp;#8217;t know enough about testing.&lt;/li&gt;
@@ -48,7 +47,7 @@ generally take the &amp;#8220;mockist&amp;#8221; approach, and this post reflect
 
 &lt;h2&gt;Why should I test?&lt;/h2&gt;
 
-&lt;p&gt;The obvious answer is that testing allows you know have some degree of
+&lt;p&gt;The simplest answer is that testing allows you to have some degree of
 confidence that the code as written is right.&lt;/p&gt;
 
 &lt;p&gt;Less obvious is the fact that tests give you confidence to change
@@ -184,8 +183,8 @@ responds to the necessary methods and returns values as needed. Then
 point the object under test at the mock objects, run the code, and
 assert that tested object has used any returned values correctly.&lt;/p&gt;
 
-&lt;p&gt;Here&amp;#8217;s an example of doing that in Ruby (I&amp;#8217;m eschewing using any
-libraries in an attempt to make the code as obvious as possible):&lt;/p&gt;
+&lt;p&gt;Here&amp;#8217;s an example of doing that in Ruby. I&amp;#8217;m eschewing using any
+libraries in an attempt to make the code as obvious as possible.&lt;/p&gt;
 
 &lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
 &lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
@@ -284,8 +283,8 @@ should be - inside the object.&lt;/p&gt;
 &lt;p&gt;The difference between stubs and mocks can seem subtle, but it is
 important. For a much richer discussion, read &lt;a href=&quot;http://martinfowler.com/articles/mocksArentStubs.html&quot;&gt;Mocks Aren&amp;#8217;t Stubs&lt;/a&gt; by Martin Fowler.&lt;/p&gt;
 
-&lt;p&gt;(I make no claim that this example is a &lt;em&gt;good&lt;/em&gt; use of mocks, just that
-it is how mocks are to be used.)&lt;/p&gt;
+&lt;p&gt;I make no claim that this example is a &lt;em&gt;good&lt;/em&gt; use of mocks, just that
+it is how mocks are to be used.&lt;/p&gt;
 
 &lt;h3&gt;Object-oriented programming and mocks&lt;/h3&gt;
 
@@ -295,7 +294,7 @@ brain after watching &lt;a href=&quot;http://confreaks.net/videos/659-rubyconf20
 
 &lt;p&gt;The code example above may still have a problem. The &lt;code&gt;Foo&lt;/code&gt; object asks
 the &lt;code&gt;Bar&lt;/code&gt; object for the value of &lt;code&gt;quux&lt;/code&gt; and then manipulates the
-result. This goes against the &lt;a href=&quot;http://pragprog.com/articles/tell-dont-as&quot;&gt;Tell, Don&amp;#8217;t Ask&lt;/a&gt; principle, and
+result. This goes against the &lt;a href=&quot;http://pragprog.com/articles/tell-dont-ask&quot;&gt;Tell, Don&amp;#8217;t Ask&lt;/a&gt; principle, and
 could be a warning sign of &lt;a href=&quot;http://c2.com/cgi/wiki?FeatureEnvySmell&quot;&gt;Feature Envy&lt;/a&gt;.&lt;/p&gt;
 
 &lt;p&gt;You should only mock collaborators. Collaborators are objects that are
@@ -423,6 +422,12 @@ confident about changes. Provides heaps of practical advice.&lt;/p&gt;
 with. If you&amp;#8217;d care to correct my false ideas, feel free to contact me
 via Twitter. If you think it will take longer than a tweet, create a
 blog post and let me know about it!&lt;/p&gt;
+
+&lt;h2&gt;Edits&lt;/h2&gt;
+
+&lt;h5&gt;2011-10-11 9:27 EDT&lt;/h5&gt;
+
+&lt;p&gt;Fixed bad link and cleaned up some poor wording.&lt;/p&gt;
 </content>
   </entry>
   
