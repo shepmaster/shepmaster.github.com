@@ -134,22 +134,25 @@ make runtime decisions based on what methods an object
 implements. This means that adding a method might trigger completely
 new behavior elsewhere.
 
-Nothing above is particularly new; every programmer *knows* that if
-you remove a method that is being used, then your code will
-break.
-
 ## In which time is considered
 
-Let us assume that the `greet` method is never called on an instance
-of the `B` class in the third example. Moving the method up the
-hierarchy is refactoring - no external behavior has changed.
+Let's focus on the third example and assume that the above caveat
+about adding methods in dynamically-typed languages doesn't apply.
 
-Now assume, thanks to user feedback, that we've decided that the `B`
-class needs a `greet` method. Following TDD, we create a test for
-our new functionality, which fails. If we now make the exact same
-change to our classes that we made earlier, the change is *not a
-refactoring* - we are changing the behavior of the system from failing
-to passing.
+If we decide that the code would be better if we moved the `greet`
+method from `A` to `Parent`, then that change would be refactoring -
+no external behavior has changed.
+
+Instead of changing the code just to make it better, assume that user
+feedback suggests that that the `B` class needs a `greet` method. This
+means that we:
+
+1. Create a failing test for our new functionality.
+2. Move the `greet` method from `A` to `Parent`.
+
+Even though we change the code in the same way in both examples, the
+second time is *not refactoring* - we are changing the behavior of the
+system from failing to passing.
 
 ## In which exceptions are noted
 
@@ -168,7 +171,7 @@ Another factor that can come into play is the visibility of the
 method(s) being refactored. If they are `private` (or language
 equivalent), you can feel more secure when refactoring. This is
 because limited visibility restricts what code can be considered
-"external".
+external.
 
 ## In which the real-world is consulted
 
@@ -180,27 +183,35 @@ Is there really a benefit to thinking of
 ## In which related areas are suggested
 
 When considering the temporal nature of refactoring, I am reminded of
-how git manages commits. A commit hash is not just based on the
+how git manages commits.
+
+A git commit hash is not just based on the
 changes to the code, although that's often how people think about
-it. The hash is based on many things, including the changes to the
-code and the commit that the change is being made to. This parent
-commit can be thought of as point in time from the viewpoint of the
-version control system.
+it. This hash is based on many things, including the changes to the
+code and the tip of the branch that the change is being comitted
+to. From the viewpoint of the version control system, this parent
+commit can be treated as a point in time.
 
-Even if you have two identical changes to the code, the state in time
-which they are applied carries great importance. For example, if the
-change adds a new option to a configuration file, but the change is
-applied before the corresponding option is added to the code, then the
-option will be ineffective, or worse.
+Even if you make the same change to the code, the state of the code
+when the change is applied carries great importance:
 
-Similarly, whether changes to code is "refactoring" or not is based on
-the change and what the external system behavior is at that
-time. Something to mull about for a future time.
+#### Ordering 1
+1. Add code for option `foo`
+2. Add option `foo` to configuration file
+
+#### Ordering 2
+1. Add code for option `foo`
+2. Add option `foo` to configuration file
+
+Even though the diffs for each change are identical, the state is
+quite different if you look at it between the first and second commit.
+
+Similarly, whether a specific change is a refactoring or not is based
+on both the change and what the external system behavior is at that
+time. Something to mull about for another blog post.
 
 [refactoring]: http://martinfowler.com/refactoring/
 [extract-method]: http://martinfowler.com/refactoring/catalog/extractMethod.html
 [inline-method]: http://martinfowler.com/refactoring/catalog/inlineMethod.html
 [pull-up-method]: http://martinfowler.com/refactoring/catalog/pullUpMethod.html
-[add-parameter]: http://martinfowler.com/refactoring/catalog/addParameter.html
-[remove-parameter]: http://martinfowler.com/refactoring/catalog/removeParameter.html
 [split-loop]: http://martinfowler.com/refactoring/catalog/splitLoop.html
