@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "When refactoring isn't refactoring"
-date: 2011-11-25 12:00
+date: 2012-01-02 12:00
 comments: true
 categories: refactoring
 ---
@@ -186,6 +186,12 @@ not really refactoring if the code being changed isn't covered by
 tests. This is because tests are the single-best way to nail down the
 expectations of the behavior of a system, with the benefit that they
 are continually verified.
+
+It is also interesting to note that the order in which code is
+modified can alter if you are performing a refactoring or not. While
+there probably isn't a practical difference between the two paths, I
+cannot help but wonder if choosing one or the other will have some
+practical benefit.
 
 [refactoring]: http://martinfowler.com/refactoring/
 [extract-method]: http://martinfowler.com/refactoring/catalog/extractMethod.html
