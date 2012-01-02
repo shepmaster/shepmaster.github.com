@@ -139,43 +139,44 @@ new behavior elsewhere.
 Let's focus on the third example and assume that the above caveat
 about adding methods in dynamically-typed languages doesn't apply.
 
-If we decide that the code would be better if we moved the `greet`
-method from `A` to `Parent`, then that change would be refactoring -
-no external behavior has changed.
+First, we decide that the code would be better if we moved the `greet`
+method from `A` to `Parent`. This change would be refactoring - no
+external behavior has changed.
 
-Instead of changing the code just to make it better, assume that user
+Second, instead of just making the code better, assume that user
 feedback suggests that that the `B` class needs a `greet` method. This
 means that we:
 
 1. Create a failing test for our new functionality.
 2. Move the `greet` method from `A` to `Parent`.
 
-Even though we change the code in the same way in both examples, the
-second time is *not refactoring* - we are changing the behavior of the
-system from failing to passing.
+Even though the code is modified in the same way for both examples,
+the second time is *not refactoring* - we are changing the behavior of
+the system from failing to passing. The only difference is that time
+has passed and the requirements of the system are different.
 
 ## In which exceptions are noted
 
 All three of the original examples have one thing in common: they all
 show refactoring techniques that change the interface of the
 class. Doing so means that collaborating objects must be viewed as the
-external code that relies on a certain behavior.
+external code that relies on certain behavior.
 
 Some refactoring techniques change code only within a single method,
 such as [Split Loop][split-loop]. In most cases, these techniques
-don't have to worry about changing the external behavior. Only when
-there are important side-effects, visible outside of the method, could
-intra-method refactoring cause a problem.
+don't have to worry about changing the external behavior. Intra-method
+refactoring can only cause a problem when the method has side-effects
+that are visible outside of the method.
 
 Another factor that can come into play is the visibility of the
-method(s) being refactored. If they are `private` (or language
-equivalent), you can feel more secure when refactoring. This is
-because limited visibility restricts what code can be considered
+method(s) being refactored. If they are `private` (or whatever
+language equivalent), you can feel more secure when refactoring. This
+is because limited visibility restricts what code can be considered
 external.
 
 ## In which the real world is consulted
 
-It is imperitive to consider the environment in which code exists
+It is imperative to consider the environment in which code exists
 before refactoring it; if the environment is ignored, then you cannot
 possibly understand the desired behavior of the code.
 
@@ -186,24 +187,7 @@ tests. This is because tests are the single-best way to nail down the
 expectations of the behavior of a system, with the benefit that they
 are continually verified.
 
-However, the environment in which the code exists can change with
-every commit.
 
-
-
-
-
-
-
-Is it useful to make a fine distiction between a refactoring
-
-a change that is a refactoring at one point in time and compared to a purposeful change in behavior 
-
-re any real difference between changing code before or after you
-have a test that expects that behavior? Probably not.
-
-However, taking the environment of the code undergoing refactoring is
-essential to the success of the refactoring.
 
 ## In which related areas are suggested
 
