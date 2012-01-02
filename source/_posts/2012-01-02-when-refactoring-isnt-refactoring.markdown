@@ -193,9 +193,13 @@ there probably isn't a practical difference between the two paths, I
 cannot help but wonder if choosing one or the other will have some
 practical benefit.
 
+Discuss this post on [reddit][reddit] or [Hacker News][hn].
+
 [refactoring]: http://martinfowler.com/refactoring/
 [extract-method]: http://martinfowler.com/refactoring/catalog/extractMethod.html
 [inline-method]: http://martinfowler.com/refactoring/catalog/inlineMethod.html
 [pull-up-method]: http://martinfowler.com/refactoring/catalog/pullUpMethod.html
 [split-loop]: http://martinfowler.com/refactoring/catalog/splitLoop.html
 [changing-shit]: http://hamletdarcy.blogspot.com/2009/06/forgotten-refactorings.html
+[reddit]: http://www.reddit.com/r/programming/comments/nzzfu/when_refactoring_isnt_refactoring/
+[hn]: http://news.ycombinator.com/item?id=3416749
