@@ -1,0 +1,464 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>When refactoring isn't refactoring - Jake Goulding</title>
+  <meta name="author" content="Jake Goulding">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+
+  <link rel="canonical" href="http://jakegoulding.com/blog/2012/01/02/when-refactoring-isnt-refactoring/"/>
+  <link href="/favicon.png" rel="shortcut icon" />
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="http://s3.amazonaws.com/ender-js/jeesh.min.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml"/>
+  <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
+<link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body  >
+  <header><hgroup>
+  <h1><a href="/">Jake Goulding</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role=navigation><ul role=subscription data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+<form action="http://google.com/search" method="get">
+  <fieldset role="site-search">
+    <input type="hidden" name="q" value="site:jakegoulding.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+<ul role=main-navigation>
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry">
+  
+  <header>
+    
+      <h1 class="entry-title">When Refactoring Isn't Refactoring</h1>
+    
+    
+      <p class="meta">
+
+
+
+
+
+  
+
+
+
+<time datetime="2012-01-02T12:00:00-05:00" pubdate  data-updated="true" >Jan 2<span>nd</span>, 2012</time></p>
+    
+  </header>
+
+
+<div class="entry-content"><p>What is refactoring? Martin Fowler <a href="http://martinfowler.com/refactoring/">provides</a> a solid
+definition:</p>
+
+<blockquote><p>Refactoring is a disciplined technique for restructuring an
+existing body of code, altering its internal structure without
+changing its external behavior.</p></blockquote>
+
+<p>That description seems fairly reasonable; let&#8217;s look at some potential
+refactoring techniques.</p>
+
+<!-- more -->
+
+
+<h2>Example 1</h2>
+
+<h4>Before</h4>
+
+<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
+<span class='line'>2</span>
+<span class='line'>3</span>
+<span class='line'>4</span>
+<span class='line'>5</span>
+</pre></td><td class='code' width='100%'><pre><code class='ruby'><div class='line'><span class="k">class</span> <span class="nc">A</span>
+</div><div class='line'>  <span class="k">def</span> <span class="nf">foobar</span>
+</div><div class='line'>    <span class="s1">&#39;foo&#39;</span> <span class="o">+</span> <span class="s1">&#39;bar&#39;</span>
+</div><div class='line'>  <span class="k">end</span>
+</div><div class='line'><span class="k">end</span>
+</div></code></pre></td></tr></table></div></figure>
+
+
+<h4>After</h4>
+
+<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
+<span class='line'>2</span>
+<span class='line'>3</span>
+<span class='line'>4</span>
+<span class='line'>5</span>
+<span class='line'>6</span>
+<span class='line'>7</span>
+<span class='line'>8</span>
+<span class='line'>9</span>
+</pre></td><td class='code' width='100%'><pre><code class='ruby'><div class='line'><span class="k">class</span> <span class="nc">A</span>
+</div><div class='line'>  <span class="k">def</span> <span class="nf">foobar</span>
+</div><div class='line'>    <span class="s1">&#39;foo&#39;</span> <span class="o">+</span> <span class="n">bar</span>
+</div><div class='line'>  <span class="k">end</span>
+</div><div class='line'>
+</div><div class='line'>  <span class="k">def</span> <span class="nf">bar</span>
+</div><div class='line'>    <span class="s1">&#39;bar&#39;</span>
+</div><div class='line'>  <span class="k">end</span>
+</div><div class='line'><span class="k">end</span>
+</div></code></pre></td></tr></table></div></figure>
+
+
+<p>This one is pretty clear-cut - it&#8217;s a refactoring technique that any
+programmer would recognize, even if she had never heard of the term
+&#8220;refactoring&#8221;. It goes by the name <a href="http://martinfowler.com/refactoring/catalog/extractMethod.html">Extract Method</a>.</p>
+
+<h2>Example 2</h2>
+
+<h4>Before</h4>
+
+<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
+<span class='line'>2</span>
+<span class='line'>3</span>
+<span class='line'>4</span>
+<span class='line'>5</span>
+<span class='line'>6</span>
+<span class='line'>7</span>
+<span class='line'>8</span>
+<span class='line'>9</span>
+</pre></td><td class='code' width='100%'><pre><code class='ruby'><div class='line'><span class="k">class</span> <span class="nc">A</span>
+</div><div class='line'>  <span class="k">def</span> <span class="nf">alphabet</span>
+</div><div class='line'>    <span class="s1">&#39;alpha&#39;</span> <span class="o">+</span> <span class="n">bet</span>
+</div><div class='line'>  <span class="k">end</span>
+</div><div class='line'>
+</div><div class='line'>  <span class="k">def</span> <span class="nf">bet</span>
+</div><div class='line'>    <span class="s1">&#39;bet&#39;</span>
+</div><div class='line'>  <span class="k">end</span>
+</div><div class='line'><span class="k">end</span>
+</div></code></pre></td></tr></table></div></figure>
+
+
+<h4>After</h4>
+
+<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
+<span class='line'>2</span>
+<span class='line'>3</span>
+<span class='line'>4</span>
+<span class='line'>5</span>
+</pre></td><td class='code' width='100%'><pre><code class='ruby'><div class='line'><span class="k">class</span> <span class="nc">A</span>
+</div><div class='line'>  <span class="k">def</span> <span class="nf">alphabet</span>
+</div><div class='line'>    <span class="s1">&#39;alpha&#39;</span> <span class="o">+</span> <span class="s1">&#39;bet&#39;</span>
+</div><div class='line'>  <span class="k">end</span>
+</div><div class='line'><span class="k">end</span>
+</div></code></pre></td></tr></table></div></figure>
+
+
+<p>This is the inverse of the first example, but is it a refactoring
+technique?  There is a technique called
+<a href="http://martinfowler.com/refactoring/catalog/inlineMethod.html">Inline Method</a>, so it certainly seems plausible.</p>
+
+<h2>Example 3</h2>
+
+<h4>Before</h4>
+
+<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
+<span class='line'>2</span>
+<span class='line'>3</span>
+<span class='line'>4</span>
+<span class='line'>5</span>
+<span class='line'>6</span>
+<span class='line'>7</span>
+<span class='line'>8</span>
+<span class='line'>9</span>
+<span class='line'>10</span>
+<span class='line'>11</span>
+</pre></td><td class='code' width='100%'><pre><code class='ruby'><div class='line'><span class="k">class</span> <span class="nc">Parent</span>
+</div><div class='line'><span class="k">end</span>
+</div><div class='line'>
+</div><div class='line'><span class="k">class</span> <span class="nc">A</span> <span class="o">&lt;</span> <span class="no">Parent</span>
+</div><div class='line'>  <span class="k">def</span> <span class="nf">greet</span>
+</div><div class='line'>    <span class="s1">&#39;hello&#39;</span>
+</div><div class='line'>  <span class="k">end</span>
+</div><div class='line'><span class="k">end</span>
+</div><div class='line'>
+</div><div class='line'><span class="k">class</span> <span class="nc">B</span> <span class="o">&lt;</span> <span class="no">Parent</span>
+</div><div class='line'><span class="k">end</span>
+</div></code></pre></td></tr></table></div></figure>
+
+
+<h4>After</h4>
+
+<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
+<span class='line'>2</span>
+<span class='line'>3</span>
+<span class='line'>4</span>
+<span class='line'>5</span>
+<span class='line'>6</span>
+<span class='line'>7</span>
+<span class='line'>8</span>
+<span class='line'>9</span>
+<span class='line'>10</span>
+<span class='line'>11</span>
+</pre></td><td class='code' width='100%'><pre><code class='ruby'><div class='line'><span class="k">class</span> <span class="nc">Parent</span>
+</div><div class='line'>  <span class="k">def</span> <span class="nf">greet</span>
+</div><div class='line'>    <span class="s1">&#39;hello&#39;</span>
+</div><div class='line'>  <span class="k">end</span>
+</div><div class='line'><span class="k">end</span>
+</div><div class='line'>
+</div><div class='line'><span class="k">class</span> <span class="nc">A</span> <span class="o">&lt;</span> <span class="no">Parent</span>
+</div><div class='line'><span class="k">end</span>
+</div><div class='line'>
+</div><div class='line'><span class="k">class</span> <span class="nc">B</span> <span class="o">&lt;</span> <span class="no">Parent</span>
+</div><div class='line'><span class="k">end</span>
+</div></code></pre></td></tr></table></div></figure>
+
+
+<p>Again, there is a related refactoring technique,
+<a href="http://martinfowler.com/refactoring/catalog/pullUpMethod.html">Pull Up Method</a>. This example differs from the linked
+one, as only one of the subclasses has the method definition to start
+with. This difference makes us less ready to call our changes
+refactoring.</p>
+
+<p>Here&#8217;s the trick: from just the code above, <strong>you can&#8217;t tell if these
+changes constitute refactoring or not</strong>.</p>
+
+<h2>In which details are examined</h2>
+
+<p>The distinction comes from two important words in the definition of
+refactoring: <em>internal</em> and <em>external</em>. These three examples only show
+the code being changed (the internal structure), not how other objects
+interact with this code (the external behavior).</p>
+
+<p>Take a look at the second example - if any object in the entire system
+ever calls the <code>bet</code> method, then removing the method will cause the
+behavior of the system as a whole to change.</p>
+
+<p>The first and third examples are actually the same from this point of
+view - they both add a new method. You might think that adding a
+method is safe, but in truth it depends on the circumstances.</p>
+
+<p>In a statically-typed language, adding a method is safe because no
+other code could have tried to call the method without getting a
+syntax error. In contrast, a dynamically-typed language like Ruby can
+make runtime decisions based on what methods an object
+implements. This means that adding a method might trigger completely
+new behavior elsewhere.</p>
+
+<h2>In which time is considered</h2>
+
+<p>Let&#8217;s focus on the third example and assume that the above caveat
+about adding methods in dynamically-typed languages doesn&#8217;t apply.</p>
+
+<p>First, we decide that the code would be better if we moved the <code>greet</code>
+method from <code>A</code> to <code>Parent</code>. This change would be refactoring - no
+external behavior has changed.</p>
+
+<p>Second, instead of just making the code better, assume that user
+feedback suggests that that the <code>B</code> class needs a <code>greet</code> method. This
+means that we:</p>
+
+<ol>
+<li>Create a failing test for our new functionality.</li>
+<li>Move the <code>greet</code> method from <code>A</code> to <code>Parent</code>.</li>
+</ol>
+
+
+<p>Even though the code is modified in the same way for both examples,
+the second time is <em>not refactoring</em> - we are changing the behavior of
+the system from failing to passing. The only difference is that time
+has passed and the requirements of the system are different.</p>
+
+<h2>In which exceptions are noted</h2>
+
+<p>All three of the original examples have one thing in common: they all
+show refactoring techniques that change the interface of the
+class. Doing so means that collaborating objects must be viewed as the
+external code that relies on certain behavior.</p>
+
+<p>Some refactoring techniques change code only within a single method,
+such as <a href="http://martinfowler.com/refactoring/catalog/splitLoop.html">Split Loop</a>. In most cases, these techniques
+don&#8217;t have to worry about changing the external behavior. Intra-method
+refactoring can only cause a problem when the method has side-effects
+that are visible outside of the method.</p>
+
+<p>Another factor that can come into play is the visibility of the
+method(s) being refactored. If they are <code>private</code> (or whatever
+language equivalent), you can feel more secure when refactoring. This
+is because limited visibility restricts what code can be considered
+external.</p>
+
+<h2>In which the real world is consulted</h2>
+
+<p>It is imperative to consider the environment in which code exists
+before refactoring it; if the environment is ignored, then you cannot
+possibly understand the desired behavior of the code.</p>
+
+<p>A main point from the blog post
+<a href="http://hamletdarcy.blogspot.com/2009/06/forgotten-refactorings.html">Forgotten Refactorings</a> by Hamlet D&#8217;Arcy is that it&#8217;s
+not really refactoring if the code being changed isn&#8217;t covered by
+tests. This is because tests are the single-best way to nail down the
+expectations of the behavior of a system, with the benefit that they
+are continually verified.</p>
+
+<p>It is also interesting to note that the order in which code is
+modified can alter if you are performing a refactoring or not. While
+there probably isn&#8217;t a practical difference between the two paths, I
+cannot help but wonder if choosing one or the other will have some
+practical benefit.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Jake Goulding</span></span>
+
+      
+
+
+
+
+
+  
+
+
+
+<time datetime="2012-01-02T12:00:00-05:00" pubdate  data-updated="true" >Jan 2<span>nd</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/refactoring/'>refactoring</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2012/01/02/when-refactoring-isnt-refactoring/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2012/01/02/when-refactoring-isnt-refactoring/" >Tweet</a>
+  
+  
+</div>
+
+    
+  </footer>
+</article>
+
+</div>
+
+<aside role=sidebar>
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/01/02/when-refactoring-isnt-refactoring/">When refactoring isn't refactoring</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2011/10/10/learned-about-testing-last-year/">What I've learned about testing over the last year</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2011/09/18/quickly-fixing-your-last-git-commit/">Quickly fixing your last Git commit</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2011/09/18/game-of-life-in-clojure/">Game of Life in Clojure</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2011/02/27/how-mock-objects-make-gantt-charts-more-useless/">How Mock Objects Make Gantt Charts (More) Useless</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("jakegoulding", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @jakegoulding</a>
+  
+</section>
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer><p>
+  Copyright &copy; 2012 - Jake Goulding -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-20521797-2']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+  
+
+  
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+</body>
+</html>
