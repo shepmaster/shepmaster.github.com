@@ -187,38 +187,6 @@ tests. This is because tests are the single-best way to nail down the
 expectations of the behavior of a system, with the benefit that they
 are continually verified.
 
-
-
-## In which related areas are suggested
-
-When considering the temporal nature of refactoring, I am reminded of
-how git manages commits.
-
-A git commit hash is not just based on the
-changes to the code, although that's often how people think about
-it. This hash is based on many things, including the changes to the
-code and the tip of the branch that the change is being committed
-to. From the viewpoint of the version control system, this parent
-commit can be treated as a point in time.
-
-Even if you make the same change to the code, the state of the code
-when the change is applied carries great importance:
-
-#### Ordering 1
-1. Add code for option `foo`
-2. Add option `foo` to configuration file
-
-#### Ordering 2
-1. Add code for option `foo`
-2. Add option `foo` to configuration file
-
-Even though the diffs for each change are identical, the state is
-quite different if you look at it between the first and second commit.
-
-Similarly, whether a specific change is a refactoring or not is based
-on both the change and what the external system behavior is at that
-time. Something to mull about for another blog post.
-
 [refactoring]: http://martinfowler.com/refactoring/
 [extract-method]: http://martinfowler.com/refactoring/catalog/extractMethod.html
 [inline-method]: http://martinfowler.com/refactoring/catalog/inlineMethod.html
