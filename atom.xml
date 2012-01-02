@@ -4,7 +4,7 @@
   <title>Jake Goulding</title>
   <link href="http://jakegoulding.com/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2012-01-02T11:36:06-05:00</updated>
+  <updated>2012-01-02T13:19:10-05:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name>Jake Goulding</name>
@@ -266,6 +266,8 @@ modified can alter if you are performing a refactoring or not. While
 there probably isn&amp;#8217;t a practical difference between the two paths, I
 cannot help but wonder if choosing one or the other will have some
 practical benefit.&lt;/p&gt;
+
+&lt;p&gt;Discuss this post on &lt;a href=&quot;http://www.reddit.com/r/programming/comments/nzzfu/when_refactoring_isnt_refactoring/&quot;&gt;reddit&lt;/a&gt; or &lt;a href=&quot;http://news.ycombinator.com/item?id=3416749&quot;&gt;Hacker News&lt;/a&gt;.&lt;/p&gt;
 </content>
   </entry>
   
