@@ -173,12 +173,37 @@ equivalent), you can feel more secure when refactoring. This is
 because limited visibility restricts what code can be considered
 external.
 
-## In which the real-world is consulted
+## In which the real world is consulted
 
-Considering the environment of code undergoing refactoring is
+It is imperitive to consider the environment in which code exists
+before refactoring it; if the environment is ignored, then you cannot
+possibly understand the desired behavior of the code.
+
+A main point from the blog post
+[Forgotten Refactorings][changing-shit] by Hamlet D'Arcy is that it's
+not really refactoring if the code being changed isn't covered by
+tests. This is because tests are the single-best way to nail down the
+expectations of the behavior of a system, with the benefit that they
+are continually verified.
+
+However, the environment in which the code exists can change with
+every commit.
+
+
+
+
+
+
+
+Is it useful to make a fine distiction between a refactoring
+
+a change that is a refactoring at one point in time and compared to a purposeful change in behavior 
+
+re any real difference between changing code before or after you
+have a test that expects that behavior? Probably not.
+
+However, taking the environment of the code undergoing refactoring is
 essential to the success of the refactoring.
-
-Is there really a benefit to thinking of
 
 ## In which related areas are suggested
 
@@ -188,7 +213,7 @@ how git manages commits.
 A git commit hash is not just based on the
 changes to the code, although that's often how people think about
 it. This hash is based on many things, including the changes to the
-code and the tip of the branch that the change is being comitted
+code and the tip of the branch that the change is being committed
 to. From the viewpoint of the version control system, this parent
 commit can be treated as a point in time.
 
@@ -215,3 +240,4 @@ time. Something to mull about for another blog post.
 [inline-method]: http://martinfowler.com/refactoring/catalog/inlineMethod.html
 [pull-up-method]: http://martinfowler.com/refactoring/catalog/pullUpMethod.html
 [split-loop]: http://martinfowler.com/refactoring/catalog/splitLoop.html
+[changing-shit]: http://hamletdarcy.blogspot.com/2009/06/forgotten-refactorings.html
