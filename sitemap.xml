@@ -48,14 +48,18 @@
     </url>
     <url>
         <loc>http://jakegoulding.com/blog/2012/01/02/when-refactoring-isnt-refactoring/</loc>
-        <lastmod>2012-01-02T13:19:10-05:00</lastmod>
+        <lastmod>2012-01-02T14:23:58-05:00</lastmod>
+    </url>
+    <url>
+        <loc>http://jakegoulding.com/blog/2012/01/09/stubbing-builder-pattern-in-mockito/</loc>
+        <lastmod>2012-01-09T20:23:41-05:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/blog/archives/</loc>
-        <lastmod>2012-01-02T13:19:10-05:00</lastmod>
+        <lastmod>2012-01-09T20:23:41-05:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/</loc>
-        <lastmod>2012-01-02T13:19:10-05:00</lastmod>
+        <lastmod>2012-01-09T20:23:41-05:00</lastmod>
     </url>
 </urlset>
