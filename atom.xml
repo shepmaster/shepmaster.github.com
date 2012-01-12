@@ -4,13 +4,126 @@
   <title>Jake Goulding</title>
   <link href="http://jakegoulding.com/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2012-01-09T20:24:26-05:00</updated>
+  <updated>2012-01-12T13:37:20-05:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name>Jake Goulding</name>
     
   </author>
 
+  
+  <entry>
+    <title>Test Double Terminology</title>
+    <link href="http://jakegoulding.com/blog/2012/01/12/test-double-terminology/"/>
+    <updated>2012-01-12T07:37:00-05:00</updated>
+    <id>http://jakegoulding.com/blog/2012/01/12/test-double-terminology</id>
+    <content type="html">&lt;p&gt;While listening to the Code Quality panel discussion at
+&lt;a href=&quot;http://codemash.org/&quot;&gt;CodeMash&lt;/a&gt;, I &lt;a href=&quot;https://twitter.com/#!/JakeGoulding/status/157261614448521216&quot;&gt;tweeted&lt;/a&gt; about &amp;#8220;the state
+of mocking&amp;#8221;:&lt;/p&gt;
+
+&lt;blockquote&gt;&lt;p&gt;The state of &amp;#8220;mocking&amp;#8221; is that the term &amp;#8220;mocking&amp;#8221; is misused by
+everyone. You often mean &amp;#8220;test double&amp;#8221; or &amp;#8220;stub&amp;#8221;.&lt;/p&gt;&lt;/blockquote&gt;
+
+&lt;p&gt;This garnered some retweets and some great replies, so I wanted to
+have the opportunity to respond in a little longer form. I&amp;#8217;ve written
+this post between sessions and in the halls, so give me a little
+leeway and feel free to send me a tweet with corrections, arguments,
+whatever.&lt;/p&gt;
+
+&lt;!&#8211; more &#8211;&gt;
+
+
+&lt;h2&gt;Test frameworks encourage misuse&lt;/h2&gt;
+
+&lt;blockquote&gt;&lt;p&gt;[I]t doesn&amp;#8217;t help that most mocking frameworks are used for stubs&lt;/p&gt;&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://twitter.com/#!/F1nglas/status/157421334220120065&quot;&gt;@F1nglas&lt;/a&gt; mentions that &lt;a href=&quot;http://code.google.com/p/moq/&quot;&gt;moq&lt;/a&gt; does this, and I
+know that &lt;a href=&quot;http://code.google.com/p/mockito/&quot;&gt;Mockito&lt;/a&gt; does as well. &lt;a href=&quot;https://www.relishapp.com/rspec&quot;&gt;RSpec&lt;/a&gt; does better
+in this area. From the &lt;a href=&quot;https://www.relishapp.com/rspec/rspec-mocks&quot;&gt;rspec-mock&lt;/a&gt; documentation:&lt;/p&gt;
+
+&lt;blockquote&gt;&lt;p&gt;Use the &lt;code&gt;double&lt;/code&gt; method to create [a test double.] You can also use
+the &lt;code&gt;mock&lt;/code&gt; and &lt;code&gt;stub&lt;/code&gt; methods to create test doubles, however these
+methods are there for backward compatibility only&lt;/p&gt;&lt;/blockquote&gt;
+
+&lt;p&gt;Remember that most of these tools we use are open source: we can
+submit patches to improve them. In the meantime, we can add local
+alias methods that better express our intent.&lt;/p&gt;
+
+&lt;h2&gt;Saying &amp;#8220;mock&amp;#8221; is just more fluid&lt;/h2&gt;
+
+&lt;blockquote&gt;&lt;p&gt;[P]eople find it easier to say &amp;#8220;I&amp;#8217;ll mock that out&amp;#8221; than &amp;#8220;I&amp;#8217;ll
+test-double that out&amp;#8221;.&lt;/p&gt;&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://twitter.com/#!/jitterted/status/157265770403987456&quot;&gt;@jitterted&lt;/a&gt;&amp;#8217;s point is spot on; it &lt;em&gt;is&lt;/em&gt; easier to say
+&amp;#8220;mock&amp;#8221;. However, I don&amp;#8217;t usually want to use just a test double. I
+always want to do/use something particular: stub, mock, dummy, etc.&lt;/p&gt;
+
+&lt;p&gt;I&amp;#8217;d love it if we as a community could come up with a better verb to
+use to mean the generic &amp;#8220;use a test double&amp;#8221;.&lt;/p&gt;
+
+&lt;h2&gt;Doesn&amp;#8217;t language evolve?&lt;/h2&gt;
+
+&lt;blockquote&gt;&lt;p&gt;[A] term takes on the meaning that &amp;#8220;everyone&amp;#8221; gives it&lt;/p&gt;&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://twitter.com/#!/JuliansThoughts/status/157372211840299009&quot;&gt;@JuliansThoughts&lt;/a&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;&lt;p&gt;The meaning of a word is defined by common understanding&lt;/p&gt;&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://twitter.com/#!/roblally/status/157361888420827137&quot;&gt;@roblally&lt;/a&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;&lt;p&gt;[M]isused by everyone is an evolving definition&lt;/p&gt;&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://twitter.com/#!/boulderDanH/status/157262539372249088&quot;&gt;@boulderDanH&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Let me get this out of the way first: I &lt;strong&gt;love&lt;/strong&gt; the evolution of
+language. Dropping irrelevant words, new words being created, and
+expanding the meaning of existing words are all good things.&lt;/p&gt;
+
+&lt;p&gt;The root issue here is not that language is evolving. The root issue
+is that our understanding of the tools and techniques we are referring
+to by that language hasn&amp;#8217;t gotten to the point where we can substitute
+one for the other and know &lt;strong&gt;conclusively&lt;/strong&gt; what we really mean.&lt;/p&gt;
+
+&lt;p&gt;If I said to you, the programmer: &amp;#8220;Use a list to store the names&amp;#8221;. You
+go off and write whatever you need, then come back for code review and
+I now say: &amp;#8220;Why can&amp;#8217;t I look up a specific name efficiently?&amp;#8221;. You
+would be outraged; why did I tell you to use a list when I really
+meant a hashtable instead? My response? &amp;#8220;Oh, you know that language
+evolves&amp;#8221;.&lt;/p&gt;
+
+&lt;p&gt;If I&amp;#8217;d originally said to use a &amp;#8220;collection&amp;#8221;, a more abstract concept
+than either list or hashtable, that would force you to think about
+what you need to do and how you were going to do it. I&amp;#8217;m not
+conflating a specific idea with a general concept.&lt;/p&gt;
+
+&lt;p&gt;As community, we have heaps of experience with various types of
+collections; we don&amp;#8217;t have that same strong background with test
+doubles yet. When we use &amp;#8220;mock&amp;#8221; when we should use &amp;#8220;dummy&amp;#8221; or &amp;#8220;stub&amp;#8221;
+or &amp;#8220;test double&amp;#8221;, we avoid thinking about what we really need to do
+and why we need to do it.&lt;/p&gt;
+
+&lt;p&gt;By using &amp;#8220;mock&amp;#8221; inappropriately, we confuse two distinct concepts. We
+then complain that &amp;#8220;mocks&amp;#8221; suck and don&amp;#8217;t do what we need them to
+do. Mocks, stubs, fakes and dummies all have a place and a
+purpose. Just as using a list when you should use a hashtable reflects
+poorly on the programmer, so does using a mock when you should use a
+stub.&lt;/p&gt;
+
+&lt;p&gt;Mocks are &lt;strong&gt;not&lt;/strong&gt; stubs. Don&amp;#8217;t believe me. Believe
+&lt;a href=&quot;http://martinfowler.com/articles/mocksArentStubs.html#TheDifferenceBetweenMocksAndStubs&quot;&gt;Martin Fowler&lt;/a&gt;. Believe
+&lt;a href=&quot;http://xunitpatterns.com/&quot;&gt;Gerard Meszaros&lt;/a&gt;. Watch
+&lt;a href=&quot;http://confreaks.net/videos/659-rubyconf2011-why-you-don-t-get-mock-objects&quot;&gt;Why You Don&amp;#8217;t Get Mock Objects&lt;/a&gt; by Gregory
+Moeck. Whatever you do, make sure you understand what a mock object
+truly is before you start conflating terms.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Note:&lt;/em&gt; Don&amp;#8217;t take from this post that I always do or say the right
+thing. I have other posts on this same blog that incorrectly refer to
+test doubles as &amp;#8220;mocks&amp;#8221;. Most of those posts were written before I
+learned the difference myself. I should edit those posts to clarify my
+real intent. The important thing is that as we go forward we should be
+careful and precise about what we mean.&lt;/p&gt;
+</content>
+  </entry>
   
   <entry>
     <title>Stubbing the Builder pattern in Mockito</title>

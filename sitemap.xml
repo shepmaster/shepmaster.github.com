@@ -2,64 +2,68 @@
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
         <loc>http://jakegoulding.com/blog/2011/01/02/why-posterous/</loc>
-        <lastmod>2011-10-08T09:30:42-04:00</lastmod>
+        <lastmod>2012-01-09T22:12:21-05:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/blog/2011/01/09/the-meh-programmer/</loc>
-        <lastmod>2011-10-08T09:30:42-04:00</lastmod>
+        <lastmod>2012-01-09T22:12:21-05:00</lastmod>
     </url>
     <url>
         <loc>
             http://jakegoulding.com/blog/2011/01/27/uninitialized-variable-warnings-and-compiler-optimizations/
         </loc>
-        <lastmod>2011-10-08T09:30:42-04:00</lastmod>
+        <lastmod>2012-01-09T22:12:21-05:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/blog/2011/02/05/the-psychology-of-computer-programming/</loc>
-        <lastmod>2011-10-08T09:30:42-04:00</lastmod>
+        <lastmod>2012-01-09T22:12:21-05:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/blog/2011/02/06/sqlite-64-bit-integers/</loc>
-        <lastmod>2011-10-08T09:30:42-04:00</lastmod>
+        <lastmod>2012-01-09T22:12:21-05:00</lastmod>
     </url>
     <url>
         <loc>
             http://jakegoulding.com/blog/2011/02/26/using-named-routes-in-actionmailer-tests-with-rails-3/
         </loc>
-        <lastmod>2011-10-08T09:30:42-04:00</lastmod>
+        <lastmod>2012-01-09T22:12:21-05:00</lastmod>
     </url>
     <url>
         <loc>
             http://jakegoulding.com/blog/2011/02/27/how-mock-objects-make-gantt-charts-more-useless/
         </loc>
-        <lastmod>2011-10-08T09:30:42-04:00</lastmod>
+        <lastmod>2012-01-09T22:12:21-05:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/blog/2011/09/18/game-of-life-in-clojure/</loc>
-        <lastmod>2011-10-08T09:30:42-04:00</lastmod>
+        <lastmod>2012-01-09T22:12:21-05:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/blog/2011/09/18/quickly-fixing-your-last-git-commit/</loc>
-        <lastmod>2011-10-08T09:30:42-04:00</lastmod>
+        <lastmod>2012-01-09T22:12:21-05:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/blog/2011/10/10/learned-about-testing-last-year/</loc>
-        <lastmod>2011-10-11T09:27:54-04:00</lastmod>
+        <lastmod>2012-01-09T22:12:21-05:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/blog/2012/01/02/when-refactoring-isnt-refactoring/</loc>
-        <lastmod>2012-01-02T14:23:58-05:00</lastmod>
+        <lastmod>2012-01-09T22:12:21-05:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/blog/2012/01/09/stubbing-builder-pattern-in-mockito/</loc>
-        <lastmod>2012-01-09T20:23:41-05:00</lastmod>
+        <lastmod>2012-01-09T22:12:36-05:00</lastmod>
+    </url>
+    <url>
+        <loc>http://jakegoulding.com/blog/2012/01/12/test-double-terminology/</loc>
+        <lastmod>2012-01-12T13:37:20-05:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/blog/archives/</loc>
-        <lastmod>2012-01-09T20:23:41-05:00</lastmod>
+        <lastmod>2012-01-12T13:37:20-05:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/</loc>
-        <lastmod>2012-01-09T20:23:41-05:00</lastmod>
+        <lastmod>2012-01-12T13:37:20-05:00</lastmod>
     </url>
 </urlset>
