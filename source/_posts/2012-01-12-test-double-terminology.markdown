@@ -111,11 +111,14 @@ learned the difference myself. I should edit those posts to clarify my
 real intent. The important thing is that as we go forward we should be
 careful and precise about what we mean.
 
+Discuss on [reddit][reddit] or [Hacker News][hn].
+
 [codemash]: http://codemash.org/
 [dont-get-mocks]: http://confreaks.net/videos/659-rubyconf2011-why-you-don-t-get-mock-objects
 [double-patterns]: http://xunitpatterns.com/Test%20Double.html
 [easier-to-say]: https://twitter.com/#!/jitterted/status/157265770403987456
 [framework-misuse]: https://twitter.com/#!/F1nglas/status/157421334220120065
+[hn]: http://news.ycombinator.com/item?id=3460509
 [impossible-to-be-wrong]: https://twitter.com/#!/roblally/status/157361888420827137
 [meaning-from-everyone]: https://twitter.com/#!/JuliansThoughts/status/157372211840299009
 [misuse-is-definition]: https://twitter.com/#!/boulderDanH/status/157262539372249088
@@ -123,6 +126,7 @@ careful and precise about what we mean.
 [mocks-not-stubs]: http://martinfowler.com/articles/mocksArentStubs.html#TheDifferenceBetweenMocksAndStubs
 [moq]: http://code.google.com/p/moq/
 [original-comment]: https://twitter.com/#!/JakeGoulding/status/157261614448521216
+[reddit]: http://www.reddit.com/r/programming/comments/off9p/test_double_terminology_the_misuse_of_the_term/
 [rspec-mock]: https://www.relishapp.com/rspec/rspec-mocks
 [rspec]: https://www.relishapp.com/rspec
 [xunitpatterns]: http://xunitpatterns.com/
