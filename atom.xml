@@ -4,7 +4,7 @@
   <title>Jake Goulding</title>
   <link href="http://jakegoulding.com/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2012-01-12T13:37:20-05:00</updated>
+  <updated>2012-01-13T09:22:34-05:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name>Jake Goulding</name>
@@ -122,6 +122,8 @@ test doubles as &amp;#8220;mocks&amp;#8221;. Most of those posts were written be
 learned the difference myself. I should edit those posts to clarify my
 real intent. The important thing is that as we go forward we should be
 careful and precise about what we mean.&lt;/p&gt;
+
+&lt;p&gt;Discuss on &lt;a href=&quot;http://www.reddit.com/r/programming/comments/off9p/test_double_terminology_the_misuse_of_the_term/&quot;&gt;reddit&lt;/a&gt; or &lt;a href=&quot;http://news.ycombinator.com/item?id=3460509&quot;&gt;Hacker News&lt;/a&gt;.&lt;/p&gt;
 </content>
   </entry>
   
