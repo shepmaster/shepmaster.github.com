@@ -5,8 +5,10 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Quickly fixing your last Git commit - Jake Goulding</title>
+  <title>Category: metaprogramming - Jake Goulding</title>
   <meta name="author" content="Jake Goulding">
+  
+    <meta name="description" content="Category: metaprogramming"/>
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -16,7 +18,7 @@
 
   
 
-  <link rel="canonical" href="http://jakegoulding.com/blog/2011/09/18/quickly-fixing-your-last-git-commit/"/>
+  <link rel="canonical" href="http://jakegoulding.comblog/categories/metaprogramming/index.html"/>
   <link href="/favicon.png" rel="shortcut icon" />
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <script src="/javascripts/modernizr-2.0.js"></script>
@@ -55,112 +57,35 @@
   <div id="main">
     <div id="content">
       <div>
-<article class="hentry">
+<article>
   
   <header>
-    
-      <h1 class="entry-title">Quickly Fixing Your Last Git Commit</h1>
-    
-    
-      <p class="meta">
-
-
-
-
-
-  
-
-
-
-<time datetime="2011-09-18T13:53:00-04:00" pubdate  data-updated="true" >Sep 18<span>th</span>, 2011</time></p>
+    <h1 class="entry-title">Category: Metaprogramming</h1>
     
   </header>
+  
+  <div id="blog-archives" class="category">
 
 
-<div class="entry-content"><p>Git encourages you to create commits early and frequently, but I often
-find that my last commit isn&#8217;t quite as awesome as I&#8217;d like it to
-be. However, there are three little tricks I use to tweak it a bit.</p>
 
-<!-- more -->
+  
+  <h2>2012</h2>
+
+<article>
+  
+<h1><a href="/blog/2012/03/03/attaching-top-level-methods-to-an-object-in-ruby/">Attaching top-level methods to an object in Ruby</a></h1>
+<time datetime="2012-03-03T10:48:00-05:00" pubdate><span class='month'>Mar</span> <span class='day'>03</span> <span class='year'>2012</span></time>
+
+<footer>
+  <span class="categories">posted in <a class='category' href='/blog/categories/metaprogramming/'>metaprogramming</a>, <a class='category' href='/blog/categories/ruby/'>ruby</a></span>
+</footer>
 
 
-<p>The main use for amending your commit is changing your last commit
-message:</p>
+</article>
 
-<pre><code>$ git commit --amend
-</code></pre>
-
-<p>However, if you add files before you amend your commit, those files
-will be combined with the commit. This is great if you missed a file,
-or if you forgot to save that very last change in your editor.</p>
-
-<pre><code>$ git add README.txt
-$ git commit --amend
-</code></pre>
-
-<p>Amending your commit will bring up your editor to change your commit
-message; what should you do if your previous message was just fine?
-Just reuse the commit message!</p>
-
-<pre><code>$ git add README.txt
-$ git commit --amend -C HEAD
-</code></pre>
-
-<p>This is conceptually the same as the &#8220;fixup&#8221; command when rebasing, so
-you could alias it as <code>git fixup</code>.</p>
-
-<pre><code>$ git add README.txt
-$ git fixup
-</code></pre>
-
-<h4>Update - 8:30 PM EDT</h4>
-
-<p><a href="http://twitter.com/nick_rutherford">Nick Rutherford</a> reminded me to caution everyone that you should
-never amend your commit <em>after</em> you have pushed it or made it public
-in some fashion. This is for the same reason that you should never
-rebase commits that are already public: you are changing history that
-other people may have already grabbed a copy of.</p>
 </div>
 
-
-  <footer>
-    <p class="meta">
-      
   
-
-<span class="byline author vcard">Posted by <span class="fn">Jake Goulding</span></span>
-
-      
-
-
-
-
-
-  
-
-
-
-<time datetime="2011-09-18T13:53:00-04:00" pubdate  data-updated="true" >Sep 18<span>th</span>, 2011</time>
-      
-
-<span class="categories">
-  
-    <a class='category' href='/blog/categories/git/'>git</a>
-  
-</span>
-
-
-    </p>
-    
-      <div class="sharing">
-  
-  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2011/09/18/quickly-fixing-your-last-git-commit/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2011/09/18/quickly-fixing-your-last-git-commit/" >Tweet</a>
-  
-  
-</div>
-
-    
-  </footer>
 </article>
 
 </div>

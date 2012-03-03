@@ -4,13 +4,239 @@
   <title>Jake Goulding</title>
   <link href="http://jakegoulding.com/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2012-01-13T09:22:34-05:00</updated>
+  <updated>2012-03-03T13:41:02-05:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name>Jake Goulding</name>
     
   </author>
 
+  
+  <entry>
+    <title>Attaching top-level methods to an object in Ruby</title>
+    <link href="http://jakegoulding.com/blog/2012/03/03/attaching-top-level-methods-to-an-object-in-ruby/"/>
+    <updated>2012-03-03T10:48:00-05:00</updated>
+    <id>http://jakegoulding.com/blog/2012/03/03/attaching-top-level-methods-to-an-object-in-ruby</id>
+    <content type="html">&lt;p&gt;Sometimes when you are doing rapid development, you need to create a
+new method &lt;em&gt;right now&lt;/em&gt;, but you don&amp;#8217;t put the method in the right
+spot. Maybe you aren&amp;#8217;t sure what object should ultimately have the
+functionality. Maybe you are simply too lazy to open the correct
+file. Whatever the reason, you decide to define the method right there
+at the top-level, pretending you are a procedural programmer.&lt;/p&gt;
+
+&lt;!&#8211; more &#8211;&gt;
+
+
+&lt;p&gt;Time passes, and you finally decide it is time to move that method to
+where it belongs. The problem is that someone (certainly not you&amp;#8230;)
+has been calling that method from &lt;em&gt;everywhere&lt;/em&gt;. Fixing all the calls
+to the method at once will be a huge change; you prefer to make
+smaller, easier to review changes. Or maybe you don&amp;#8217;t have control
+over all code that calls the method, and so you &lt;em&gt;can&amp;#8217;t&lt;/em&gt; change all the
+the calls.&lt;/p&gt;
+
+&lt;p&gt;Here&amp;#8217;s an example of the problem&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;5&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;6&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;7&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;8&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;9&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;10&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;11&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;12&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;ruby&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;add_value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;object&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;param&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;n&quot;&gt;object&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;param&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;MyObject&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;value&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;    &lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;n&quot;&gt;obj&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;MyObject&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;new&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;n&quot;&gt;add_value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;obj&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;You&amp;#8217;d really like &lt;code&gt;MyObject&lt;/code&gt; to have an &lt;code&gt;add_value&lt;/code&gt; method, instead of
+it just floating around at the top-level. However, you don&amp;#8217;t want to
+just copy code around - what if one of the implementations changes?
+Your first instinct might be to do something like this:&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;5&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;ruby&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;MyObject&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;add_value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;param&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;    &lt;span class=&quot;n&quot;&gt;add_value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;param&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;The problem with this is that once you are inside the class
+definition, all calls to &lt;code&gt;add_value&lt;/code&gt; will be handled by the instance,
+not the top-level method.&lt;/p&gt;
+
+&lt;p&gt;You could avoid this by making the top-level method and the instance
+method have unique names. If you like the existing name for both
+methods, you could alias the original name to a more unique one to
+avoid shadowing it:&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;5&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;6&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;7&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;ruby&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;alias&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:i_am_secret_method_add_value&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:add_value&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;MyObject&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;add_value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;param&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;    &lt;span class=&quot;n&quot;&gt;i_am_secret_method_add_value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;param&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Another solution is to qualify access to the top-level method. This
+can be done by maintaining a reference to the object that defines the
+method.&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;5&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;6&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;ruby&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;n&quot;&gt;reference_to_main&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;self&lt;/span&gt;                            &lt;span class=&quot;c1&quot;&gt;# 1&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;no&quot;&gt;MyObject&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;class_eval&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;                              &lt;span class=&quot;c1&quot;&gt;# 2&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;n&quot;&gt;define_method&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:add_value&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;param&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;    &lt;span class=&quot;n&quot;&gt;reference_to_main&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;send&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;:add_value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;param&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;# 3&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;We start by stashing a reference to the object that defines the
+top-level method. This object is named &amp;#8220;main&amp;#8221;.&lt;/li&gt;
+&lt;li&gt;If we reopened our class the traditional way, using &lt;code&gt;class MyObject&lt;/code&gt;,
+the reference to main would fall out of scope. Instead, we use
+&lt;code&gt;class_eval&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;The definition of the &lt;code&gt;add_value&lt;/code&gt; instance method must use &lt;code&gt;send&lt;/code&gt; as
+the top-level method is private.&lt;/li&gt;
+&lt;/ol&gt;
+
+
+&lt;p&gt;If you don&amp;#8217;t want to modify the object directly, you can apply the
+same techniques to a module:&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;5&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;6&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;7&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;8&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;9&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;10&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;11&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;12&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;ruby&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;module&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;MathModule&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;n&quot;&gt;reference_to_main&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;self&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;no&quot;&gt;MathModule&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;module_eval&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;n&quot;&gt;define_method&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:add_value&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;param&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;    &lt;span class=&quot;n&quot;&gt;reference_to_main&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;send&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;:add_value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;param&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;n&quot;&gt;obj&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;MyObject&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;new&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;n&quot;&gt;obj&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;extend&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;MathModule&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Using modules leads to another solution. You can move the top-level
+method into a module, and use the module with both the class and the
+main object.&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;5&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;6&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;7&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;8&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;9&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;10&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;11&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;12&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;13&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;14&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;15&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;ruby&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;module&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;MathModule&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;add_value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;object&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;param&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;    &lt;span class=&quot;n&quot;&gt;object&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;param&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;kp&quot;&gt;extend&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;MathModule&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;MyObject&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;kp&quot;&gt;include&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;MathModule&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;add_value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;param&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;super&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;param&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;The downside to this solution is that the object now has two
+&lt;code&gt;add_value&lt;/code&gt; methods. One of the methods takes any instance of the
+class, which would be confusing to anyone trying to figure out how to
+use the object.&lt;/p&gt;
+
+&lt;p&gt;The easiest and clearest solution to this problem is not to use clever
+metaprogramming, but just flip the way you think about the
+problem. Move the entire method into the object and leave a stub
+method that redirects to the object&amp;#8217;s implementation:&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;5&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;6&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;7&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;8&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;9&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;ruby&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;add_value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;object&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;param&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;n&quot;&gt;object&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;add_value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;param&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;MyObject&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;add_value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;param&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;    &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;param&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+</content>
+  </entry>
   
   <entry>
     <title>Test Double Terminology</title>
