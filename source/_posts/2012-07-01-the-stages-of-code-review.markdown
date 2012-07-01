@@ -11,6 +11,8 @@ a legacy C codebase that I work on. I also help out on a couple of
 newer Java and Ruby projects that have had the benefit of having code
 reviews and testing infrastructure from day one.
 
+<!-- more -->
+
 Starting to use gerrit on our C code has led me to think about how we
 approach code reviews, and I've identified some stages that we have
 gone through. It's loosely sorted by the order in which we adopted
