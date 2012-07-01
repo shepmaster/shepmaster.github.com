@@ -85,117 +85,12 @@ a legacy C codebase that I work on. I also help out on a couple of
 newer Java and Ruby projects that have had the benefit of having code
 reviews and testing infrastructure from day one.</p>
 
-<p>Starting to use gerrit on our C code has led me to think about how we
-approach code reviews, and I&#8217;ve identified some stages that we have
-gone through. It&#8217;s loosely sorted by the order in which we adopted
-each check. While not every commit needs each point, this is a general
-idea of what might be required.</p>
-
-<ol>
-<li><p>Functionality</p>
-
-<p>This was what started us on the code review path - sometimes we
-would commit something that just didn&#8217;t work right. Occasionally,
-the code wouldn&#8217;t even compile! To try and address these problems,
-we would have a coworker give the code a once-over before pushing
-it. We actually started doing this long before gerrit by walking
-over to another desk.</p></li>
-<li><p>Function names</p>
-
-<p>One of our explicit coding conventions is that non-static functions
-must be prefixed with the module name they belong to. This keeps us
-sane and helps prevent name collisions. We also have a few
-conventions for constructors, destructors and other common
-patterns. These are all easy to check for and was something we
-started doing almost immediately.</p></li>
-<li><p>Resource leaks</p>
-
-<p>After a few annoying memory leaks got committed, we started looking
-at the code with a critical eye for all kinds of leaks. Resource
-leaks are easy enough to add and subsequently miss, especially in
-C. Leaks are really just a special type of non-functioning code,
-but one that bites you days/weeks/years later instead of
-immediately.</p>
-
-<p>Sometimes we use a tool such as <a href="http://valgrind.org/">valgrind</a> to test for
-leaks, but in many cases we just inspect the code visually. We
-check to see if resources are handled consistently and pay special
-attention to various error conditions.</p></li>
-<li><p>Efficiency</p>
-
-<p>For better or worse, we almost always worry about how optimized our
-code is. Sometimes this is can be a valuable exercise, but in most
-situations it was probably overkill. There&#8217;s just a warm fuzzy
-feeling when you catch an O(n<sup>2</sup>) algorithm that could be
-O(n log n), even if you spend more time coming up with the faster
-algorithm than will ever be saved in runtime. Since this focus on
-optimization is part of our culture, it has found it&#8217;s way into our
-reviews.</p></li>
-<li><p>Tests</p>
-
-<p>Tests fall lower on this list than I would prefer. Unit testing C
-code is, at best, hard and/or annoying. Add the fact that trying to
-test code that was never designed to be tested is painful, and you
-can easily see why we tend to turn a blind eye when a commit
-doesn&#8217;t add any new tests.</p></li>
-<li><p>Documentation</p>
-
-<p>Code written in C should probably have more documentation than most
-other languages, simply due to all the ways you can shoot yourself
-in the foot. For example, you can&#8217;t tell if any given function will
-take ownership of the pointer you pass it, that information has to
-be documented somewhere. When we prefix our function names with the
-module name, the descriptive part of the name is often shortened to
-prevent extremely long function names. This means the function
-documentation is vital to understand what the function does.</p>
-
-<p>Reviewing documentation often comes down to checking that it makes
-sense and is proper English. It&#8217;s impressive how mangled a sentence
-can get when you refactor the code it is trying to describe.</p></li>
-<li><p>Coding style</p>
-
-<p>Many different aspects of code fall into &#8220;style&#8221;: the contents,
-formatting and spelling of comments; the names of variables, static
-functions, and structures; the size and complexity of functions;
-the contents of structures.</p>
-
-<p>These stylistic issues can be difficult to talk about in a code
-review, since sometimes it comes down to personal preference. The
-best you can do is express your preference and try to sway the
-other developer to your line of thinking. It helps if both people
-realize that the code has to be read and maintained by the entire
-development group.</p></li>
-<li><p>Test style</p>
-
-<p>Test code style is an entirely different kettle of fish from
-production code style. A test needs to focus on how a user would
-want to use the code. It should minimize the clutter required to
-perform the test so as to make the test as readable as possible,
-while still highlighting the interesting part under test.</p>
-
-<p>Similar to code style, the difficulty reviewing tests comes from
-differences in personal preference. This is compounded by the fact
-that we are not as experienced with writing great tests yet.</p></li>
-<li><p>Commit message</p>
-
-<p>Right now, this is my holy grail of code reviews. I once spent 15
-minutes skimming through the git log to determine if we had a
-preferred <em>verb tense</em> in our commit messages (we did). More
-reasonably, this can involve ensuring that commit messages are
-capitalized consistently and that they describe why a change is
-being made, not just what or how.</p></li>
-</ol>
-
-
-<h4>Where we are now</h4>
-
-<p>The C project is currently somewhere around the &#8220;Tests&#8221; or
-&#8220;Documentation&#8221; stages. The Java and Ruby projects expect tests and
-documentation, so they hover around the &#8220;Code style&#8221; and &#8220;Test style&#8221;
-stages; I&#8217;ve only had one or two opportunities to correct someones
-verb tense :-).</p>
 </div>
   
+  
+    <footer>
+      <a rel="full-article" href="/blog/2012/07/01/the-stages-of-code-review/">Continue reading &rarr;</a>
+    </footer>
   
 
 
