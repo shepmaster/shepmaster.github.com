@@ -13,7 +13,7 @@ start with JUnit.
 People often start out testing with simple Boolean assertions, then
 move on substring matching, then maybe on to mocks and stubs. At some
 point, however, most people want to assert that their code throws a
-particular assertion, and that's where our story starts.
+particular exception, and that's where our story starts.
 
 <!-- more -->
 
