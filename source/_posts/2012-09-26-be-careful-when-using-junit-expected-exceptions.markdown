@@ -117,6 +117,31 @@ wouldn't be caught by the test. If you can change your code so it
 cannot throw the exception multiple ways, or if it throws different
 exceptions, then that would also allow you to sidestep the problem.
 
+**Update 2012-09-27**
+
+David Bradley points out that if you configure the JUnit rule right
+before the expected exception, you can reduce the possibility of
+error. Unfortunately, exceptions thrown *after* the desired line will
+still cause the test to pass incorrectly. This may not be a problem in
+practice, as you are unlikely to continue the test after an exception
+should be thrown, and most Java tests do not have a teardown phase.
+
+```java
+@Rule
+public ExpectedException thrown = ExpectedException.none();
+
+@Test
+public void test_for_npe_with_rule_at_last_moment() {
+    CoolObject obj = new CoolObject(null);
+    obj.doSomeSetupWork(42);
+
+    thrown.expect(NullPointerException.class);
+    obj.calculateTheAnswer();
+
+    // Any exceptions here will still cause the test to pass incorrectly
+}
+```
+
 [lasse]: http://radio.javaranch.com/lasse/2007/05/17/1179405760728.html
 [test-doc]: http://kentbeck.github.com/junit/javadoc/latest/org/junit/Test.html
 [expected-doc]: http://kentbeck.github.com/junit/javadoc/latest/org/junit/rules/ExpectedException.html
