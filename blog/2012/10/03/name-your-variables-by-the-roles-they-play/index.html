@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>The "meh" programmer - Jake Goulding</title>
+  <title>Name your variables by the roles they play - Jake Goulding</title>
   <meta name="author" content="Jake Goulding">
   
 
@@ -16,7 +16,7 @@
 
   
 
-  <link rel="canonical" href="http://jakegoulding.com/blog/2011/01/09/the-meh-programmer/"/>
+  <link rel="canonical" href="http://jakegoulding.com/blog/2012/10/03/name-your-variables-by-the-roles-they-play/"/>
   <link href="/favicon.png" rel="shortcut icon" />
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <script src="/javascripts/modernizr-2.0.js"></script>
@@ -59,7 +59,7 @@
   
   <header>
     
-      <h1 class="entry-title">The "Meh" Programmer</h1>
+      <h1 class="entry-title">Name Your Variables by the Roles They Play</h1>
     
     
       <p class="meta">
@@ -72,46 +72,64 @@
 
 
 
-<time datetime="2011-01-09T12:00:00-05:00" pubdate  data-updated="true" >Jan 9<span>th</span>, 2011</time></p>
+<time datetime="2012-10-03T19:49:00-04:00" pubdate  data-updated="true" >Oct 3<span>rd</span>, 2012</time></p>
     
   </header>
 
 
-<div class="entry-content"><p>Do you know a &#8220;meh&#8221; programmer? As an example:</p>
+<div class="entry-content"><p>Have you ever seen a variable with a terrible name? This is of course
+a trick question; everyone has. I&#8217;d like to look at a particular
+variable-naming annoyance: naming the variable based on the class
+name.</p>
 
-<blockquote><p>Alice: This variable name isn&#8217;t very good&#8230;<br/>
-Bob: Meh, it&#8217;s just a variable name, it&#8217;s good enough.</p></blockquote>
-
-<p>Where does this lack of caring come from? If you replace <em>variable name</em> with something else, it sounds ridiculous:</p>
-
-<blockquote><p>Alice: This algorithm isn&#8217;t very good&#8230;<br/>
-Bob: Meh, it&#8217;s just an algorithm, it&#8217;s good enough.</p></blockquote>
-
-<!--more-->
+<!-- more -->
 
 
-<p>To me, this kind of behavior is antithetical to the ideas of <a href="http://manifesto.softwarecraftsmanship.org/">Software
-Craftsmanship</a>. An incorrect algorithm makes the program wrong, and
-most programmers detest that idea. An incorrect variable name only
-affects how well-crafted the program is, but we are usually
-all-too-willing to let that slide. There shouldn&#8217;t be such a huge gulf
-between these two ideas.</p>
+<p>In a statically-typed language without type inference, like Java, you
+have likely seen something like this:</p>
 
-<p>I recently caught myself saying the following during a code review:</p>
+<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
+</pre></td><td class='code' width='100%'><pre><code class='java'><div class='line'><span class="n">FooBarZed</span> <span class="n">fooBarZed</span> <span class="o">=</span> <span class="k">new</span> <span class="n">FooBarZed</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+</div></code></pre></td></tr></table></div></figure>
 
-<blockquote><p>I would have named this variable <em>descriptive_name</em> instead of
-<em>foo</em>. Don&#8217;t worry though, it doesn&#8217;t really matter since the code
-works.</p></blockquote>
 
-<p>Fortunately, I know exactly why I said this - I was too afraid to be
-truly confrontational. Not everyone buys-in to Software Craftsmanship in
-to the extent that I strive to. Even if they did, craftsmanship is a
-softer science, providing many ways to be right.</p>
+<p>In a dynamically typed language, like Ruby, it would look more like this:</p>
 
-<p>I don&#8217;t know which I think is worse, <strong>not caring</strong> about the
-craftsmanship of the code you write, or being <strong>too scared</strong> to
-evangelize good practices to others. I bet master woodworkers don&#8217;t have
-to deal with these kinds of problems.</p>
+<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
+</pre></td><td class='code' width='100%'><pre><code class='ruby'><div class='line'><span class="n">foo_bar_zed</span> <span class="o">=</span> <span class="no">FooBarZed</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="kp">true</span><span class="p">)</span>
+</div></code></pre></td></tr></table></div></figure>
+
+
+<p>This style of code may make sense to you. Maybe your class names are
+self-describing, and so duplicating the class name as the variable
+name is just &#8220;reusing a good thing&#8221;.</p>
+
+<p>The problem with naming variables in this style is that the class
+name, at <em>best</em>, describes what is special about an object or how the
+object works. When you are using the object, you want to know why you
+are using it - you want to know the <em>role</em> of the object:</p>
+
+<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
+<span class='line'>2</span>
+<span class='line'>3</span>
+<span class='line'>4</span>
+</pre></td><td class='code' width='100%'><pre><code class='ruby'><div class='line'><span class="c1"># this variable name says nothing new to the reader of the code</span>
+</div><div class='line'><span class="n">url_fetcher</span> <span class="o">=</span> <span class="no">UrlFetcher</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;http://example.com/&#39;</span><span class="p">)</span>
+</div><div class='line'><span class="c1"># this variable name explains why we want to do something</span>
+</div><div class='line'><span class="n">conversion_rate_fetcher</span> <span class="o">=</span> <span class="no">UrlFetcher</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;http://example.com/&#39;</span><span class="p">)</span>
+</div></code></pre></td></tr></table></div></figure>
+
+
+<p>As a pragmatic argument, think how often you rename a class to better
+describe it. Now think how often you&#8217;ve changed a class name AND all
+the variables to match the new class.</p>
+
+<p>The role that an object plays changes at vastly different rate than
+the name of the class. It&#8217;s unlikely that the role will change
+dramatically, as that new role would probably be better represented by
+a brand new object. Similarly, code that uses that object is unlikely
+to want an object that fills a different role without a rewrite of how
+the calling code works.</p>
 </div>
 
 
@@ -132,21 +150,15 @@ to deal with these kinds of problems.</p>
 
 
 
-<time datetime="2011-01-09T12:00:00-05:00" pubdate  data-updated="true" >Jan 9<span>th</span>, 2011</time>
+<time datetime="2012-10-03T19:49:00-04:00" pubdate  data-updated="true" >Oct 3<span>rd</span>, 2012</time>
       
-
-<span class="categories">
-  
-    <a class='category' href='/blog/categories/craftsmanship/'>craftsmanship</a>
-  
-</span>
 
 
     </p>
     
       <div class="sharing">
   
-  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2011/01/09/the-meh-programmer/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2011/01/09/the-meh-programmer/" >Tweet</a>
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2012/10/03/name-your-variables-by-the-roles-they-play/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2012/10/03/name-your-variables-by-the-roles-they-play/" >Tweet</a>
   
   
 </div>

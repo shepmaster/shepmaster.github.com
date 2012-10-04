@@ -87,11 +87,17 @@
         <lastmod>2012-10-01T18:06:11-04:00</lastmod>
     </url>
     <url>
+        <loc>
+            http://jakegoulding.com/blog/2012/10/03/name-your-variables-by-the-roles-they-play/
+        </loc>
+        <lastmod>2012-10-03T20:39:42-04:00</lastmod>
+    </url>
+    <url>
         <loc>http://jakegoulding.com/blog/archives/</loc>
-        <lastmod>2012-10-01T18:06:11-04:00</lastmod>
+        <lastmod>2012-10-03T20:39:42-04:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/</loc>
-        <lastmod>2012-10-01T18:06:11-04:00</lastmod>
+        <lastmod>2012-10-03T20:39:42-04:00</lastmod>
     </url>
 </urlset>

@@ -4,13 +4,74 @@
   <title>Jake Goulding</title>
   <link href="http://jakegoulding.com/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2012-10-01T18:06:12-04:00</updated>
+  <updated>2012-10-03T20:39:42-04:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name>Jake Goulding</name>
     
   </author>
 
+  
+  <entry>
+    <title>Name your variables by the roles they play</title>
+    <link href="http://jakegoulding.com/blog/2012/10/03/name-your-variables-by-the-roles-they-play/"/>
+    <updated>2012-10-03T19:49:00-04:00</updated>
+    <id>http://jakegoulding.com/blog/2012/10/03/name-your-variables-by-the-roles-they-play</id>
+    <content type="html">&lt;p&gt;Have you ever seen a variable with a terrible name? This is of course
+a trick question; everyone has. I&amp;#8217;d like to look at a particular
+variable-naming annoyance: naming the variable based on the class
+name.&lt;/p&gt;
+
+&lt;!&#8211; more &#8211;&gt;
+
+
+&lt;p&gt;In a statically-typed language without type inference, like Java, you
+have likely seen something like this:&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;java&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;n&quot;&gt;FooBarZed&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fooBarZed&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;FooBarZed&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;In a dynamically typed language, like Ruby, it would look more like this:&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;ruby&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;n&quot;&gt;foo_bar_zed&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;FooBarZed&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;new&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kp&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;This style of code may make sense to you. Maybe your class names are
+self-describing, and so duplicating the class name as the variable
+name is just &amp;#8220;reusing a good thing&amp;#8221;.&lt;/p&gt;
+
+&lt;p&gt;The problem with naming variables in this style is that the class
+name, at &lt;em&gt;best&lt;/em&gt;, describes what is special about an object or how the
+object works. When you are using the object, you want to know why you
+are using it - you want to know the &lt;em&gt;role&lt;/em&gt; of the object:&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;4&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;ruby&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;c1&quot;&gt;# this variable name says nothing new to the reader of the code&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;n&quot;&gt;url_fetcher&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;UrlFetcher&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;new&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;http://example.com/&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;c1&quot;&gt;# this variable name explains why we want to do something&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;n&quot;&gt;conversion_rate_fetcher&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;UrlFetcher&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;new&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;http://example.com/&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;As a pragmatic argument, think how often you rename a class to better
+describe it. Now think how often you&amp;#8217;ve changed a class name AND all
+the variables to match the new class.&lt;/p&gt;
+
+&lt;p&gt;The role that an object plays changes at vastly different rate than
+the name of the class. It&amp;#8217;s unlikely that the role will change
+dramatically, as that new role would probably be better represented by
+a brand new object. Similarly, code that uses that object is unlikely
+to want an object that fills a different role without a rewrite of how
+the calling code works.&lt;/p&gt;
+</content>
+  </entry>
   
   <entry>
     <title>Using Ruby blocks to ensure resources are cleaned up</title>
