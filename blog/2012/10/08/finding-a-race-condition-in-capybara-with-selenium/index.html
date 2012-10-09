@@ -1,0 +1,374 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Finding a race condition in Capybara with Selenium - Jake Goulding</title>
+  <meta name="author" content="Jake Goulding">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+
+  <link rel="canonical" href="http://jakegoulding.com/blog/2012/10/08/finding-a-race-condition-in-capybara-with-selenium/"/>
+  <link href="/favicon.png" rel="shortcut icon" />
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="http://s3.amazonaws.com/ender-js/jeesh.min.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml"/>
+  <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
+<link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body  >
+  <header><hgroup>
+  <h1><a href="/">Jake Goulding</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role=navigation><ul role=subscription data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+<form action="http://google.com/search" method="get">
+  <fieldset role="site-search">
+    <input type="hidden" name="q" value="site:jakegoulding.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+<ul role=main-navigation>
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry">
+  
+  <header>
+    
+      <h1 class="entry-title">Finding a Race Condition in Capybara With Selenium</h1>
+    
+    
+      <p class="meta">
+
+
+
+
+
+  
+
+
+
+<time datetime="2012-10-08T20:40:00-04:00" pubdate  data-updated="true" >Oct 8<span>th</span>, 2012</time></p>
+    
+  </header>
+
+
+<div class="entry-content"><p>At work, we&#8217;ve been using <a href="https://github.com/jnicklas/capybara">Capybara</a> and
+<a href="https://code.google.com/p/selenium/">Selenium</a> to test our newest web application. Many of us
+have used this combination before for our own projects, but it&#8217;s new
+territory for a work project.</p>
+
+<p>Every so often, we would get this error from a specific test:</p>
+
+<figure role=code><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
+<span class='line'>2</span>
+</pre></td><td class='code' width='100%'><pre><code class=''><div class='line'>Selenium::WebDriver::Error::StaleElementReferenceError:
+</div><div class='line'>  Element not found in the cache - perhaps the page has changed since it was looked up</div></code></pre></td></tr></table></div></figure>
+
+
+<p>The error was intermittent, so we fell into the seductive but
+dangerous trap of simply rerunning our tests whenever it
+failed. Recently, I had a bit of time and decided to dig into it and
+fix it once and for all.</p>
+
+<!-- more -->
+
+
+<p>My first task was to see if I could reproduce the error locally. We
+often saw the error when running the tests on our <a href="http://jenkins-ci.org/">Jenkins</a>
+continuous integration server, so there was the possibility that the
+problem was environmental. However, we also knew that the failure was
+intermittent, so we couldn&#8217;t be sure it was environmental even if the
+test passed locally a few times.</p>
+
+<p>I rigged up a small shell script to simply run the test over and over
+again while I wandered away from my computer. The script looked
+something like:</p>
+
+<figure role=code><figcaption><span> (test-script-runner.sh)</span> <a href='/downloads/code/test-script-runner.sh'>download</a></figcaption>
+ <div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
+<span class='line'>2</span>
+<span class='line'>3</span>
+<span class='line'>4</span>
+<span class='line'>5</span>
+<span class='line'>6</span>
+<span class='line'>7</span>
+<span class='line'>8</span>
+<span class='line'>9</span>
+<span class='line'>10</span>
+<span class='line'>11</span>
+<span class='line'>12</span>
+</pre></td><td class='code' width='100%'><pre><code class='sh'><div class='line'><span class="c">#!/bin/bash</span>
+</div><div class='line'><span class="nb">set</span> -eu
+</div><div class='line'>
+</div><div class='line'><span class="nv">failures</span><span class="o">=</span>0
+</div><div class='line'>
+</div><div class='line'><span class="k">for </span>run in <span class="sb">`</span>seq 20<span class="sb">`</span>; <span class="k">do</span>
+</div><div class='line'><span class="k">    if</span> ! rspec -e <span class="s1">&#39;the bad test&#39;</span>; <span class="k">then</span>
+</div><div class='line'><span class="k">        </span><span class="nv">failures</span><span class="o">=</span><span class="k">$((</span><span class="nv">$failures</span> <span class="o">+</span> <span class="m">1</span><span class="k">))</span>
+</div><div class='line'>    <span class="k">fi</span>
+</div><div class='line'>
+</div><div class='line'><span class="k">    </span><span class="nb">echo</span> <span class="s2">&quot;Test run $run complete, $failures failures&quot;</span>
+</div><div class='line'><span class="k">done</span>
+</div></code></pre></td></tr></table></div></figure>
+
+
+<p>I&#8217;m sure there&#8217;s a proper statistical manner to determine how many
+times the test would have to be run without failing to be reasonably
+certain that the test won&#8217;t fail, but I didn&#8217;t have to worry about
+that - the test failed somewhere within the first ten or so runs.</p>
+
+<p>Now that I knew the test could fail on my local setup, it was time to
+dig into what the test was doing. The test was fairly concise and
+readable (which I highly appreciated) and looked something like:</p>
+
+<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
+<span class='line'>2</span>
+<span class='line'>3</span>
+<span class='line'>4</span>
+<span class='line'>5</span>
+</pre></td><td class='code' width='100%'><pre><code class='ruby'><div class='line'><span class="n">it</span> <span class="s1">&#39;deletes the element&#39;</span><span class="p">,</span> <span class="ss">:js</span> <span class="o">=&gt;</span> <span class="kp">true</span>  <span class="k">do</span>
+</div><div class='line'>  <span class="n">visit</span> <span class="n">path_to_the_page</span>
+</div><div class='line'>  <span class="n">click_on</span> <span class="s1">&#39;Remove item&#39;</span>
+</div><div class='line'>  <span class="n">page</span><span class="o">.</span><span class="n">should_not</span> <span class="n">have_css</span><span class="p">(</span><span class="s2">&quot;.item&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="s2">&quot;Old text&quot;</span><span class="p">)</span>
+</div><div class='line'><span class="k">end</span>
+</div></code></pre></td></tr></table></div></figure>
+
+
+<p>The exception was coming from line #4 - when the test made the first
+assertion about the elements. Unfortunately, the stacktrace isn&#8217;t very
+useful, as it mostly contains references to the JavaScript running
+inside of Firefox. The exception text indicates that the test has a
+reference to an element, but it isn&#8217;t available in the cache
+anymore. Considering that the test just deleted the element, this is
+certainly suspicious.</p>
+
+<p>At this point, I cloned the capybara repository and started poking
+around. A <code>git grep</code> quickly found where <code>has_no_css?</code> was
+<a href="https://github.com/jnicklas/capybara/blob/1.1_stable/lib/capybara/node/matchers.rb#L171">defined</a>. Following the thread of code led to
+<code>has_no_selector?</code>, which calls the <code>all</code> <a href="https://github.com/jnicklas/capybara/blob/1.1_stable/lib/capybara/node/finders.rb#L109">method</a>. This method
+had a pretty clear split between the &#8220;finding&#8221; part of the code and
+the &#8220;filtering&#8221; part. There was no magic I used here to see this, just
+previous experience debugging race conditions.</p>
+
+<p>I opened up the installed gem and inserted a sleep directly into the
+code between the &#8220;finding&#8221; and &#8220;filtering&#8221; sections. It&#8217;s ugly doing
+this, but it&#8217;s good to try to not change too many things at once when
+debugging. I played with the sleep value a bit and eventually found a
+value that reliably reproduced the failure. Success!</p>
+
+<p>Well, maybe not <em>complete</em> success, but at least a step in the right
+direction. Even though I could reproduce the problem, I had only
+reproduced it in our production application, and I had modified my
+installed gem directly. It was time to make a nice test case.</p>
+
+<p>I created a new Rails app and added the requisite RSpec gems. Since we
+only need a simple HTML page with a bit of JavaScript to remove the
+element, I modified the index.html that ships with Rails to have the
+JavaScript inline and created an element and link to wire the action
+to.</p>
+
+<p>Since I knew that I would want to make changes to Capybara, I used the
+<code>:path</code> parameter in the Gemfile to point to my local checkout of
+Capybara. This is an awesome feature of <a href="http://gembundler.com/">Bundler</a> that you might not
+know about. It also means I&#8217;m not messing with my generally-available
+copy of Capybara, which is good for my sanity.</p>
+
+<p>I then created a stripped-down version of the test, the same as the
+example above. After getting everything hooked up, I ran the test but
+it didn&#8217;t fail. This was bad news - I had done a few big steps between
+the production app and the smaller test case - which one of them could
+have changed the behavior?</p>
+
+<p>This is where my knowledge of our production system came in useful. In
+that application, we aren&#8217;t just removing something from the page, we
+are persisting that deletion to disk. Doing that can add some time
+before the JavaScript fires to remove the item. I changed the test
+JavaScript to have a delay less than the delay in Capybara and ran the
+test again. It failed, just like we wanted it to. To be sure, I ran
+the test case a bunch of times to make sure it always failed and for
+the expected reason. Success!</p>
+
+<p>Well, almost. Even though I had a test case, I still needed to show
+that code to someone who could do something about it. Checking back at
+the <a href="https://github.com/jnicklas/capybara">Capybara website</a>, I looked for how to submit a
+ticket. Right at the top is a nice, clear comment:</p>
+
+<blockquote><p>Need help? Ask on the mailing list (please do not open an issue on GitHub)</p></blockquote>
+
+<p>So, I pushed my changes to Capybara to <a href="https://github.com/shepmaster/capybara">my fork</a> and
+updated my test app to use a remote git version of the gem (another
+cool Bundler feature). I then pushed <a href="https://github.com/shepmaster/capybara-race">my test case</a> to
+GitHub as well. I took a bit of time to create a short README so that
+anyone stumbling on the test app would have a clue as to what it was.</p>
+
+<p>After that, it was just a small matter to write up a clear email to
+the Capybara list. I still find emailing new lists scary. Who knows
+how the list will respond? This time I got a <a href="https://groups.google.com/forum/?fromgroups=#!topic/ruby-capybara/O3Ib6INOP58">nice surprise</a>:</p>
+
+<blockquote><p>That&#8217;s a very nice bug report, Jake.</p>
+
+<p>It appears to be a bug indeed. I&#8217;ve been able to reproduce it on master as well.</p></blockquote>
+
+<p>A GitHub issue <a href="https://github.com/jnicklas/capybara/issues/843">has been opened</a>, and the bug is well on the
+way to being fixed. Yay for Open Source!</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Jake Goulding</span></span>
+
+      
+
+
+
+
+
+  
+
+
+
+<time datetime="2012-10-08T20:40:00-04:00" pubdate  data-updated="true" >Oct 8<span>th</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/debugging/'>debugging</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2012/10/08/finding-a-race-condition-in-capybara-with-selenium/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2012/10/08/finding-a-race-condition-in-capybara-with-selenium/" >Tweet</a>
+  
+  
+</div>
+
+    
+  </footer>
+</article>
+
+</div>
+
+<aside role=sidebar>
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/10/08/finding-a-race-condition-in-capybara-with-selenium/">Finding a race condition in Capybara with Selenium</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/10/03/name-your-variables-by-the-roles-they-play/">Name your variables by the roles they play</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/10/01/using-ruby-blocks-to-ensure-resources-are-cleaned-up/">Using Ruby blocks to ensure resources are cleaned up</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/09/26/be-careful-when-using-junit-expected-exceptions/">Be careful when using JUnit's expected exceptions</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/09/24/a-refactoring-example-if-else-on-strings/">A refactoring example: lots of if-else statements on strings</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("jakegoulding", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @jakegoulding</a>
+  
+</section>
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer><p>
+  Copyright &copy; 2012 - Jake Goulding -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-20521797-2']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+  
+
+  
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+</body>
+</html>

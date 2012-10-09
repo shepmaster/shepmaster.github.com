@@ -4,13 +4,180 @@
   <title>Jake Goulding</title>
   <link href="http://jakegoulding.com/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2012-10-03T20:39:42-04:00</updated>
+  <updated>2012-10-08T22:59:34-04:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name>Jake Goulding</name>
     
   </author>
 
+  
+  <entry>
+    <title>Finding a race condition in Capybara with Selenium</title>
+    <link href="http://jakegoulding.com/blog/2012/10/08/finding-a-race-condition-in-capybara-with-selenium/"/>
+    <updated>2012-10-08T20:40:00-04:00</updated>
+    <id>http://jakegoulding.com/blog/2012/10/08/finding-a-race-condition-in-capybara-with-selenium</id>
+    <content type="html">&lt;p&gt;At work, we&amp;#8217;ve been using &lt;a href=&quot;https://github.com/jnicklas/capybara&quot;&gt;Capybara&lt;/a&gt; and
+&lt;a href=&quot;https://code.google.com/p/selenium/&quot;&gt;Selenium&lt;/a&gt; to test our newest web application. Many of us
+have used this combination before for our own projects, but it&amp;#8217;s new
+territory for a work project.&lt;/p&gt;
+
+&lt;p&gt;Every so often, we would get this error from a specific test:&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8221;&gt;&lt;div class=&#8217;line&#8217;&gt;Selenium::WebDriver::Error::StaleElementReferenceError:
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  Element not found in the cache - perhaps the page has changed since it was looked up&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;The error was intermittent, so we fell into the seductive but
+dangerous trap of simply rerunning our tests whenever it
+failed. Recently, I had a bit of time and decided to dig into it and
+fix it once and for all.&lt;/p&gt;
+
+&lt;!&#8211; more &#8211;&gt;
+
+
+&lt;p&gt;My first task was to see if I could reproduce the error locally. We
+often saw the error when running the tests on our &lt;a href=&quot;http://jenkins-ci.org/&quot;&gt;Jenkins&lt;/a&gt;
+continuous integration server, so there was the possibility that the
+problem was environmental. However, we also knew that the failure was
+intermittent, so we couldn&amp;#8217;t be sure it was environmental even if the
+test passed locally a few times.&lt;/p&gt;
+
+&lt;p&gt;I rigged up a small shell script to simply run the test over and over
+again while I wandered away from my computer. The script looked
+something like:&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt; (test-script-runner.sh)&lt;/span&gt; &lt;a href=&#8217;http://jakegoulding.com/downloads/code/test-script-runner.sh&#8217;&gt;download&lt;/a&gt;&lt;/figcaption&gt;
+ &lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;5&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;6&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;7&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;8&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;9&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;10&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;11&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;12&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;sh&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;#!/bin/bash&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;nb&quot;&gt;set&lt;/span&gt; -eu
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;nv&quot;&gt;failures&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;0
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;for &lt;/span&gt;run in &lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;seq 20&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    if&lt;/span&gt; ! rspec -e &lt;span class=&quot;s1&quot;&gt;&amp;#39;the bad test&amp;#39;&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;failures&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$((&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$failures&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;))&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;Test run $run complete, $failures failures&amp;quot;&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;done&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;I&amp;#8217;m sure there&amp;#8217;s a proper statistical manner to determine how many
+times the test would have to be run without failing to be reasonably
+certain that the test won&amp;#8217;t fail, but I didn&amp;#8217;t have to worry about
+that - the test failed somewhere within the first ten or so runs.&lt;/p&gt;
+
+&lt;p&gt;Now that I knew the test could fail on my local setup, it was time to
+dig into what the test was doing. The test was fairly concise and
+readable (which I highly appreciated) and looked something like:&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;5&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;ruby&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;n&quot;&gt;it&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;deletes the element&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:js&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;kp&quot;&gt;true&lt;/span&gt;  &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;n&quot;&gt;visit&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;path_to_the_page&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;n&quot;&gt;click_on&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;Remove item&amp;#39;&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;n&quot;&gt;page&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;should_not&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;have_css&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;.item&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;text&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;Old text&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;The exception was coming from line #4 - when the test made the first
+assertion about the elements. Unfortunately, the stacktrace isn&amp;#8217;t very
+useful, as it mostly contains references to the JavaScript running
+inside of Firefox. The exception text indicates that the test has a
+reference to an element, but it isn&amp;#8217;t available in the cache
+anymore. Considering that the test just deleted the element, this is
+certainly suspicious.&lt;/p&gt;
+
+&lt;p&gt;At this point, I cloned the capybara repository and started poking
+around. A &lt;code&gt;git grep&lt;/code&gt; quickly found where &lt;code&gt;has_no_css?&lt;/code&gt; was
+&lt;a href=&quot;https://github.com/jnicklas/capybara/blob/1.1_stable/lib/capybara/node/matchers.rb#L171&quot;&gt;defined&lt;/a&gt;. Following the thread of code led to
+&lt;code&gt;has_no_selector?&lt;/code&gt;, which calls the &lt;code&gt;all&lt;/code&gt; &lt;a href=&quot;https://github.com/jnicklas/capybara/blob/1.1_stable/lib/capybara/node/finders.rb#L109&quot;&gt;method&lt;/a&gt;. This method
+had a pretty clear split between the &amp;#8220;finding&amp;#8221; part of the code and
+the &amp;#8220;filtering&amp;#8221; part. There was no magic I used here to see this, just
+previous experience debugging race conditions.&lt;/p&gt;
+
+&lt;p&gt;I opened up the installed gem and inserted a sleep directly into the
+code between the &amp;#8220;finding&amp;#8221; and &amp;#8220;filtering&amp;#8221; sections. It&amp;#8217;s ugly doing
+this, but it&amp;#8217;s good to try to not change too many things at once when
+debugging. I played with the sleep value a bit and eventually found a
+value that reliably reproduced the failure. Success!&lt;/p&gt;
+
+&lt;p&gt;Well, maybe not &lt;em&gt;complete&lt;/em&gt; success, but at least a step in the right
+direction. Even though I could reproduce the problem, I had only
+reproduced it in our production application, and I had modified my
+installed gem directly. It was time to make a nice test case.&lt;/p&gt;
+
+&lt;p&gt;I created a new Rails app and added the requisite RSpec gems. Since we
+only need a simple HTML page with a bit of JavaScript to remove the
+element, I modified the index.html that ships with Rails to have the
+JavaScript inline and created an element and link to wire the action
+to.&lt;/p&gt;
+
+&lt;p&gt;Since I knew that I would want to make changes to Capybara, I used the
+&lt;code&gt;:path&lt;/code&gt; parameter in the Gemfile to point to my local checkout of
+Capybara. This is an awesome feature of &lt;a href=&quot;http://gembundler.com/&quot;&gt;Bundler&lt;/a&gt; that you might not
+know about. It also means I&amp;#8217;m not messing with my generally-available
+copy of Capybara, which is good for my sanity.&lt;/p&gt;
+
+&lt;p&gt;I then created a stripped-down version of the test, the same as the
+example above. After getting everything hooked up, I ran the test but
+it didn&amp;#8217;t fail. This was bad news - I had done a few big steps between
+the production app and the smaller test case - which one of them could
+have changed the behavior?&lt;/p&gt;
+
+&lt;p&gt;This is where my knowledge of our production system came in useful. In
+that application, we aren&amp;#8217;t just removing something from the page, we
+are persisting that deletion to disk. Doing that can add some time
+before the JavaScript fires to remove the item. I changed the test
+JavaScript to have a delay less than the delay in Capybara and ran the
+test again. It failed, just like we wanted it to. To be sure, I ran
+the test case a bunch of times to make sure it always failed and for
+the expected reason. Success!&lt;/p&gt;
+
+&lt;p&gt;Well, almost. Even though I had a test case, I still needed to show
+that code to someone who could do something about it. Checking back at
+the &lt;a href=&quot;https://github.com/jnicklas/capybara&quot;&gt;Capybara website&lt;/a&gt;, I looked for how to submit a
+ticket. Right at the top is a nice, clear comment:&lt;/p&gt;
+
+&lt;blockquote&gt;&lt;p&gt;Need help? Ask on the mailing list (please do not open an issue on GitHub)&lt;/p&gt;&lt;/blockquote&gt;
+
+&lt;p&gt;So, I pushed my changes to Capybara to &lt;a href=&quot;https://github.com/shepmaster/capybara&quot;&gt;my fork&lt;/a&gt; and
+updated my test app to use a remote git version of the gem (another
+cool Bundler feature). I then pushed &lt;a href=&quot;https://github.com/shepmaster/capybara-race&quot;&gt;my test case&lt;/a&gt; to
+GitHub as well. I took a bit of time to create a short README so that
+anyone stumbling on the test app would have a clue as to what it was.&lt;/p&gt;
+
+&lt;p&gt;After that, it was just a small matter to write up a clear email to
+the Capybara list. I still find emailing new lists scary. Who knows
+how the list will respond? This time I got a &lt;a href=&quot;https://groups.google.com/forum/?fromgroups=#!topic/ruby-capybara/O3Ib6INOP58&quot;&gt;nice surprise&lt;/a&gt;:&lt;/p&gt;
+
+&lt;blockquote&gt;&lt;p&gt;That&amp;#8217;s a very nice bug report, Jake.&lt;/p&gt;
+
+&lt;p&gt;It appears to be a bug indeed. I&amp;#8217;ve been able to reproduce it on master as well.&lt;/p&gt;&lt;/blockquote&gt;
+
+&lt;p&gt;A GitHub issue &lt;a href=&quot;https://github.com/jnicklas/capybara/issues/843&quot;&gt;has been opened&lt;/a&gt;, and the bug is well on the
+way to being fixed. Yay for Open Source!&lt;/p&gt;
+</content>
+  </entry>
   
   <entry>
     <title>Name your variables by the roles they play</title>
