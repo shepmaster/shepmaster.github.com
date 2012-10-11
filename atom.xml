@@ -4,13 +4,176 @@
   <title>Jake Goulding</title>
   <link href="http://jakegoulding.com/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2012-10-08T22:59:34-04:00</updated>
+  <updated>2012-10-10T21:10:10-04:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name>Jake Goulding</name>
     
   </author>
 
+  
+  <entry>
+    <title>Watch out for lost updates when using Capybara with Selenium</title>
+    <link href="http://jakegoulding.com/blog/2012/10/10/watch-out-for-lost-updates-when-using-capybara-with-selenium/"/>
+    <updated>2012-10-10T19:41:00-04:00</updated>
+    <id>http://jakegoulding.com/blog/2012/10/10/watch-out-for-lost-updates-when-using-capybara-with-selenium</id>
+    <content type="html">&lt;p&gt;At work, I am still working on finding and squashing fun test
+failures. In this case, &amp;#8220;fun&amp;#8221; means tests that have an intermittent
+failure rate of 5% (or less!). The test issue I worked on today had to
+do with the &amp;#8220;lost update&amp;#8221; problem.&lt;/p&gt;
+
+&lt;!&#8211; more &#8211;&gt;
+
+
+&lt;h3&gt;The lost update problem&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://www.amazon.com/gp/product/0321503627/ref=as_li_ss_tl?ie=UTF8&amp;amp;tag=jakgousblo-20&amp;amp;linkCode=as2&amp;amp;camp=217145&amp;amp;creative=399369&amp;amp;creativeASIN=0321503627&quot;&gt;Growing Object-Oriented Software, Guided by Tests&lt;/a&gt; has a great
+description and diagram of the problem:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://jakegoulding.com/images/blog/lost-update.png&quot; alt=&quot;The lost update problem&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The short version is that when you poll a system for its state, it&amp;#8217;s
+entirely possible to miss the state you are looking for. In the
+diagram, the color changes to red and then to blue before the test
+ever has a chance to see that it was red. Since this system will never
+go back to red, the test will incorrectly fail.&lt;/p&gt;
+
+&lt;h3&gt;The lost update problem in Capybara&lt;/h3&gt;
+
+&lt;p&gt;Like many other sites, we use the &lt;a href=&quot;http://datatables.net/&quot;&gt;DataTables&lt;/a&gt; jQuery
+plugin to show tabular data. A test that ensured that the filtering
+worked looked something like this:&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;5&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;6&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;7&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;8&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;9&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;10&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;11&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;12&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;13&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;14&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;15&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;16&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;17&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;ruby&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;wait_for_table_loading&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;n&quot;&gt;dialog&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;page&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;find&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;.loading_dialog&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;n&quot;&gt;wait_until&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dialog&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;visible?&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;wait_for_table_ready&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;n&quot;&gt;dialog&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;page&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;find&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;.loading_dialog&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;n&quot;&gt;wait_until&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dialog&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;visible?&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;n&quot;&gt;it&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;filters the list&amp;#39;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;n&quot;&gt;visit&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;list_path&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;n&quot;&gt;click_on&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;Filter by active&amp;#39;&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;n&quot;&gt;wait_for_table_loading&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;n&quot;&gt;wait_for_table_ready&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;n&quot;&gt;page&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;all&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;.data-item&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;should&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;have&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;items&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Enabling filtering triggers some slow backend activity, which brings
+up the loading dialog. The test waits for that dialog to appear and
+disappear before continuing on. Now the entire table is populated and
+we can safely see how many elements are in the table.&lt;/p&gt;
+
+&lt;p&gt;However, the test will fail if the backend is &lt;em&gt;too fast&lt;/em&gt;. The loading
+dialog will appear and disappear almost immediately. The test will
+time out waiting for the loading dialog that will never appear
+again. This behavior can be reliably replicated by adding a sleep to
+the test between lines 13 and 14.&lt;/p&gt;
+
+&lt;h3&gt;A Capybara solution&lt;/h3&gt;
+
+&lt;p&gt;In order to make the test more robust, I rewrote it as:&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;5&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;ruby&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;n&quot;&gt;it&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;filters the list&amp;#39;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;n&quot;&gt;visit&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;list_path&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;n&quot;&gt;click_on&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;Filter by active&amp;#39;&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;n&quot;&gt;page&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;should&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;have_css&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;.data-item&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:count&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;The test now ignores the loading dialogs completely, instead asking
+Capybara to find a particular number of elements. Asking Capybara to
+find things in this manner will let the test leverage the built-in
+waiting facilities of Capybara.&lt;/p&gt;
+
+&lt;p&gt;In this test, the number of data items won&amp;#8217;t change once the table is
+loaded, so it is a safe state to poll. As an additional benefit, the
+test now has fewer lines of code and is clearer.&lt;/p&gt;
+
+&lt;p&gt;As a downside, when the test fails, the Capybara error message doesn&amp;#8217;t
+include how many items were found, which isn&amp;#8217;t as informative as the
+equivalent message from the RSpec matcher.&lt;/p&gt;
+
+&lt;p&gt;Also, this test still ultimately relies on polling the DOM, so it&amp;#8217;s
+possible for similar bugs to pop up in the future.&lt;/p&gt;
+
+&lt;h3&gt;The GOOS solution to the lost update problem&lt;/h3&gt;
+
+&lt;p&gt;GOOS provides a solution to the lost update problem that can avoid the
+problems with polling completely:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://jakegoulding.com/images/blog/lost-update-fixed.png&quot; alt=&quot;The solution to the lost update problem&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The system under test must be modified to provide notifications when
+something interesting happens. This system now has a listener that is
+notified when the color changes and what the color is changed to. The
+test supplies a simple listener that accumulates the changes and
+offers a nice API suited for the tests.&lt;/p&gt;
+
+&lt;h3&gt;A hypothetical Capybara solution without polling&lt;/h3&gt;
+
+&lt;p&gt;I can imagine a Capybara test that looks something like this:&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;5&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;6&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;7&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;ruby&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;n&quot;&gt;it&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;filters the list&amp;#39;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;n&quot;&gt;visit&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;list_path&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;n&quot;&gt;wait_for_js_event&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;table.loaded&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;    &lt;span class=&quot;n&quot;&gt;click_on&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;Filter by active&amp;#39;&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;n&quot;&gt;page&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;all&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;.data-item&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;should&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;have&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;items&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Under the hood, there&amp;#8217;s some extra JavaScript going on. The
+&lt;code&gt;wait_for_js_event&lt;/code&gt; method would inject some JavaScript into the
+running Selenium session that creates an event listener and binds it
+to the given event. This listener just collects all the events it
+receives. After yielding the block, the test code then polls the event
+listener, waiting for the event to be captured.&lt;/p&gt;
+
+&lt;p&gt;It&amp;#8217;s entirely possible that code that does this already exists, but I
+don&amp;#8217;t know of it. It wouldn&amp;#8217;t be a large amount of code to write, but
+it would straddle the borders of Capybara, Selenium and JavaScript.&lt;/p&gt;
+
+&lt;p&gt;This might be a useful thing for &lt;a href=&quot;http://pivotal.github.com/jasmine/&quot;&gt;Jasmine&lt;/a&gt; tests, so it might
+already exist in that ecosystem.&lt;/p&gt;
+</content>
+  </entry>
   
   <entry>
     <title>Finding a race condition in Capybara with Selenium</title>
@@ -3472,80 +3635,6 @@ softer science, providing many ways to be right.&lt;/p&gt;
 craftsmanship of the code you write, or being &lt;strong&gt;too scared&lt;/strong&gt; to
 evangelize good practices to others. I bet master woodworkers don&amp;#8217;t have
 to deal with these kinds of problems.&lt;/p&gt;
-</content>
-  </entry>
-  
-  <entry>
-    <title>Why Posterous?</title>
-    <link href="http://jakegoulding.com/blog/2011/01/02/why-posterous/"/>
-    <updated>2011-01-02T12:00:00-05:00</updated>
-    <id>http://jakegoulding.com/blog/2011/01/02/why-posterous</id>
-    <content type="html">&lt;p&gt;Since I need something to start a blog with, why not start with why I
-chose Posterous?&lt;/p&gt;
-
-&lt;p&gt;Over the Christmas holidays, I&amp;#8217;ve been reading through back entries in
-&lt;a href=&quot;http://michaelfeathers.typepad.com/&quot;&gt;Michael Feather&amp;#8217;s blog&lt;/a&gt;. Reading through his posts (among many
-other blogs) was one of the reasons I thought to start a blog, so I
-figured I could start there.&lt;/p&gt;
-
-&lt;!&#8211;more&#8211;&gt;
-
-
-&lt;p&gt;Michael uses &lt;a href=&quot;http://www.typepad.com/&quot;&gt;Typepad&lt;/a&gt;, but the basic blog there costs money (there
-is a &lt;a href=&quot;http://www.typepad.com/micro/&quot;&gt;Micro service&lt;/a&gt;, but why restrict myself?). I&amp;#8217;m not sure that
-blogging is my thing, so I didn&amp;#8217;t want to put my money where my mouth
-is, so to speak.&lt;/p&gt;
-
-&lt;p&gt;Next, I checked out &lt;a href=&quot;http://www.tumblr.com/&quot;&gt;Tumblr&lt;/a&gt;. Tumblr is an interesting case, as I
-know the lead developer there, &lt;a href=&quot;http://www.marco.org/&quot;&gt;Marco Arment&lt;/a&gt;. Not that knowing him
-would really affect the quality of my blogging experience, but it&amp;#8217;s one
-of those little things one can use to namedrop. The landing page for
-Tumblr is amazingly clean and inviting, but what really threw me was the
-&lt;strong&gt;URL&lt;/strong&gt; field. I wasn&amp;#8217;t sure exactly what was supposed to
-go there, so I clicked though to the &lt;strong&gt;Help&lt;/strong&gt; page.&lt;/p&gt;
-
-&lt;div class=&quot;image_with_caption&quot;&gt;
-   &lt;img src=&quot;http://jakegoulding.com/images/blog/tumblr-signup.png&quot; alt=&quot;Tumblr signup&quot; /&gt;
-   &lt;span&gt;Tumblr signup - simple but ultimately confusing.&lt;/span&gt;
-&lt;/div&gt;
-
-
-&lt;p&gt;At least that&amp;#8217;s what I would have done, but I didn&amp;#8217;t see one. &lt;strong&gt;About
-Tumblr&lt;/strong&gt; was the closest, so I tried that. While I was looking around, I
-got distracted and wanted to know how I could export my data from
-Tumblr, should the need arise. I was a little worried about the safety
-of my posts, as the recent Tumblr outages have been very prominent. Not
-like I expect the loss of my blog to be important, but I hate losing
-anything. During my search interlude, Carol pointed out a tweet from
-today about another Tumblr outage, so that seemed like a sign.&lt;/p&gt;
-
-&lt;p&gt;Conveniently, I did find a &lt;a href=&quot;http://techcrunch.com/2010/09/18/stuff-white-person-doesnt-like/&quot;&gt;post on TechCrunch&lt;/a&gt; about switching to
-Tumblr. Reading that article pointed me towards towards Posterous, which
-had the ring of &amp;#8220;all the cool kids are doing it&amp;#8221;, which is music to my
-ears. The signup was almost as clean as Tumblr&amp;#8217;s, but most importantly,
-it had immediate feedback for each field. In the &lt;strong&gt;URL&lt;/strong&gt; field, for
-example, it clearly showed that it was asking for the &lt;em&gt;subdomain&lt;/em&gt; of my
-future blog. Clicking on the field even shows if that domain is
-available, as you type. Good UX for the win!&lt;/p&gt;
-
-&lt;div class=&quot;image_with_caption&quot;&gt;
-   &lt;img src=&quot;http://jakegoulding.com/images/blog/posterous-signup.png&quot; alt=&quot;Posterous signup&quot; /&gt;
-   &lt;span&gt;Posterous signup - still simple, but a bit more useful. The URL field clearly shows you are creating a subdomain.&lt;/span&gt;
-&lt;/div&gt;
-
-
-
-
-&lt;div class=&quot;image_with_caption&quot;&gt;
-   &lt;img src=&quot;http://jakegoulding.com/images/blog/posterous-signup-detail.png&quot; alt=&quot;Posterous signup detail&quot; /&gt;
-   &lt;span&gt;Once you&amp;#8217;ve clicked on a field, you are provided with more information.&lt;/span&gt;
-&lt;/div&gt;
-
-
-&lt;p&gt;Reading through the help also indicated that the site operators have
-their shit together, so I went for it. I didn&amp;#8217;t even think about
-checking to see if I would be able to get my data back out (I did just
-now, and they say you can &lt;a href=&quot;http://help.posterous.com/can-i-export-my-site&quot;&gt;use the API to export your data&lt;/a&gt;).&lt;/p&gt;
 </content>
   </entry>
   

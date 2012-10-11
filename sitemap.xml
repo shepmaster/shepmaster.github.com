@@ -99,11 +99,17 @@
         <lastmod>2012-10-08T22:59:33-04:00</lastmod>
     </url>
     <url>
+        <loc>
+            http://jakegoulding.com/blog/2012/10/10/watch-out-for-lost-updates-when-using-capybara-with-selenium/
+        </loc>
+        <lastmod>2012-10-10T21:10:09-04:00</lastmod>
+    </url>
+    <url>
         <loc>http://jakegoulding.com/blog/archives/</loc>
-        <lastmod>2012-10-08T22:59:33-04:00</lastmod>
+        <lastmod>2012-10-10T21:10:09-04:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/</loc>
-        <lastmod>2012-10-08T22:59:33-04:00</lastmod>
+        <lastmod>2012-10-10T21:10:09-04:00</lastmod>
     </url>
 </urlset>

@@ -1,0 +1,370 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Watch out for lost updates when using Capybara with Selenium - Jake Goulding</title>
+  <meta name="author" content="Jake Goulding">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+
+  <link rel="canonical" href="http://jakegoulding.com/blog/2012/10/10/watch-out-for-lost-updates-when-using-capybara-with-selenium/"/>
+  <link href="/favicon.png" rel="shortcut icon" />
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="http://s3.amazonaws.com/ender-js/jeesh.min.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml"/>
+  <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
+<link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body  >
+  <header><hgroup>
+  <h1><a href="/">Jake Goulding</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role=navigation><ul role=subscription data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+<form action="http://google.com/search" method="get">
+  <fieldset role="site-search">
+    <input type="hidden" name="q" value="site:jakegoulding.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+<ul role=main-navigation>
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry">
+  
+  <header>
+    
+      <h1 class="entry-title">Watch Out for Lost Updates When Using Capybara With Selenium</h1>
+    
+    
+      <p class="meta">
+
+
+
+
+
+  
+
+
+
+<time datetime="2012-10-10T19:41:00-04:00" pubdate  data-updated="true" >Oct 10<span>th</span>, 2012</time></p>
+    
+  </header>
+
+
+<div class="entry-content"><p>At work, I am still working on finding and squashing fun test
+failures. In this case, &#8220;fun&#8221; means tests that have an intermittent
+failure rate of 5% (or less!). The test issue I worked on today had to
+do with the &#8220;lost update&#8221; problem.</p>
+
+<!-- more -->
+
+
+<h3>The lost update problem</h3>
+
+<p><a href="http://www.amazon.com/gp/product/0321503627/ref=as_li_ss_tl?ie=UTF8&amp;tag=jakgousblo-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399369&amp;creativeASIN=0321503627">Growing Object-Oriented Software, Guided by Tests</a> has a great
+description and diagram of the problem:</p>
+
+<p><img src="/images/blog/lost-update.png" alt="The lost update problem" /></p>
+
+<p>The short version is that when you poll a system for its state, it&#8217;s
+entirely possible to miss the state you are looking for. In the
+diagram, the color changes to red and then to blue before the test
+ever has a chance to see that it was red. Since this system will never
+go back to red, the test will incorrectly fail.</p>
+
+<h3>The lost update problem in Capybara</h3>
+
+<p>Like many other sites, we use the <a href="http://datatables.net/">DataTables</a> jQuery
+plugin to show tabular data. A test that ensured that the filtering
+worked looked something like this:</p>
+
+<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
+<span class='line'>2</span>
+<span class='line'>3</span>
+<span class='line'>4</span>
+<span class='line'>5</span>
+<span class='line'>6</span>
+<span class='line'>7</span>
+<span class='line'>8</span>
+<span class='line'>9</span>
+<span class='line'>10</span>
+<span class='line'>11</span>
+<span class='line'>12</span>
+<span class='line'>13</span>
+<span class='line'>14</span>
+<span class='line'>15</span>
+<span class='line'>16</span>
+<span class='line'>17</span>
+</pre></td><td class='code' width='100%'><pre><code class='ruby'><div class='line'><span class="k">def</span> <span class="nf">wait_for_table_loading</span>
+</div><div class='line'>  <span class="n">dialog</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;.loading_dialog&#39;</span><span class="p">)</span>
+</div><div class='line'>  <span class="n">wait_until</span> <span class="p">{</span> <span class="n">dialog</span><span class="o">.</span><span class="n">visible?</span> <span class="p">}</span>
+</div><div class='line'><span class="k">end</span>
+</div><div class='line'>
+</div><div class='line'><span class="k">def</span> <span class="nf">wait_for_table_ready</span>
+</div><div class='line'>  <span class="n">dialog</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;.loading_dialog&#39;</span><span class="p">)</span>
+</div><div class='line'>  <span class="n">wait_until</span> <span class="p">{</span> <span class="o">!</span> <span class="n">dialog</span><span class="o">.</span><span class="n">visible?</span> <span class="p">}</span>
+</div><div class='line'><span class="k">end</span>
+</div><div class='line'>
+</div><div class='line'><span class="n">it</span> <span class="s1">&#39;filters the list&#39;</span> <span class="k">do</span>
+</div><div class='line'>  <span class="n">visit</span> <span class="n">list_path</span>
+</div><div class='line'>  <span class="n">click_on</span> <span class="s1">&#39;Filter by active&#39;</span>
+</div><div class='line'>  <span class="n">wait_for_table_loading</span>
+</div><div class='line'>  <span class="n">wait_for_table_ready</span>
+</div><div class='line'>  <span class="n">page</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="s1">&#39;.data-item&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">should</span> <span class="n">have</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">items</span>
+</div><div class='line'><span class="k">end</span>
+</div></code></pre></td></tr></table></div></figure>
+
+
+<p>Enabling filtering triggers some slow backend activity, which brings
+up the loading dialog. The test waits for that dialog to appear and
+disappear before continuing on. Now the entire table is populated and
+we can safely see how many elements are in the table.</p>
+
+<p>However, the test will fail if the backend is <em>too fast</em>. The loading
+dialog will appear and disappear almost immediately. The test will
+time out waiting for the loading dialog that will never appear
+again. This behavior can be reliably replicated by adding a sleep to
+the test between lines 13 and 14.</p>
+
+<h3>A Capybara solution</h3>
+
+<p>In order to make the test more robust, I rewrote it as:</p>
+
+<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
+<span class='line'>2</span>
+<span class='line'>3</span>
+<span class='line'>4</span>
+<span class='line'>5</span>
+</pre></td><td class='code' width='100%'><pre><code class='ruby'><div class='line'><span class="n">it</span> <span class="s1">&#39;filters the list&#39;</span> <span class="k">do</span>
+</div><div class='line'>  <span class="n">visit</span> <span class="n">list_path</span>
+</div><div class='line'>  <span class="n">click_on</span> <span class="s1">&#39;Filter by active&#39;</span>
+</div><div class='line'>  <span class="n">page</span><span class="o">.</span><span class="n">should</span> <span class="n">have_css</span><span class="p">(</span><span class="s1">&#39;.data-item&#39;</span><span class="p">,</span> <span class="ss">:count</span> <span class="o">=&gt;</span> <span class="mi">3</span><span class="p">)</span>
+</div><div class='line'><span class="k">end</span>
+</div></code></pre></td></tr></table></div></figure>
+
+
+<p>The test now ignores the loading dialogs completely, instead asking
+Capybara to find a particular number of elements. Asking Capybara to
+find things in this manner will let the test leverage the built-in
+waiting facilities of Capybara.</p>
+
+<p>In this test, the number of data items won&#8217;t change once the table is
+loaded, so it is a safe state to poll. As an additional benefit, the
+test now has fewer lines of code and is clearer.</p>
+
+<p>As a downside, when the test fails, the Capybara error message doesn&#8217;t
+include how many items were found, which isn&#8217;t as informative as the
+equivalent message from the RSpec matcher.</p>
+
+<p>Also, this test still ultimately relies on polling the DOM, so it&#8217;s
+possible for similar bugs to pop up in the future.</p>
+
+<h3>The GOOS solution to the lost update problem</h3>
+
+<p>GOOS provides a solution to the lost update problem that can avoid the
+problems with polling completely:</p>
+
+<p><img src="/images/blog/lost-update-fixed.png" alt="The solution to the lost update problem" /></p>
+
+<p>The system under test must be modified to provide notifications when
+something interesting happens. This system now has a listener that is
+notified when the color changes and what the color is changed to. The
+test supplies a simple listener that accumulates the changes and
+offers a nice API suited for the tests.</p>
+
+<h3>A hypothetical Capybara solution without polling</h3>
+
+<p>I can imagine a Capybara test that looks something like this:</p>
+
+<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
+<span class='line'>2</span>
+<span class='line'>3</span>
+<span class='line'>4</span>
+<span class='line'>5</span>
+<span class='line'>6</span>
+<span class='line'>7</span>
+</pre></td><td class='code' width='100%'><pre><code class='ruby'><div class='line'><span class="n">it</span> <span class="s1">&#39;filters the list&#39;</span> <span class="k">do</span>
+</div><div class='line'>  <span class="n">visit</span> <span class="n">list_path</span>
+</div><div class='line'>  <span class="n">wait_for_js_event</span><span class="p">(</span><span class="s1">&#39;table.loaded&#39;</span><span class="p">)</span> <span class="k">do</span>
+</div><div class='line'>    <span class="n">click_on</span> <span class="s1">&#39;Filter by active&#39;</span>
+</div><div class='line'>  <span class="k">end</span>
+</div><div class='line'>  <span class="n">page</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="s1">&#39;.data-item&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">should</span> <span class="n">have</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">items</span>
+</div><div class='line'><span class="k">end</span>
+</div></code></pre></td></tr></table></div></figure>
+
+
+<p>Under the hood, there&#8217;s some extra JavaScript going on. The
+<code>wait_for_js_event</code> method would inject some JavaScript into the
+running Selenium session that creates an event listener and binds it
+to the given event. This listener just collects all the events it
+receives. After yielding the block, the test code then polls the event
+listener, waiting for the event to be captured.</p>
+
+<p>It&#8217;s entirely possible that code that does this already exists, but I
+don&#8217;t know of it. It wouldn&#8217;t be a large amount of code to write, but
+it would straddle the borders of Capybara, Selenium and JavaScript.</p>
+
+<p>This might be a useful thing for <a href="http://pivotal.github.com/jasmine/">Jasmine</a> tests, so it might
+already exist in that ecosystem.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Jake Goulding</span></span>
+
+      
+
+
+
+
+
+  
+
+
+
+<time datetime="2012-10-10T19:41:00-04:00" pubdate  data-updated="true" >Oct 10<span>th</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/debugging/'>debugging</a>, <a class='category' href='/blog/categories/testing/'>testing</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2012/10/10/watch-out-for-lost-updates-when-using-capybara-with-selenium/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2012/10/10/watch-out-for-lost-updates-when-using-capybara-with-selenium/" >Tweet</a>
+  
+  
+</div>
+
+    
+  </footer>
+</article>
+
+</div>
+
+<aside role=sidebar>
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/10/10/watch-out-for-lost-updates-when-using-capybara-with-selenium/">Watch out for lost updates when using Capybara with Selenium</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/10/08/finding-a-race-condition-in-capybara-with-selenium/">Finding a race condition in Capybara with Selenium</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/10/03/name-your-variables-by-the-roles-they-play/">Name your variables by the roles they play</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/10/01/using-ruby-blocks-to-ensure-resources-are-cleaned-up/">Using Ruby blocks to ensure resources are cleaned up</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/09/26/be-careful-when-using-junit-expected-exceptions/">Be careful when using JUnit's expected exceptions</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("jakegoulding", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @jakegoulding</a>
+  
+</section>
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer><p>
+  Copyright &copy; 2012 - Jake Goulding -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-20521797-2']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+  
+
+  
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+</body>
+</html>
