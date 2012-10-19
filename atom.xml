@@ -4,13 +4,120 @@
   <title>Jake Goulding</title>
   <link href="http://jakegoulding.com/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2012-10-10T21:10:10-04:00</updated>
+  <updated>2012-10-18T20:40:22-04:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name>Jake Goulding</name>
     
   </author>
 
+  
+  <entry>
+    <title>Run your tests in a deterministic random order</title>
+    <link href="http://jakegoulding.com/blog/2012/10/18/run-your-tests-in-a-deterministic-random-order/"/>
+    <updated>2012-10-18T18:56:00-04:00</updated>
+    <id>http://jakegoulding.com/blog/2012/10/18/run-your-tests-in-a-deterministic-random-order</id>
+    <content type="html">&lt;p&gt;Running your tests in a random order is a good idea to help shake out
+implicit dependencies between tests. Running your tests in a
+deterministic random order is even better.&lt;/p&gt;
+
+&lt;!&#8211; more &#8211;&gt;
+
+
+&lt;h4&gt;What&amp;#8217;s an implicit dependency?&lt;/h4&gt;
+
+&lt;p&gt;It&amp;#8217;s easy to accidentally create order-dependent tests:&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;5&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;6&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;7&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;8&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;9&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;ruby&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;n&quot;&gt;it&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;creates a widget&amp;quot;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;no&quot;&gt;Widget&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;create&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;Awesome Widget&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;no&quot;&gt;Widget&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;count&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;should&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;eql&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;n&quot;&gt;it&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;deletes a widget&amp;quot;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;no&quot;&gt;Widget&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;first&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;delete&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;# Implicitly requires the first test to have been run&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;no&quot;&gt;Widget&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;count&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;should&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;eql&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;h4&gt;Why should I care?&lt;/h4&gt;
+
+&lt;p&gt;Dependencies between tests are bad for a number of reasons:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;When a single test fails, you need to run many tests to reproduce
+the failure. This makes reproduction slower and more annoying.&lt;/li&gt;
+&lt;li&gt;The test method is no longer complete documentation. The required setup
+for the test is located in many different methods.&lt;/li&gt;
+&lt;li&gt;The complexity of the test is hidden. What looks like a two line
+test may actually comprise hundreds of lines of code. Complex test
+code is often an excellent indicator of complex production code.&lt;/li&gt;
+&lt;/ol&gt;
+
+
+&lt;p&gt;Running tests in a random order isn&amp;#8217;t enough; you need to be able to
+reproduce the same random order before you can fix it! &lt;a href=&quot;https://www.relishapp.com/rspec/rspec-core/v/2-11/docs/command-line/order-new-in-rspec-core-2-8&quot;&gt;RSpec&lt;/a&gt;
+and &lt;a href=&quot;http://www.bootspring.com/2010/09/22/minitest-rubys-test-framework/&quot;&gt;MiniTest&lt;/a&gt; both offer a way to specify the random seed
+on the command line or with environment variables. Unfortunately, the
+&lt;a href=&quot;http://maven.apache.org/plugins/maven-surefire-plugin/test-mojo.html&quot;&gt;Surefire&lt;/a&gt; plugin for Maven does not offer a way to specify
+the seed, even though it allows random ordering.&lt;/p&gt;
+
+&lt;h4&gt;Continuous integration servers&lt;/h4&gt;
+
+&lt;p&gt;At work, we use &lt;a href=&quot;http://code.google.com/p/gerrit/&quot;&gt;gerrit&lt;/a&gt; for code reviews and
+&lt;a href=&quot;http://jenkins-ci.org/&quot;&gt;Jenkins&lt;/a&gt; as our CI server. Whenever a new or updated commit
+is pushed to gerrit, a build is started in Jenkins. There is also a
+Jenkins job to build &lt;code&gt;origin/master&lt;/code&gt; every 15 minutes if it has been
+updated.&lt;/p&gt;
+
+&lt;p&gt;The Gerrit/Jenkins combination allows you to retrigger a specific
+build in case there were environmental issues that have since been
+fixed. Unfortunately for us, retriggering was being used as a way to
+avoid dealing with test failures due to order dependencies. To
+encourage us to stop and address our order dependency problem, we
+updated both jobs to use a deterministic seed.&lt;/p&gt;
+
+&lt;p&gt;For the Gerrit builds, we used the Gerrit change number, which remains
+constant across multiple revisions of the same commit. The Gerrit
+plugin makes this value available as a environment variable during
+script execution.&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;rspec &lt;span class=&quot;nv&quot;&gt;SPEC_OPTS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;&#8211;seed $GERRIT_CHANGE_NUMBER&amp;quot;&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;For the &lt;code&gt;origin/master&lt;/code&gt; build, we chose to use the Git hash of the
+commit. Since the hash contains letters, we used a shell one-liner to
+scrape out something that looks reasonable as a seed.&lt;/p&gt;
+
+&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;nv&quot;&gt;SEED&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;git rev-parse HEAD | tr -d &lt;span class=&quot;s1&quot;&gt;&amp;#39;a-z&amp;#39;&lt;/span&gt; | cut -b 1-5&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt;
+&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;rspec &lt;span class=&quot;nv&quot;&gt;SPEC_OPTS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;&#8211;seed $SEED&amp;quot;&lt;/span&gt;
+&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;h4&gt;Does it work?&lt;/h4&gt;
+
+&lt;p&gt;Just a few days after making the above changes, another developer came
+to me with a strange problem. His commit was unable to pass the tests
+in Gerrit, but the failing test had nothing to do with his changes. We
+ran the tests locally using the seed from the Jenkins server and were
+able to reproduce the problem. Ultimately, we traced the problem to a
+request spec that modified some core configuration settings and didn&amp;#8217;t
+reset them successfully. Success!&lt;/p&gt;
+</content>
+  </entry>
   
   <entry>
     <title>Watch out for lost updates when using Capybara with Selenium</title>
@@ -3592,49 +3699,6 @@ providing warnings. I&amp;#8217;d much rather have an extraneous warning that I
 can silence instead of no warning at all.&lt;/p&gt;
 
 &lt;p&gt;&lt;strong&gt;Edit 2010-01-28&lt;/strong&gt; - added Visual Studio and clang analyzer output from reddit.&lt;/p&gt;
-</content>
-  </entry>
-  
-  <entry>
-    <title>The &#8220;meh&#8221; programmer</title>
-    <link href="http://jakegoulding.com/blog/2011/01/09/the-meh-programmer/"/>
-    <updated>2011-01-09T12:00:00-05:00</updated>
-    <id>http://jakegoulding.com/blog/2011/01/09/the-meh-programmer</id>
-    <content type="html">&lt;p&gt;Do you know a &amp;#8220;meh&amp;#8221; programmer? As an example:&lt;/p&gt;
-
-&lt;blockquote&gt;&lt;p&gt;Alice: This variable name isn&amp;#8217;t very good&amp;#8230;&lt;br/&gt;
-Bob: Meh, it&amp;#8217;s just a variable name, it&amp;#8217;s good enough.&lt;/p&gt;&lt;/blockquote&gt;
-
-&lt;p&gt;Where does this lack of caring come from? If you replace &lt;em&gt;variable name&lt;/em&gt; with something else, it sounds ridiculous:&lt;/p&gt;
-
-&lt;blockquote&gt;&lt;p&gt;Alice: This algorithm isn&amp;#8217;t very good&amp;#8230;&lt;br/&gt;
-Bob: Meh, it&amp;#8217;s just an algorithm, it&amp;#8217;s good enough.&lt;/p&gt;&lt;/blockquote&gt;
-
-&lt;!&#8211;more&#8211;&gt;
-
-
-&lt;p&gt;To me, this kind of behavior is antithetical to the ideas of &lt;a href=&quot;http://manifesto.softwarecraftsmanship.org/&quot;&gt;Software
-Craftsmanship&lt;/a&gt;. An incorrect algorithm makes the program wrong, and
-most programmers detest that idea. An incorrect variable name only
-affects how well-crafted the program is, but we are usually
-all-too-willing to let that slide. There shouldn&amp;#8217;t be such a huge gulf
-between these two ideas.&lt;/p&gt;
-
-&lt;p&gt;I recently caught myself saying the following during a code review:&lt;/p&gt;
-
-&lt;blockquote&gt;&lt;p&gt;I would have named this variable &lt;em&gt;descriptive_name&lt;/em&gt; instead of
-&lt;em&gt;foo&lt;/em&gt;. Don&amp;#8217;t worry though, it doesn&amp;#8217;t really matter since the code
-works.&lt;/p&gt;&lt;/blockquote&gt;
-
-&lt;p&gt;Fortunately, I know exactly why I said this - I was too afraid to be
-truly confrontational. Not everyone buys-in to Software Craftsmanship in
-to the extent that I strive to. Even if they did, craftsmanship is a
-softer science, providing many ways to be right.&lt;/p&gt;
-
-&lt;p&gt;I don&amp;#8217;t know which I think is worse, &lt;strong&gt;not caring&lt;/strong&gt; about the
-craftsmanship of the code you write, or being &lt;strong&gt;too scared&lt;/strong&gt; to
-evangelize good practices to others. I bet master woodworkers don&amp;#8217;t have
-to deal with these kinds of problems.&lt;/p&gt;
 </content>
   </entry>
   
