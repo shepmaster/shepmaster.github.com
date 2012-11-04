@@ -72,7 +72,7 @@
         <loc>
             http://jakegoulding.com/blog/2012/09/24/a-refactoring-example-if-else-on-strings/
         </loc>
-        <lastmod>2012-09-24T22:41:19-04:00</lastmod>
+        <lastmod>2012-11-04T14:45:44-05:00</lastmod>
     </url>
     <url>
         <loc>
@@ -111,11 +111,17 @@
         <lastmod>2012-10-18T20:40:22-04:00</lastmod>
     </url>
     <url>
+        <loc>
+            http://jakegoulding.com/blog/2012/11/04/refactor-and-make-changes-in-different-commits/
+        </loc>
+        <lastmod>2012-11-04T17:54:35-05:00</lastmod>
+    </url>
+    <url>
         <loc>http://jakegoulding.com/blog/archives/</loc>
-        <lastmod>2012-10-18T20:40:22-04:00</lastmod>
+        <lastmod>2012-11-04T17:54:35-05:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/</loc>
-        <lastmod>2012-10-18T20:40:22-04:00</lastmod>
+        <lastmod>2012-11-04T17:54:35-05:00</lastmod>
     </url>
 </urlset>

@@ -4,13 +4,137 @@
   <title>Jake Goulding</title>
   <link href="http://jakegoulding.com/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2012-10-18T20:40:22-04:00</updated>
+  <updated>2012-11-04T17:54:36-05:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name>Jake Goulding</name>
     
   </author>
 
+  
+  <entry>
+    <title>Refactor and make changes in different commits</title>
+    <link href="http://jakegoulding.com/blog/2012/11/04/refactor-and-make-changes-in-different-commits/"/>
+    <updated>2012-11-04T14:31:00-05:00</updated>
+    <id>http://jakegoulding.com/blog/2012/11/04/refactor-and-make-changes-in-different-commits</id>
+    <content type="html">&lt;p&gt;If you combine refactoring and making a change to your code into the
+same commit, you are going to have a bad time.&lt;/p&gt;
+
+&lt;!&#8211; more &#8211;&gt;
+
+
+&lt;p&gt;Just in case you&amp;#8217;ve forgotten, &lt;a href=&quot;http://en.wikipedia.org/wiki/Refactoring&quot;&gt;refactoring&lt;/a&gt; is&lt;/p&gt;
+
+&lt;blockquote&gt;&lt;p&gt;the process of changing a computer program&amp;#8217;s source code without
+modifying its external functional behavior&lt;/p&gt;&lt;/blockquote&gt;
+
+&lt;p&gt;When I review a commit that claims to be refactoring, I shift into to
+a very specific mindset. I visualize myself as a world-class goalie,
+ready to stop any rogue features that come my way; I&amp;#8217;m going to stand
+my ground, no matter what.&lt;/p&gt;
+
+&lt;p&gt;Contrast refactoring to adding new functionality. In that case, the
+author should be adding new objects that fulfill a responsibility,
+following the &lt;a href=&quot;http://en.wikipedia.org/wiki/Open/closed_principle&quot;&gt;open/closed principle&lt;/a&gt;. When I review a commit
+that adds new functionality, I pay attention that the tests cover the
+new functionality, the minimum amount of code was added, and that the
+new code is sufficient.&lt;/p&gt;
+
+&lt;p&gt;These are very different things to review for.&lt;/p&gt;
+
+&lt;h3&gt;Why&amp;#8217;s it bad?&lt;/h3&gt;
+
+&lt;p&gt;When you combine refactoring and feature addition into the same
+commit, you double the work required to review it. In addition to
+figuring out if each changed line is correct, you also have to figure
+out what &amp;#8220;correct&amp;#8221; even means!&lt;/p&gt;
+
+&lt;p&gt;Beyond the doubled work, you have to change your mindset for &lt;strong&gt;every
+line of code&lt;/strong&gt;. That&amp;#8217;s an amazing amount of context switching. It&amp;#8217;s
+very hard to thoroughly review each line when it&amp;#8217;s hard to even
+remember what you are reviewing for.&lt;/p&gt;
+
+&lt;p&gt;Combining these disparate actions into one commit isn&amp;#8217;t something that
+we do maliciously. In fact, it&amp;#8217;s likely the opposite: good programmers
+have an innate drive to make the code better all the time. Sometimes
+we see a little problem that we just &lt;em&gt;have&lt;/em&gt; to fix up.&lt;/p&gt;
+
+&lt;p&gt;The problem is that when we have our programmer hats on, we don&amp;#8217;t
+always think about what this commit will mean to others
+downstream. This could mean reviewers, approvers, testers,
+documenters, whatever needs to happen after the commit.&lt;/p&gt;
+
+&lt;h3&gt;What do I do when my commit is too big?&lt;/h3&gt;
+
+&lt;p&gt;There are a few main techniques I use when I discover I&amp;#8217;ve done work
+that should be in different commits.&lt;/p&gt;
+
+&lt;p&gt;If I haven&amp;#8217;t committed yet, and the changes are separate enough, I use
+&lt;code&gt;git add -pu&lt;/code&gt; to add certain lines of code and not others.&lt;/p&gt;
+
+&lt;p&gt;If the changes overlap with each other, I will edit a specific section
+of the file until it looks like the intermediate change I really
+wanted. I &lt;code&gt;git add&lt;/code&gt; the file and immediately revert my editor
+changes. I then repeat with the next section.&lt;/p&gt;
+
+&lt;p&gt;If I have already committed, then I go into an interactive rebase and
+&lt;code&gt;edit&lt;/code&gt; the particular commits that are too big. I often create a
+throw-away branch so I can easily compare the original and modified
+branches to make sure they end up the same.&lt;/p&gt;
+
+&lt;p&gt;All of these techniques create &amp;#8220;false history&amp;#8221; - I didn&amp;#8217;t &lt;em&gt;really&lt;/em&gt;
+make that small step. After I&amp;#8217;m finished, I run a little script that
+checks out each commit and runs my tests.&lt;/p&gt;
+
+&lt;p&gt;Sometimes, trying to preserve my changes isn&amp;#8217;t worth the time, or I
+can see into the future a bit and know ahead of time that I am about
+to make a big set of changes. In these cases, I try a spike: I make
+the changes willy-nilly, writing down each step as I do it. Then I
+throw it away and &lt;em&gt;invert the order of steps&lt;/em&gt;. This allows each step
+to happen in the order I would prefer, and I often improve on each
+step.&lt;/p&gt;
+
+&lt;h3&gt;Isn&amp;#8217;t too many small commits just as bad?&lt;/h3&gt;
+
+&lt;p&gt;I&amp;#8217;ve heard something like this before:&lt;/p&gt;
+
+&lt;blockquote&gt;&lt;p&gt;It&amp;#8217;s so small, it doesn&amp;#8217;t deserve it&amp;#8217;s own commit&lt;/p&gt;&lt;/blockquote&gt;
+
+&lt;p&gt;I&amp;#8217;ve &lt;strong&gt;never&lt;/strong&gt; had to review a commit that was too small. I have had
+to review a commit that was too large. I&amp;#8217;m willing to take the risk of
+creating many small commits, especially if all the changes are going
+to be made one way or another.&lt;/p&gt;
+
+&lt;p&gt;If a commit is small, then I can open it, read the commit message, and
+review it within seconds.&lt;/p&gt;
+
+&lt;h3&gt;What do I do as a reviewer?&lt;/h3&gt;
+
+&lt;p&gt;I use a modified version of the &lt;a href=&quot;http://en.wikipedia.org/wiki/Single_responsibility_principle&quot;&gt;single responsibility principle&lt;/a&gt;
+that applies to commits:&lt;/p&gt;
+
+&lt;blockquote&gt;&lt;p&gt;A commit should have one, and only one, change.&lt;/p&gt;&lt;/blockquote&gt;
+
+&lt;p&gt;I try to follow steps like these:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Read the whole commit message. It should have no &lt;strong&gt;and&lt;/strong&gt;s, &lt;strong&gt;or&lt;/strong&gt;s,
+or &lt;strong&gt;but&lt;/strong&gt;s. If it does, I kick it back to the author and request that
+the commit be split up into those pieces. Otherwise, I sear the commit
+message into my brain.&lt;/li&gt;
+&lt;li&gt;Read the diff of the commit and evaluate each change against the
+commit message. If a line doesn&amp;#8217;t fit with the message, mark the
+change as unrelated. If it does, review the line as usual.&lt;/li&gt;
+&lt;li&gt;Sometimes I keep reading the diff once you I find an unrelated
+line, other times I stop at the first one; the original author may be
+faster at separating the concerns.&lt;/li&gt;
+&lt;li&gt;Make sure to thank the author when they provide a commit with a
+single focus - positive reinforcement lets us know that we are on the
+right track!&lt;/li&gt;
+&lt;/ol&gt;
+
+</content>
+  </entry>
   
   <entry>
     <title>Run your tests in a deterministic random order</title>
@@ -3501,204 +3625,6 @@ address and phone number in case anyone is interested.&lt;/p&gt;
 228 Decatur St&lt;br/&gt;
 New Orleans, LA 70130&lt;br/&gt;
 (504) 522-9875&lt;/p&gt;
-</content>
-  </entry>
-  
-  <entry>
-    <title>Uninitialized variable warnings and compiler optimizations</title>
-    <link href="http://jakegoulding.com/blog/2011/01/27/uninitialized-variable-warnings-and-compiler-optimizations/"/>
-    <updated>2011-01-27T12:00:00-05:00</updated>
-    <id>http://jakegoulding.com/blog/2011/01/27/uninitialized-variable-warnings-and-compiler-optimizations</id>
-    <content type="html">&lt;p&gt;A coworker recently got the &lt;code&gt;may be used uninitialized in this
-function&lt;/code&gt; warning from GCC and asked me to take a look at it to see if
-the warning was spurious or if he was missing something. While trying
-to boil his code down to a concise example, we found an example where
-the warning got flipped - we no longer got a warning even though we
-both expected one.&lt;/p&gt;
-
-&lt;!&#8211;more&#8211;&gt;
-
-
-&lt;p&gt;Here is the example code we ended up with. &lt;code&gt;foo&lt;/code&gt; is a function that
-should set &lt;code&gt;value&lt;/code&gt; when the parameter is true. If the parameter is not
-set, then &lt;code&gt;value&lt;/code&gt; is undefined. The main simply calls &lt;code&gt;foo&lt;/code&gt;, using the
-command-line argument count to control what is passed to the function.&lt;/p&gt;
-
-&lt;figure role=code&gt;&lt;figcaption&gt;&lt;span&gt; (uninit-warning.c)&lt;/span&gt; &lt;a href=&#8217;http://jakegoulding.com/downloads/code/uninit-warning.c&#8217;&gt;download&lt;/a&gt;&lt;/figcaption&gt;
- &lt;div class=&quot;highlight&quot;&gt;&lt;table cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line&#8217;&gt;1&lt;/span&gt;
-&lt;span class=&#8217;line&#8217;&gt;2&lt;/span&gt;
-&lt;span class=&#8217;line&#8217;&gt;3&lt;/span&gt;
-&lt;span class=&#8217;line&#8217;&gt;4&lt;/span&gt;
-&lt;span class=&#8217;line&#8217;&gt;5&lt;/span&gt;
-&lt;span class=&#8217;line&#8217;&gt;6&lt;/span&gt;
-&lt;span class=&#8217;line&#8217;&gt;7&lt;/span&gt;
-&lt;span class=&#8217;line&#8217;&gt;8&lt;/span&gt;
-&lt;span class=&#8217;line&#8217;&gt;9&lt;/span&gt;
-&lt;span class=&#8217;line&#8217;&gt;10&lt;/span&gt;
-&lt;span class=&#8217;line&#8217;&gt;11&lt;/span&gt;
-&lt;span class=&#8217;line&#8217;&gt;12&lt;/span&gt;
-&lt;span class=&#8217;line&#8217;&gt;13&lt;/span&gt;
-&lt;span class=&#8217;line&#8217;&gt;14&lt;/span&gt;
-&lt;span class=&#8217;line&#8217;&gt;15&lt;/span&gt;
-&lt;span class=&#8217;line&#8217;&gt;16&lt;/span&gt;
-&lt;span class=&#8217;line&#8217;&gt;17&lt;/span&gt;
-&lt;span class=&#8217;line&#8217;&gt;18&lt;/span&gt;
-&lt;span class=&#8217;line&#8217;&gt;19&lt;/span&gt;
-&lt;span class=&#8217;line&#8217;&gt;20&lt;/span&gt;
-&lt;span class=&#8217;line&#8217;&gt;21&lt;/span&gt;
-&lt;span class=&#8217;line&#8217;&gt;22&lt;/span&gt;
-&lt;span class=&#8217;line&#8217;&gt;23&lt;/span&gt;
-&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217; width=&#8217;100%&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;c&#8217;&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;cp&quot;&gt;#include &amp;lt;stdio.h&amp;gt;&lt;/span&gt;
-&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;cp&quot;&gt;#include &amp;lt;stdlib.h&amp;gt;&lt;/span&gt;
-&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
-&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;
-&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;nf&quot;&gt;foo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;do_it&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
-&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;do_it&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;    &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;7&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
-&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;7&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;    &lt;span class=&quot;n&quot;&gt;printf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;It is 7&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
-&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt;
-&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;nf&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;argc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;argv&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[])&lt;/span&gt;
-&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;n&quot;&gt;foo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;argc&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;
-&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;/div&gt;&lt;div class=&#8217;line&#8217;&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
-
-
-&lt;p&gt;We compiled it with GCC, expecting to see a warning.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ gcc &#8211;version
-gcc (Gentoo 4.4.4-r2 p1.2, pie-0.4.5) 4.4.4
-$ gcc -o uninit-gcc uninit.c -O3 -Wall -pedantic
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Strange, no warning. What does Clang say?&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ clang &#8211;version
-clang version 2.8 (branches/release_28)
-$ clang -o uninit-clang uninit.c -O3 -Wall -pedantic
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Neither compilation produces warnings! We tried compiling with -O0 and
--Os, in case some optimization was being applied, but the results were
-the same. Curiosity piqued, we dropped down to the next most logical
-level - assembly.&lt;/p&gt;
-
-&lt;h2&gt;GCC disassembly&lt;/h2&gt;
-
-&lt;pre&gt;&lt;code&gt;0000000000400570 &amp;lt;foo&amp;gt;:
-  400570:       be 9c 06 40 00          mov    $0x40069c,%esi
-  400575:       bf 01 00 00 00          mov    $0x1,%edi
-  40057a:       31 c0                   xor    %eax,%eax
-  40057c:       e9 d7 fe ff ff          jmpq   400458 &amp;lt;__printf_chk@plt&amp;gt;
-  400581:       66 66 66 66 66 66 2e    nopw   %cs:0x0(%rax,%rax,1)
-  400588:       0f 1f 84 00 00 00 00 
-  40058f:       00 
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;If you want to follow along, I used the &lt;a href=&quot;http://support.amd.com/us/Processor_TechDocs/24592.pdf&quot;&gt;AMD64 Architecture Programmer&amp;#8217;s Manual&lt;/a&gt; as an assembly reference.&lt;/p&gt;
-
-&lt;p&gt;GCC starts out by loading the address of the string into &lt;code&gt;%esi&lt;/code&gt;, then
-loads 1 into &lt;code&gt;%edi&lt;/code&gt; and &lt;code&gt;%eax&lt;/code&gt; is then XORed against itself, which
-sets &lt;code&gt;%eax&lt;/code&gt; to 0. According to &lt;a href=&quot;http://en.wikipedia.org/wiki/X86_calling_conventions#System_V_AMD64_ABI_convention&quot;&gt;the X86_64 calling convention&lt;/a&gt;,
-&lt;code&gt;%edi&lt;/code&gt; and &lt;code&gt;%esi&lt;/code&gt; are the first and second integral parameters to the
-function about to be called and &lt;code&gt;%eax&lt;/code&gt; is used as the return value
-from the current function. Since we only have one parameter to printf,
-and &lt;code&gt;foo&lt;/code&gt; is a void function, I think that &lt;code&gt;%edi&lt;/code&gt; and &lt;code&gt;%eax&lt;/code&gt; must have
-something to do with calling a variadic function. &lt;em&gt;The code
-&lt;strong&gt;unconditionally&lt;/strong&gt; jumps to printf.&lt;/em&gt; The function finishes off with
-nopw, a &lt;a href=&quot;http://john.freml.in/amd64-nopl&quot;&gt;fancy way of using a NOP&lt;/a&gt; to pad out to a nice even
-boundary.&lt;/p&gt;
-
-&lt;h2&gt;Clang disassembly&lt;/h2&gt;
-
-&lt;pre&gt;&lt;code&gt;0000000000400540 &amp;lt;foo&amp;gt;:
-  400540:       55                      push   %rbp
-  400541:       48 89 e5                mov    %rsp,%rbp
-  400544:       bf 5c 06 40 00          mov    $0x40065c,%edi
-  400549:       5d                      pop    %rbp
-  40054a:       e9 e1 fe ff ff          jmpq   400430 &amp;lt;puts@plt&amp;gt;
-  40054f:       90                      nop
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Clang produces pretty much the same code, but does some different
-gyrations. The contents of &lt;code&gt;%rpb&lt;/code&gt; are pushed onto the stack, then
-&lt;code&gt;%rsp&lt;/code&gt; is moved to &lt;code&gt;%rpb&lt;/code&gt;. The address of the string is loaded into
-&lt;code&gt;%edi&lt;/code&gt; and &lt;code&gt;%rbp&lt;/code&gt; is restored - never having been used. Clang has
-optimized the call to &lt;code&gt;printf&lt;/code&gt; to instead use the simpler &lt;code&gt;puts&lt;/code&gt;
-function, so we don&amp;#8217;t see the same mucking about with &lt;code&gt;%edi&lt;/code&gt; and
-&lt;code&gt;%eax&lt;/code&gt;. However, it is still an &lt;strong&gt;unconditional&lt;/strong&gt; jump!&lt;/p&gt;
-
-&lt;h2&gt;Clang LLVM output&lt;/h2&gt;
-
-&lt;p&gt;Clang has an interesting feature that lets you dump the abstract
-syntax tree just like assembly.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;define void @foo(i32 %do_it) nounwind {
-  %puts = tail call i32 @puts(i8* getelementptr inbounds ([8 x i8]* @str, i64 0, i64 0))
-  ret void
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;We can see that it ignores the parameter &lt;code&gt;do_it&lt;/code&gt;.&lt;/p&gt;
-
-&lt;h2&gt;Visual Studio 2010&lt;/h2&gt;
-
-&lt;p&gt;Reddit user DeliciouslyMoist &lt;a href=&quot;http://www.reddit.com/r/programming/comments/fag84/uninitialized_variable_warnings_and_compiler/c1eht39&quot;&gt;shows&lt;/a&gt; that Visual Studio 2010 does
-have a warning.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;cl -c -Ox -W4 test.cpp
-test.cpp
-test.cpp(18) : warning C4100: &#8216;argv&#8217; : unreferenced formal parameter
-test.cpp(12) : warning C4701: potentially uninitialized local variable &#8216;value&#8217; used
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Along with the generated assembly. Note this is Windows assembly, so
-the Linux calling conventions above don&amp;#8217;t apply.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;?foo@@YAXH@Z (void __cdecl foo(int)):
-  00000000: 83 7C 24 04 00     cmp         dword ptr [esp+4],0
-  00000005: 75 07              jne         0000000E
-  00000007: 83 7C 24 04 07     cmp         dword ptr [esp+4],7
-  0000000C: 75 0D              jne         0000001B
-  0000000E: C7 44 24 04 00 00  mov         dword ptr [esp+4],offset $SG4825
-        00 00
-  00000016: E9 00 00 00 00     jmp         _printf
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2&gt;Clang static analyzer&lt;/h2&gt;
-
-&lt;p&gt;As Reddit user masklinn &lt;a href=&quot;http://www.reddit.com/r/programming/comments/fag84/uninitialized_variable_warnings_and_compiler/c1eixa9&quot;&gt;points out&lt;/a&gt;, the clang static analyzer
-&lt;em&gt;does&lt;/em&gt; output a warning, even though the clang compiler does not.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ clang &#8211;analyze uninit.c 
-uninit.c:12:9: warning: The right operand of &#8216;==&#8217; is a garbage value
-  if (7 == value) {
-      ^  ~~~~~
-1 warning generated.
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2&gt;Lessons&lt;/h2&gt;
-
-&lt;p&gt;The behavior and generated code of the compilers is interesting, but I
-think they are allowed to do whatever they want when optimizing
-undefined code, so I can&amp;#8217;t fault them for that.&lt;/p&gt;
-
-&lt;p&gt;What both my coworker and I were surprised was the lack of warning. In
-general, we have come to rely on GCC to be overly zealous about
-providing warnings. I&amp;#8217;d much rather have an extraneous warning that I
-can silence instead of no warning at all.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Edit 2010-01-28&lt;/strong&gt; - added Visual Studio and clang analyzer output from reddit.&lt;/p&gt;
 </content>
   </entry>
   

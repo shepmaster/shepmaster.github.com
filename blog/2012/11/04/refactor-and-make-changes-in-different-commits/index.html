@@ -1,0 +1,331 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Refactor and make changes in different commits - Jake Goulding</title>
+  <meta name="author" content="Jake Goulding">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+
+  <link rel="canonical" href="http://jakegoulding.com/blog/2012/11/04/refactor-and-make-changes-in-different-commits/"/>
+  <link href="/favicon.png" rel="shortcut icon" />
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="http://s3.amazonaws.com/ender-js/jeesh.min.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml"/>
+  <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
+<link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body  >
+  <header><hgroup>
+  <h1><a href="/">Jake Goulding</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role=navigation><ul role=subscription data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+<form action="http://google.com/search" method="get">
+  <fieldset role="site-search">
+    <input type="hidden" name="q" value="site:jakegoulding.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+<ul role=main-navigation>
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry">
+  
+  <header>
+    
+      <h1 class="entry-title">Refactor and Make Changes in Different Commits</h1>
+    
+    
+      <p class="meta">
+
+
+
+
+
+  
+
+
+
+<time datetime="2012-11-04T14:31:00-05:00" pubdate  data-updated="true" >Nov 4<span>th</span>, 2012</time></p>
+    
+  </header>
+
+
+<div class="entry-content"><p>If you combine refactoring and making a change to your code into the
+same commit, you are going to have a bad time.</p>
+
+<!-- more -->
+
+
+<p>Just in case you&#8217;ve forgotten, <a href="http://en.wikipedia.org/wiki/Refactoring">refactoring</a> is</p>
+
+<blockquote><p>the process of changing a computer program&#8217;s source code without
+modifying its external functional behavior</p></blockquote>
+
+<p>When I review a commit that claims to be refactoring, I shift into to
+a very specific mindset. I visualize myself as a world-class goalie,
+ready to stop any rogue features that come my way; I&#8217;m going to stand
+my ground, no matter what.</p>
+
+<p>Contrast refactoring to adding new functionality. In that case, the
+author should be adding new objects that fulfill a responsibility,
+following the <a href="http://en.wikipedia.org/wiki/Open/closed_principle">open/closed principle</a>. When I review a commit
+that adds new functionality, I pay attention that the tests cover the
+new functionality, the minimum amount of code was added, and that the
+new code is sufficient.</p>
+
+<p>These are very different things to review for.</p>
+
+<h3>Why&#8217;s it bad?</h3>
+
+<p>When you combine refactoring and feature addition into the same
+commit, you double the work required to review it. In addition to
+figuring out if each changed line is correct, you also have to figure
+out what &#8220;correct&#8221; even means!</p>
+
+<p>Beyond the doubled work, you have to change your mindset for <strong>every
+line of code</strong>. That&#8217;s an amazing amount of context switching. It&#8217;s
+very hard to thoroughly review each line when it&#8217;s hard to even
+remember what you are reviewing for.</p>
+
+<p>Combining these disparate actions into one commit isn&#8217;t something that
+we do maliciously. In fact, it&#8217;s likely the opposite: good programmers
+have an innate drive to make the code better all the time. Sometimes
+we see a little problem that we just <em>have</em> to fix up.</p>
+
+<p>The problem is that when we have our programmer hats on, we don&#8217;t
+always think about what this commit will mean to others
+downstream. This could mean reviewers, approvers, testers,
+documenters, whatever needs to happen after the commit.</p>
+
+<h3>What do I do when my commit is too big?</h3>
+
+<p>There are a few main techniques I use when I discover I&#8217;ve done work
+that should be in different commits.</p>
+
+<p>If I haven&#8217;t committed yet, and the changes are separate enough, I use
+<code>git add -pu</code> to add certain lines of code and not others.</p>
+
+<p>If the changes overlap with each other, I will edit a specific section
+of the file until it looks like the intermediate change I really
+wanted. I <code>git add</code> the file and immediately revert my editor
+changes. I then repeat with the next section.</p>
+
+<p>If I have already committed, then I go into an interactive rebase and
+<code>edit</code> the particular commits that are too big. I often create a
+throw-away branch so I can easily compare the original and modified
+branches to make sure they end up the same.</p>
+
+<p>All of these techniques create &#8220;false history&#8221; - I didn&#8217;t <em>really</em>
+make that small step. After I&#8217;m finished, I run a little script that
+checks out each commit and runs my tests.</p>
+
+<p>Sometimes, trying to preserve my changes isn&#8217;t worth the time, or I
+can see into the future a bit and know ahead of time that I am about
+to make a big set of changes. In these cases, I try a spike: I make
+the changes willy-nilly, writing down each step as I do it. Then I
+throw it away and <em>invert the order of steps</em>. This allows each step
+to happen in the order I would prefer, and I often improve on each
+step.</p>
+
+<h3>Isn&#8217;t too many small commits just as bad?</h3>
+
+<p>I&#8217;ve heard something like this before:</p>
+
+<blockquote><p>It&#8217;s so small, it doesn&#8217;t deserve it&#8217;s own commit</p></blockquote>
+
+<p>I&#8217;ve <strong>never</strong> had to review a commit that was too small. I have had
+to review a commit that was too large. I&#8217;m willing to take the risk of
+creating many small commits, especially if all the changes are going
+to be made one way or another.</p>
+
+<p>If a commit is small, then I can open it, read the commit message, and
+review it within seconds.</p>
+
+<h3>What do I do as a reviewer?</h3>
+
+<p>I use a modified version of the <a href="http://en.wikipedia.org/wiki/Single_responsibility_principle">single responsibility principle</a>
+that applies to commits:</p>
+
+<blockquote><p>A commit should have one, and only one, change.</p></blockquote>
+
+<p>I try to follow steps like these:</p>
+
+<ol>
+<li>Read the whole commit message. It should have no <strong>and</strong>s, <strong>or</strong>s,
+or <strong>but</strong>s. If it does, I kick it back to the author and request that
+the commit be split up into those pieces. Otherwise, I sear the commit
+message into my brain.</li>
+<li>Read the diff of the commit and evaluate each change against the
+commit message. If a line doesn&#8217;t fit with the message, mark the
+change as unrelated. If it does, review the line as usual.</li>
+<li>Sometimes I keep reading the diff once you I find an unrelated
+line, other times I stop at the first one; the original author may be
+faster at separating the concerns.</li>
+<li>Make sure to thank the author when they provide a commit with a
+single focus - positive reinforcement lets us know that we are on the
+right track!</li>
+</ol>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Jake Goulding</span></span>
+
+      
+
+
+
+
+
+  
+
+
+
+<time datetime="2012-11-04T14:31:00-05:00" pubdate  data-updated="true" >Nov 4<span>th</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/refactoring/'>refactoring</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2012/11/04/refactor-and-make-changes-in-different-commits/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2012/11/04/refactor-and-make-changes-in-different-commits/" >Tweet</a>
+  
+  
+</div>
+
+    
+  </footer>
+</article>
+
+</div>
+
+<aside role=sidebar>
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/11/04/refactor-and-make-changes-in-different-commits/">Refactor and make changes in different commits</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/10/18/run-your-tests-in-a-deterministic-random-order/">Run your tests in a deterministic random order</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/10/10/watch-out-for-lost-updates-when-using-capybara-with-selenium/">Watch out for lost updates when using Capybara with Selenium</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/10/08/finding-a-race-condition-in-capybara-with-selenium/">Finding a race condition in Capybara with Selenium</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/10/03/name-your-variables-by-the-roles-they-play/">Name your variables by the roles they play</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("jakegoulding", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @jakegoulding</a>
+  
+</section>
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer><p>
+  Copyright &copy; 2012 - Jake Goulding -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-20521797-2']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+  
+
+  
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+</body>
+</html>
