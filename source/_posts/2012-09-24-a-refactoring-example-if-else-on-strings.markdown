@@ -3,7 +3,7 @@ layout: post
 title: "A refactoring example: lots of if-else statements on strings"
 date: 2012-09-24 12:00
 comments: true
-categories: refactoring, example
+categories: refactoring example
 ---
 
 I recently did a bit of work that turned out to be a great exercise
