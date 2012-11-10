@@ -7,6 +7,11 @@
   <meta charset="utf-8">
   <title>Be careful when using JUnit's expected exceptions - Jake Goulding</title>
   <meta name="author" content="Jake Goulding">
+
+  
+  <meta name="description" content="For many people, JUnit is the grand-daddy of testing frameworks. Even
+though other testing frameworks came first, a lot of people got their
+start &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -15,37 +20,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-
-  <link rel="canonical" href="http://jakegoulding.com/blog/2012/09/26/be-careful-when-using-junit-expected-exceptions/"/>
-  <link href="/favicon.png" rel="shortcut icon" />
+  <link rel="canonical" href="http://jakegoulding.com/blog/2012/09/26/be-careful-when-using-junit-expected-exceptions/">
+  <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="http://s3.amazonaws.com/ender-js/jeesh.min.js"></script>
+  <script src="/javascripts/ender.js"></script>
   <script src="/javascripts/octopress.js" type="text/javascript"></script>
-  <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml"/>
+  <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml">
   <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
 <link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
 
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-20521797-2']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
 </head>
 
-<body  >
-  <header><hgroup>
+<body   >
+  <header role="banner"><hgroup>
   <h1><a href="/">Jake Goulding</a></h1>
   
 </hgroup>
 
 </header>
-  <nav role=navigation><ul role=subscription data-subscription="rss">
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
   <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
   
 </ul>
+  
 <form action="http://google.com/search" method="get">
-  <fieldset role="site-search">
+  <fieldset role="search">
     <input type="hidden" name="q" value="site:jakegoulding.com" />
     <input class="search" type="text" name="q" results="0" placeholder="Search"/>
   </fieldset>
 </form>
+  
 <ul role=main-navigation>
   <li><a href="/">Blog</a></li>
   <li><a href="/blog/archives">Archives</a></li>
@@ -55,14 +75,18 @@
   <div id="main">
     <div id="content">
       <div>
-<article class="hentry">
+<article class="hentry" role="article">
   
   <header>
     
-      <h1 class="entry-title">Be Careful When Using JUnit's Expected Exceptions</h1>
+      <h1 class="entry-title">Be careful when using JUnit's expected exceptions</h1>
     
     
       <p class="meta">
+        
+
+
+
 
 
 
@@ -71,8 +95,9 @@
   
 
 
-
-<time datetime="2012-09-26T18:52:00-04:00" pubdate  data-updated="true" >Sep 26<span>th</span>, 2012</time></p>
+<time datetime="2012-09-26T18:52:00-04:00" pubdate data-updated="true">Sep 26<span>th</span>, 2012</time>
+        
+      </p>
     
   </header>
 
@@ -94,61 +119,61 @@ the exception yourself and assert if no such exception was
 thrown. Here&#8217;s an example I tweaked from <a href="http://radio.javaranch.com/lasse/2007/05/17/1179405760728.html">Lasse&#8217;s blog</a> and the
 JUnit documentation for <a href="http://kentbeck.github.com/junit/javadoc/latest/org/junit/Test.html"><code>@Test</code></a>.</p>
 
-<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
-<span class='line'>2</span>
-<span class='line'>3</span>
-<span class='line'>4</span>
-<span class='line'>5</span>
-<span class='line'>6</span>
-<span class='line'>7</span>
-<span class='line'>8</span>
-<span class='line'>9</span>
-</pre></td><td class='code' width='100%'><pre><code class='java'><div class='line'><span class="nd">@Test</span>
-</div><div class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">test_for_npe_with_try_catch</span><span class="o">()</span> <span class="o">{</span>
-</div><div class='line'>    <span class="k">try</span> <span class="o">{</span>
-</div><div class='line'>        <span class="k">throw</span> <span class="k">new</span> <span class="nf">NullPointerException</span><span class="o">();</span>
-</div><div class='line'>        <span class="n">fail</span><span class="o">(</span><span class="s">&quot;should&#39;ve thrown an exception!&quot;</span><span class="o">);</span>
-</div><div class='line'>    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">NullPointerException</span> <span class="n">expected</span><span class="o">)</span> <span class="o">{</span>
-</div><div class='line'>        <span class="c1">// go team!</span>
-</div><div class='line'>    <span class="o">}</span>
-</div><div class='line'><span class="o">}</span>
-</div></code></pre></td></tr></table></div></figure>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Test</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">test_for_npe_with_try_catch</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>    <span class="k">try</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">throw</span> <span class="k">new</span> <span class="nf">NullPointerException</span><span class="o">();</span>
+</span><span class='line'>        <span class="n">fail</span><span class="o">(</span><span class="s">&quot;should&#39;ve thrown an exception!&quot;</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">NullPointerException</span> <span class="n">expected</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="c1">// go team!</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 <p>With the newest versions of JUnit 4 (4.11 at the time of writing),
 there are two more options available to you: the <a href="http://kentbeck.github.com/junit/javadoc/latest/org/junit/Test.html"><code>@Test</code></a>
 annotation and the <a href="http://kentbeck.github.com/junit/javadoc/latest/org/junit/rules/ExpectedException.html"><code>ExpectedException</code></a> rule.</p>
 
-<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
-<span class='line'>2</span>
-<span class='line'>3</span>
-<span class='line'>4</span>
-</pre></td><td class='code' width='100%'><pre><code class='java'><div class='line'><span class="nd">@Test</span><span class="o">(</span><span class="n">expected</span> <span class="o">=</span> <span class="n">NullPointerException</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
-</div><div class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">test_for_npe_with_annotation</span><span class="o">()</span> <span class="o">{</span>
-</div><div class='line'>    <span class="k">throw</span> <span class="k">new</span> <span class="nf">NullPointerException</span><span class="o">();</span>
-</div><div class='line'><span class="o">}</span>
-</div></code></pre></td></tr></table></div></figure>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Test</span><span class="o">(</span><span class="n">expected</span> <span class="o">=</span> <span class="n">NullPointerException</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">test_for_npe_with_annotation</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>    <span class="k">throw</span> <span class="k">new</span> <span class="nf">NullPointerException</span><span class="o">();</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 
 
-<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
-<span class='line'>2</span>
-<span class='line'>3</span>
-<span class='line'>4</span>
-<span class='line'>5</span>
-<span class='line'>6</span>
-<span class='line'>7</span>
-<span class='line'>8</span>
-</pre></td><td class='code' width='100%'><pre><code class='java'><div class='line'><span class="nd">@Rule</span>
-</div><div class='line'><span class="kd">public</span> <span class="n">ExpectedException</span> <span class="n">thrown</span> <span class="o">=</span> <span class="n">ExpectedException</span><span class="o">.</span><span class="na">none</span><span class="o">();</span>
-</div><div class='line'>
-</div><div class='line'><span class="nd">@Test</span>
-</div><div class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">test_for_npe_with_rule</span><span class="o">()</span> <span class="o">{</span>
-</div><div class='line'>    <span class="n">thrown</span><span class="o">.</span><span class="na">expect</span><span class="o">(</span><span class="n">NullPointerException</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
-</div><div class='line'>    <span class="k">throw</span> <span class="k">new</span> <span class="nf">NullPointerException</span><span class="o">();</span>
-</div><div class='line'><span class="o">}</span>
-</div></code></pre></td></tr></table></div></figure>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Rule</span>
+</span><span class='line'><span class="kd">public</span> <span class="n">ExpectedException</span> <span class="n">thrown</span> <span class="o">=</span> <span class="n">ExpectedException</span><span class="o">.</span><span class="na">none</span><span class="o">();</span>
+</span><span class='line'>
+</span><span class='line'><span class="nd">@Test</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">test_for_npe_with_rule</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>    <span class="n">thrown</span><span class="o">.</span><span class="na">expect</span><span class="o">(</span><span class="n">NullPointerException</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+</span><span class='line'>    <span class="k">throw</span> <span class="k">new</span> <span class="nf">NullPointerException</span><span class="o">();</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 <p>Both of these forms offer a lot in the way of conciseness and
@@ -156,35 +181,35 @@ readability, and I prefer to use them when I need to test this kind of
 thing. However, both forms can cause a test to pass when it shouldn&#8217;t
 when the code can throw the exception in multiple ways:</p>
 
-<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
-<span class='line'>2</span>
-<span class='line'>3</span>
-<span class='line'>4</span>
-<span class='line'>5</span>
-<span class='line'>6</span>
-</pre></td><td class='code' width='100%'><pre><code class='java'><div class='line'><span class="nd">@Test</span><span class="o">(</span><span class="n">expected</span> <span class="o">=</span> <span class="n">NullPointerException</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
-</div><div class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">test_for_npe_but_which_one</span><span class="o">()</span> <span class="o">{</span>
-</div><div class='line'>    <span class="n">CoolObject</span> <span class="n">obj</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CoolObject</span><span class="o">(</span><span class="kc">null</span><span class="o">);</span>
-</div><div class='line'>    <span class="n">obj</span><span class="o">.</span><span class="na">doSomeSetupWork</span><span class="o">(</span><span class="mi">42</span><span class="o">);</span>  <span class="c1">// What actually throws the exception</span>
-</div><div class='line'>    <span class="n">obj</span><span class="o">.</span><span class="na">calculateTheAnswer</span><span class="o">();</span> <span class="c1">// What we want to throw the exception</span>
-</div><div class='line'><span class="o">}</span>
-</div></code></pre></td></tr></table></div></figure>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Test</span><span class="o">(</span><span class="n">expected</span> <span class="o">=</span> <span class="n">NullPointerException</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">test_for_npe_but_which_one</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>    <span class="n">CoolObject</span> <span class="n">obj</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CoolObject</span><span class="o">(</span><span class="kc">null</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">obj</span><span class="o">.</span><span class="na">doSomeSetupWork</span><span class="o">(</span><span class="mi">42</span><span class="o">);</span>  <span class="c1">// What actually throws the exception</span>
+</span><span class='line'>    <span class="n">obj</span><span class="o">.</span><span class="na">calculateTheAnswer</span><span class="o">();</span> <span class="c1">// What we want to throw the exception</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 <p>In languages that have lambdas or equivalents, this problem is easily
 avoided. For example, you can use <a href="https://www.relishapp.com/rspec/rspec-expectations/v/2-11/docs/built-in-matchers/raise-error-matcher"><code>expect</code></a> and <a href="https://www.relishapp.com/rspec/rspec-expectations/v/2-11/docs/built-in-matchers/raise-error-matcher"><code>raise_error</code></a> in RSpec:</p>
 
-<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
-<span class='line'>2</span>
-<span class='line'>3</span>
-<span class='line'>4</span>
-<span class='line'>5</span>
-</pre></td><td class='code' width='100%'><pre><code class='ruby'><div class='line'><span class="n">it</span> <span class="s1">&#39;throws_a_npe&#39;</span> <span class="k">do</span>
-</div><div class='line'>  <span class="n">obj</span> <span class="o">=</span> <span class="no">CoolObject</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="kp">nil</span><span class="p">)</span>
-</div><div class='line'>  <span class="n">obj</span><span class="o">.</span><span class="n">do_some_setup_work</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
-</div><div class='line'>  <span class="n">expect</span> <span class="p">{</span> <span class="n">obj</span><span class="o">.</span><span class="n">calculate_the_answer</span> <span class="p">}</span><span class="o">.</span><span class="n">to_raise</span><span class="p">(</span><span class="no">NoMethodError</span><span class="p">)</span>
-</div><div class='line'><span class="k">end</span>
-</div></code></pre></td></tr></table></div></figure>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">it</span> <span class="s1">&#39;throws_a_npe&#39;</span> <span class="k">do</span>
+</span><span class='line'>  <span class="n">obj</span> <span class="o">=</span> <span class="no">CoolObject</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="kp">nil</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">obj</span><span class="o">.</span><span class="n">do_some_setup_work</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">expect</span> <span class="p">{</span> <span class="n">obj</span><span class="o">.</span><span class="n">calculate_the_answer</span> <span class="p">}</span><span class="o">.</span><span class="n">to_raise</span><span class="p">(</span><span class="no">NoMethodError</span><span class="p">)</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 <h4>Alternate solutions</h4>
@@ -196,29 +221,29 @@ have the desired level of granularity. This is a pretty bulky syntax,
 any variables you use in the object would need to be declared final,
 and then you have to explictly run the code!</p>
 
-<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
-<span class='line'>2</span>
-<span class='line'>3</span>
-<span class='line'>4</span>
-<span class='line'>5</span>
-<span class='line'>6</span>
-<span class='line'>7</span>
-<span class='line'>8</span>
-<span class='line'>9</span>
-<span class='line'>10</span>
-<span class='line'>11</span>
-</pre></td><td class='code' width='100%'><pre><code class='java'><div class='line'><span class="nd">@Test</span>
-</div><div class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">test_for_one_of_two_npe_bulky_syntax</span><span class="o">()</span> <span class="o">{</span>
-</div><div class='line'>    <span class="kd">final</span> <span class="n">CoolObject</span> <span class="n">obj</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CoolObject</span><span class="o">(</span><span class="kc">null</span><span class="o">);</span>
-</div><div class='line'>    <span class="n">obj</span><span class="o">.</span><span class="na">doSomeSetupWork</span><span class="o">(</span><span class="mi">42</span><span class="o">);</span>
-</div><div class='line'>
-</div><div class='line'>    <span class="k">new</span> <span class="nf">GonnaThrowException</span><span class="o">(</span><span class="n">NullPointerException</span><span class="o">.</span><span class="na">class</span><span class="o">)</span> <span class="o">{</span>
-</div><div class='line'>        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">test</span><span class="o">()</span> <span class="o">{</span>
-</div><div class='line'>            <span class="n">obj</span><span class="o">.</span><span class="na">calculateTheAnswer</span><span class="o">();</span>
-</div><div class='line'>        <span class="o">}</span>
-</div><div class='line'>    <span class="o">}.</span><span class="na">run</span><span class="o">();</span>
-</div><div class='line'><span class="o">}</span>
-</div></code></pre></td></tr></table></div></figure>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Test</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">test_for_one_of_two_npe_bulky_syntax</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">final</span> <span class="n">CoolObject</span> <span class="n">obj</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CoolObject</span><span class="o">(</span><span class="kc">null</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">obj</span><span class="o">.</span><span class="na">doSomeSetupWork</span><span class="o">(</span><span class="mi">42</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">new</span> <span class="nf">GonnaThrowException</span><span class="o">(</span><span class="n">NullPointerException</span><span class="o">.</span><span class="na">class</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">test</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">obj</span><span class="o">.</span><span class="na">calculateTheAnswer</span><span class="o">();</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}.</span><span class="na">run</span><span class="o">();</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 <p>If you can rephrase the problem slightly, you might be able to use the
@@ -243,33 +268,33 @@ still cause the test to pass incorrectly. This may not be a problem in
 practice, as you are unlikely to continue the test after an exception
 should be thrown, and most Java tests do not have a teardown phase.</p>
 
-<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
-<span class='line'>2</span>
-<span class='line'>3</span>
-<span class='line'>4</span>
-<span class='line'>5</span>
-<span class='line'>6</span>
-<span class='line'>7</span>
-<span class='line'>8</span>
-<span class='line'>9</span>
-<span class='line'>10</span>
-<span class='line'>11</span>
-<span class='line'>12</span>
-<span class='line'>13</span>
-</pre></td><td class='code' width='100%'><pre><code class='java'><div class='line'><span class="nd">@Rule</span>
-</div><div class='line'><span class="kd">public</span> <span class="n">ExpectedException</span> <span class="n">thrown</span> <span class="o">=</span> <span class="n">ExpectedException</span><span class="o">.</span><span class="na">none</span><span class="o">();</span>
-</div><div class='line'>
-</div><div class='line'><span class="nd">@Test</span>
-</div><div class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">test_for_npe_with_rule_at_last_moment</span><span class="o">()</span> <span class="o">{</span>
-</div><div class='line'>    <span class="n">CoolObject</span> <span class="n">obj</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CoolObject</span><span class="o">(</span><span class="kc">null</span><span class="o">);</span>
-</div><div class='line'>    <span class="n">obj</span><span class="o">.</span><span class="na">doSomeSetupWork</span><span class="o">(</span><span class="mi">42</span><span class="o">);</span>
-</div><div class='line'>
-</div><div class='line'>    <span class="n">thrown</span><span class="o">.</span><span class="na">expect</span><span class="o">(</span><span class="n">NullPointerException</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
-</div><div class='line'>    <span class="n">obj</span><span class="o">.</span><span class="na">calculateTheAnswer</span><span class="o">();</span>
-</div><div class='line'>
-</div><div class='line'>    <span class="c1">// Any exceptions here will still cause the test to pass incorrectly</span>
-</div><div class='line'><span class="o">}</span>
-</div></code></pre></td></tr></table></div></figure>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Rule</span>
+</span><span class='line'><span class="kd">public</span> <span class="n">ExpectedException</span> <span class="n">thrown</span> <span class="o">=</span> <span class="n">ExpectedException</span><span class="o">.</span><span class="na">none</span><span class="o">();</span>
+</span><span class='line'>
+</span><span class='line'><span class="nd">@Test</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">test_for_npe_with_rule_at_last_moment</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>    <span class="n">CoolObject</span> <span class="n">obj</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CoolObject</span><span class="o">(</span><span class="kc">null</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">obj</span><span class="o">.</span><span class="na">doSomeSetupWork</span><span class="o">(</span><span class="mi">42</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">thrown</span><span class="o">.</span><span class="na">expect</span><span class="o">(</span><span class="n">NullPointerException</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">obj</span><span class="o">.</span><span class="na">calculateTheAnswer</span><span class="o">();</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// Any exceptions here will still cause the test to pass incorrectly</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 
@@ -289,11 +314,13 @@ should be thrown, and most Java tests do not have a teardown phase.</p>
 
 
 
+
+
+
   
 
 
-
-<time datetime="2012-09-26T18:52:00-04:00" pubdate  data-updated="true" >Sep 26<span>th</span>, 2012</time>
+<time datetime="2012-09-26T18:52:00-04:00" pubdate data-updated="true">Sep 26<span>th</span>, 2012</time>
       
 
 <span class="categories">
@@ -310,15 +337,24 @@ should be thrown, and most Java tests do not have a teardown phase.</p>
   <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2012/09/26/be-careful-when-using-junit-expected-exceptions/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2012/09/26/be-careful-when-using-junit-expected-exceptions/" >Tweet</a>
   
   
+  
 </div>
 
     
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2012/09/24/a-refactoring-example-if-else-on-strings/" title="Previous Post: A refactoring example: lots of if-else statements on strings">&laquo; A refactoring example: lots of if-else statements on strings</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2012/10/01/using-ruby-blocks-to-ensure-resources-are-cleaned-up/" title="Next Post: Using Ruby blocks to ensure resources are cleaned up">Using Ruby blocks to ensure resources are cleaned up &raquo;</a>
+      
+    </p>
   </footer>
 </article>
 
 </div>
 
-<aside role=sidebar>
+<aside class="sidebar">
   
     <section>
   <h1>Recent Posts</h1>
@@ -360,9 +396,10 @@ should be thrown, and most Java tests do not have a teardown phase.</p>
   </script>
   <script src="/javascripts/twitter.js" type="text/javascript"> </script>
   
-    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @jakegoulding</a>
+    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-show-count="false">Follow @jakegoulding</a>
   
 </section>
+
 
 
 
@@ -373,29 +410,20 @@ should be thrown, and most Java tests do not have a teardown phase.</p>
 
     </div>
   </div>
-  <footer><p>
+  <footer role="contentinfo"><p>
   Copyright &copy; 2012 - Jake Goulding -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 
 </footer>
   
-  <script type="text/javascript">
-    var _gaq = _gaq || [];
-    _gaq.push(['_setAccount', 'UA-20521797-2']);
-    _gaq.push(['_trackPageview']);
-
-    (function() {
-      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-    })();
-  </script>
 
 
-  
 
-  
+
+
+
+
   <script type="text/javascript">
     (function(){
       var twitterWidgets = document.createElement('script');
@@ -405,6 +433,9 @@ should be thrown, and most Java tests do not have a teardown phase.</p>
       document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
     })();
   </script>
+
+
+
 
 
 </body>

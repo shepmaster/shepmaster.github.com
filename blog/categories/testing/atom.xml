@@ -1,0 +1,806 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: testing | Jake Goulding]]></title>
+  <link href="http://jakegoulding.com/blog/categories/testing/atom.xml" rel="self"/>
+  <link href="http://jakegoulding.com/"/>
+  <updated>2012-11-10T17:27:44-05:00</updated>
+  <id>http://jakegoulding.com/</id>
+  <author>
+    <name><![CDATA[Jake Goulding]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Run your tests in a deterministic random order]]></title>
+    <link href="http://jakegoulding.com/blog/2012/10/18/run-your-tests-in-a-deterministic-random-order/"/>
+    <updated>2012-10-18T18:56:00-04:00</updated>
+    <id>http://jakegoulding.com/blog/2012/10/18/run-your-tests-in-a-deterministic-random-order</id>
+    <content type="html"><![CDATA[<p>Running your tests in a random order is a good idea to help shake out
+implicit dependencies between tests. Running your tests in a
+deterministic random order is even better.</p>
+
+<!-- more -->
+
+
+<h4>What's an implicit dependency?</h4>
+
+<p>It's easy to accidentally create order-dependent tests:</p>
+
+<p>```ruby
+it "creates a widget" do
+  Widget.create(name: 'Awesome Widget')
+  Widget.count.should eql(1)
+end</p>
+
+<p>it "deletes a widget" do
+  Widget.first.delete # Implicitly requires the first test to have been run
+  Widget.count.should eql(0)
+end
+```</p>
+
+<h4>Why should I care?</h4>
+
+<p>Dependencies between tests are bad for a number of reasons:</p>
+
+<ol>
+<li>When a single test fails, you need to run many tests to reproduce
+the failure. This makes reproduction slower and more annoying.</li>
+<li>The test method is no longer complete documentation. The required setup
+for the test is located in many different methods.</li>
+<li>The complexity of the test is hidden. What looks like a two line
+test may actually comprise hundreds of lines of code. Complex test
+code is often an excellent indicator of complex production code.</li>
+</ol>
+
+
+<p>Running tests in a random order isn't enough; you need to be able to
+reproduce the same random order before you can fix it! <a href="https://www.relishapp.com/rspec/rspec-core/v/2-11/docs/command-line/order-new-in-rspec-core-2-8">RSpec</a>
+and <a href="http://www.bootspring.com/2010/09/22/minitest-rubys-test-framework/">MiniTest</a> both offer a way to specify the random seed
+on the command line or with environment variables. Unfortunately, the
+<a href="http://maven.apache.org/plugins/maven-surefire-plugin/test-mojo.html">Surefire</a> plugin for Maven does not offer a way to specify
+the seed, even though it allows random ordering.</p>
+
+<h4>Continuous integration servers</h4>
+
+<p>At work, we use <a href="http://code.google.com/p/gerrit/">gerrit</a> for code reviews and
+<a href="http://jenkins-ci.org/">Jenkins</a> as our CI server. Whenever a new or updated commit
+is pushed to gerrit, a build is started in Jenkins. There is also a
+Jenkins job to build <code>origin/master</code> every 15 minutes if it has been
+updated.</p>
+
+<p>The Gerrit/Jenkins combination allows you to retrigger a specific
+build in case there were environmental issues that have since been
+fixed. Unfortunately for us, retriggering was being used as a way to
+avoid dealing with test failures due to order dependencies. To
+encourage us to stop and address our order dependency problem, we
+updated both jobs to use a deterministic seed.</p>
+
+<p>For the Gerrit builds, we used the Gerrit change number, which remains
+constant across multiple revisions of the same commit. The Gerrit
+plugin makes this value available as a environment variable during
+script execution.</p>
+
+<p><code>bash
+rspec SPEC_OPTS="--seed $GERRIT_CHANGE_NUMBER"
+</code></p>
+
+<p>For the <code>origin/master</code> build, we chose to use the Git hash of the
+commit. Since the hash contains letters, we used a shell one-liner to
+scrape out something that looks reasonable as a seed.</p>
+
+<p><code>bash
+SEED=$(git rev-parse HEAD | tr -d 'a-z' | cut -b 1-5)
+rspec SPEC_OPTS="--seed $SEED"
+</code></p>
+
+<h4>Does it work?</h4>
+
+<p>Just a few days after making the above changes, another developer came
+to me with a strange problem. His commit was unable to pass the tests
+in Gerrit, but the failing test had nothing to do with his changes. We
+ran the tests locally using the seed from the Jenkins server and were
+able to reproduce the problem. Ultimately, we traced the problem to a
+request spec that modified some core configuration settings and didn't
+reset them successfully. Success!</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Watch out for lost updates when using Capybara with Selenium]]></title>
+    <link href="http://jakegoulding.com/blog/2012/10/10/watch-out-for-lost-updates-when-using-capybara-with-selenium/"/>
+    <updated>2012-10-10T19:41:00-04:00</updated>
+    <id>http://jakegoulding.com/blog/2012/10/10/watch-out-for-lost-updates-when-using-capybara-with-selenium</id>
+    <content type="html"><![CDATA[<p>At work, I am still working on finding and squashing fun test
+failures. In this case, "fun" means tests that have an intermittent
+failure rate of 5% (or less!). The test issue I worked on today had to
+do with the "lost update" problem.</p>
+
+<!-- more -->
+
+
+<h3>The lost update problem</h3>
+
+<p><a href="http://www.amazon.com/gp/product/0321503627/ref=as_li_ss_tl?ie=UTF8&amp;tag=jakgousblo-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399369&amp;creativeASIN=0321503627">Growing Object-Oriented Software, Guided by Tests</a> has a great
+description and diagram of the problem:</p>
+
+<p><img src="http://jakegoulding.com/images/blog/lost-update.png" alt="The lost update problem" /></p>
+
+<p>The short version is that when you poll a system for its state, it's
+entirely possible to miss the state you are looking for. In the
+diagram, the color changes to red and then to blue before the test
+ever has a chance to see that it was red. Since this system will never
+go back to red, the test will incorrectly fail.</p>
+
+<h3>The lost update problem in Capybara</h3>
+
+<p>Like many other sites, we use the <a href="http://datatables.net/">DataTables</a> jQuery
+plugin to show tabular data. A test that ensured that the filtering
+worked looked something like this:</p>
+
+<p>```ruby
+def wait_for_table_loading
+  dialog = page.find('.loading_dialog')
+  wait_until { dialog.visible? }
+end</p>
+
+<p>def wait_for_table_ready
+  dialog = page.find('.loading_dialog')
+  wait_until { ! dialog.visible? }
+end</p>
+
+<p>it 'filters the list' do
+  visit list_path
+  click_on 'Filter by active'
+  wait_for_table_loading
+  wait_for_table_ready
+  page.all('.data-item').should have(3).items
+end
+```</p>
+
+<p>Enabling filtering triggers some slow backend activity, which brings
+up the loading dialog. The test waits for that dialog to appear and
+disappear before continuing on. Now the entire table is populated and
+we can safely see how many elements are in the table.</p>
+
+<p>However, the test will fail if the backend is <em>too fast</em>. The loading
+dialog will appear and disappear almost immediately. The test will
+time out waiting for the loading dialog that will never appear
+again. This behavior can be reliably replicated by adding a sleep to
+the test between lines 13 and 14.</p>
+
+<h3>A Capybara solution</h3>
+
+<p>In order to make the test more robust, I rewrote it as:</p>
+
+<p><code>
+it 'filters the list' do
+  visit list_path
+  click_on 'Filter by active'
+  page.should have_css('.data-item', :count =&gt; 3)
+end
+</code></p>
+
+<p>The test now ignores the loading dialogs completely, instead asking
+Capybara to find a particular number of elements. Asking Capybara to
+find things in this manner will let the test leverage the built-in
+waiting facilities of Capybara.</p>
+
+<p>In this test, the number of data items won't change once the table is
+loaded, so it is a safe state to poll. As an additional benefit, the
+test now has fewer lines of code and is clearer.</p>
+
+<p>As a downside, when the test fails, the Capybara error message doesn't
+include how many items were found, which isn't as informative as the
+equivalent message from the RSpec matcher.</p>
+
+<p>Also, this test still ultimately relies on polling the DOM, so it's
+possible for similar bugs to pop up in the future.</p>
+
+<h3>The GOOS solution to the lost update problem</h3>
+
+<p>GOOS provides a solution to the lost update problem that can avoid the
+problems with polling completely:</p>
+
+<p><img src="http://jakegoulding.com/images/blog/lost-update-fixed.png" alt="The solution to the lost update problem" /></p>
+
+<p>The system under test must be modified to provide notifications when
+something interesting happens. This system now has a listener that is
+notified when the color changes and what the color is changed to. The
+test supplies a simple listener that accumulates the changes and
+offers a nice API suited for the tests.</p>
+
+<h3>A hypothetical Capybara solution without polling</h3>
+
+<p>I can imagine a Capybara test that looks something like this:</p>
+
+<p>```ruby
+it 'filters the list' do
+  visit list_path
+  wait_for_js_event('table.loaded') do</p>
+
+<pre><code>click_on 'Filter by active'
+</code></pre>
+
+<p>  end
+  page.all('.data-item').should have(3).items
+end
+```</p>
+
+<p>Under the hood, there's some extra JavaScript going on. The
+<code>wait_for_js_event</code> method would inject some JavaScript into the
+running Selenium session that creates an event listener and binds it
+to the given event. This listener just collects all the events it
+receives. After yielding the block, the test code then polls the event
+listener, waiting for the event to be captured.</p>
+
+<p>It's entirely possible that code that does this already exists, but I
+don't know of it. It wouldn't be a large amount of code to write, but
+it would straddle the borders of Capybara, Selenium and JavaScript.</p>
+
+<p>This might be a useful thing for <a href="http://pivotal.github.com/jasmine/">Jasmine</a> tests, so it might
+already exist in that ecosystem.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Be careful when using JUnit's expected exceptions]]></title>
+    <link href="http://jakegoulding.com/blog/2012/09/26/be-careful-when-using-junit-expected-exceptions/"/>
+    <updated>2012-09-26T18:52:00-04:00</updated>
+    <id>http://jakegoulding.com/blog/2012/09/26/be-careful-when-using-junit-expected-exceptions</id>
+    <content type="html"><![CDATA[<p>For many people, JUnit is the grand-daddy of testing frameworks. Even
+though other testing frameworks came first, a lot of people got their
+start with JUnit.</p>
+
+<p>People often start out testing with simple Boolean assertions, then
+move on substring matching, then maybe on to mocks and stubs. At some
+point, however, most people want to assert that their code throws a
+particular exception, and that's where our story starts.</p>
+
+<!-- more -->
+
+
+<p>When JUnit 3 was the latest and greatest, you were supposed to catch
+the exception yourself and assert if no such exception was
+thrown. Here's an example I tweaked from <a href="http://radio.javaranch.com/lasse/2007/05/17/1179405760728.html">Lasse's blog</a> and the
+JUnit documentation for <a href="http://kentbeck.github.com/junit/javadoc/latest/org/junit/Test.html"><code>@Test</code></a>.</p>
+
+<p>```java
+@Test
+public void test_for_npe_with_try_catch() {</p>
+
+<pre><code>try {
+    throw new NullPointerException();
+    fail("should've thrown an exception!");
+} catch (NullPointerException expected) {
+    // go team!
+}
+</code></pre>
+
+<p>}
+```</p>
+
+<p>With the newest versions of JUnit 4 (4.11 at the time of writing),
+there are two more options available to you: the <a href="http://kentbeck.github.com/junit/javadoc/latest/org/junit/Test.html"><code>@Test</code></a>
+annotation and the <a href="http://kentbeck.github.com/junit/javadoc/latest/org/junit/rules/ExpectedException.html"><code>ExpectedException</code></a> rule.</p>
+
+<p>```java
+@Test(expected = NullPointerException.class)
+public void test_for_npe_with_annotation() {</p>
+
+<pre><code>throw new NullPointerException();
+</code></pre>
+
+<p>}
+```</p>
+
+<p>```java
+@Rule
+public ExpectedException thrown = ExpectedException.none();</p>
+
+<p>@Test
+public void test_for_npe_with_rule() {</p>
+
+<pre><code>thrown.expect(NullPointerException.class);
+throw new NullPointerException();
+</code></pre>
+
+<p>}
+```</p>
+
+<p>Both of these forms offer a lot in the way of conciseness and
+readability, and I prefer to use them when I need to test this kind of
+thing. However, both forms can cause a test to pass when it shouldn't
+when the code can throw the exception in multiple ways:</p>
+
+<p>```java
+@Test(expected = NullPointerException.class)
+public void test_for_npe_but_which_one() {</p>
+
+<pre><code>CoolObject obj = new CoolObject(null);
+obj.doSomeSetupWork(42);  // What actually throws the exception
+obj.calculateTheAnswer(); // What we want to throw the exception
+</code></pre>
+
+<p>}
+```</p>
+
+<p>In languages that have lambdas or equivalents, this problem is easily
+avoided. For example, you can use <a href="https://www.relishapp.com/rspec/rspec-expectations/v/2-11/docs/built-in-matchers/raise-error-matcher"><code>expect</code></a> and <a href="https://www.relishapp.com/rspec/rspec-expectations/v/2-11/docs/built-in-matchers/raise-error-matcher"><code>raise_error</code></a> in RSpec:</p>
+
+<p><code>ruby
+it 'throws_a_npe' do
+  obj = CoolObject.new(nil)
+  obj.do_some_setup_work(42)
+  expect { obj.calculate_the_answer }.to_raise(NoMethodError)
+end
+</code></p>
+
+<h4>Alternate solutions</h4>
+
+<p>Until a version of Java is released with lambdas, I see no better
+solution than using try-catch blocks, the old JUnit 3 way. You could
+define an interface and then create anonymous classes in the test to
+have the desired level of granularity. This is a pretty bulky syntax,
+any variables you use in the object would need to be declared final,
+and then you have to explictly run the code!</p>
+
+<p>```java
+@Test
+public void test_for_one_of_two_npe_bulky_syntax() {</p>
+
+<pre><code>final CoolObject obj = new CoolObject(null);
+obj.doSomeSetupWork(42);
+
+new GonnaThrowException(NullPointerException.class) {
+    public void test() {
+        obj.calculateTheAnswer();
+    }
+}.run();
+</code></pre>
+
+<p>}
+```</p>
+
+<p>If you can rephrase the problem slightly, you might be able to use the
+fact that <code>ExpectedException</code> can assert on the exception message to
+restrict your test. If you know that <strong>only</strong> your error can include a
+certain string, then checking for that string could prevent tests from
+passing when they shouldn't.</p>
+
+<p>Another solution would be to modify your code or tests so that you
+don't have to deal with the problem in the first place. If you can
+move the setup code into a <code>@Before</code> block, then the exception
+wouldn't be caught by the test. If you can change your code so it
+cannot throw the exception multiple ways, or if it throws different
+exceptions, then that would also allow you to sidestep the problem.</p>
+
+<p><strong>Update 2012-09-27</strong></p>
+
+<p>David Bradley points out that if you configure the JUnit rule right
+before the expected exception, you can reduce the possibility of
+error. Unfortunately, exceptions thrown <em>after</em> the desired line will
+still cause the test to pass incorrectly. This may not be a problem in
+practice, as you are unlikely to continue the test after an exception
+should be thrown, and most Java tests do not have a teardown phase.</p>
+
+<p>```java
+@Rule
+public ExpectedException thrown = ExpectedException.none();</p>
+
+<p>@Test
+public void test_for_npe_with_rule_at_last_moment() {</p>
+
+<pre><code>CoolObject obj = new CoolObject(null);
+obj.doSomeSetupWork(42);
+
+thrown.expect(NullPointerException.class);
+obj.calculateTheAnswer();
+
+// Any exceptions here will still cause the test to pass incorrectly
+</code></pre>
+
+<p>}
+```</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[What I've learned about testing over the last year]]></title>
+    <link href="http://jakegoulding.com/blog/2011/10/10/learned-about-testing-last-year/"/>
+    <updated>2011-10-10T19:15:00-04:00</updated>
+    <id>http://jakegoulding.com/blog/2011/10/10/learned-about-testing-last-year</id>
+    <content type="html"><![CDATA[<p>Over the last year or so, I've been trying to learn about various
+types and methodologies of testing. The Ruby community is pretty vocal
+about testing, so I felt out of place not knowing even the most basic
+of things. This post is intended to organize my current thoughts and
+hopefully provide some guidance for people on the same journey.</p>
+
+<!-- more -->
+
+
+<h2>Who should read this?</h2>
+
+<p>I had to realize two things before I could start learning:</p>
+
+<ol>
+<li>I don't know enough about testing.</li>
+<li>I need to know more about testing.</li>
+</ol>
+
+
+<p>If you don't fit into both of these categories, you probably aren't
+reading this post.</p>
+
+<p>If you know what "mockist" and "classicist" mean and you know which
+you are, you probably already know everything here. If you care, I
+generally take the "mockist" approach, and this post reflects that.</p>
+
+<p>Otherwise, feel free to continue!</p>
+
+<h2>Why should I test?</h2>
+
+<p>The simplest answer is that testing allows you to have some degree of
+confidence that the code as written is right.</p>
+
+<p>Less obvious is the fact that tests give you confidence to change
+code. Eventually, some part of the software will need to change
+while everything else should stay constant. For me, this point really
+hit home when I read <a href="http://www.amazon.com/gp/product/0131177052/ref=as_li_ss_tl?ie=UTF8&amp;tag=jakgousblo-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399369&amp;creativeASIN=0131177052">Working Effectively with Legacy Code</a> by Michael Feathers. I deal with lots of code that
+needs to be changed and I'm usually worried that my change might
+affect some conceptually remote piece of the software.</p>
+
+<p>Maybe the hardest thing for people to believe is that tests can
+provide feedback on the design of the code. This is a core concept
+behind Test-Driven Design: if you listen to what your tests tell you
+about your code, you can make your code better.</p>
+
+<p>Note that these three things cover the entire life cycle of code;
+correctness applies to the <em>present</em> of the feature, confidence comes
+into play when the feature is in the <em>past</em>, and design feedback sheds
+light into the <em>future</em> of your code.</p>
+
+<h2>What flavors of test exist?</h2>
+
+<p>Here is a list of the types of tests that I can think of purely off the top
+of my head, I'm sure there are lots more.</p>
+
+<ul>
+<li><a href="http://en.wikipedia.org/wiki/Unit_testing">Unit testing</a></li>
+<li><a href="http://en.wikipedia.org/wiki/Integration_testing">Integration testing</a></li>
+<li><a href="http://en.wikipedia.org/wiki/Functional_testing">Functional testing</a></li>
+<li><a href="http://en.wikipedia.org/wiki/Acceptance_testing">Acceptance testing</a></li>
+<li><a href="http://en.wikipedia.org/wiki/Load_testing">Load testing</a></li>
+<li><a href="http://en.wikipedia.org/wiki/Performance_testing">Performance testing</a></li>
+<li><a href="http://en.wikipedia.org/wiki/Fuzz_testing">Fuzz testing</a></li>
+</ul>
+
+
+<p>Those are all links to corresponding Wikipedia page; I don't agree
+with every nuance listed on those pages, and some pages are
+unfortunately short, but the links provide the barest minimum of
+a start if you would like to learn more about each type of test.</p>
+
+<p>I don't tend to draw a hard line between integration, functional, and
+acceptance tests. If you need to know the difference, this
+<a href="http://stackoverflow.com/questions/4904096/whats-the-difference-between-unit-functional-acceptance-and-integration-tests">Stack Overflow question</a> has a pretty good breakdown. I
+think of acceptance tests as a superset of functional tests, which
+are themselves supersets of integration tests.</p>
+
+<p>All I care to talk about in this post are unit and acceptance tests. I
+am <em>not</em> saying the other types of testing are not important. I am
+saying that I think that unit and acceptance tests are the most
+useful types of tests to start with.</p>
+
+<p>I am nominally a programmer, and this post will exhibit that
+bias. I certainly hope that people approaching testing from a
+different angle can benefit from this post, but no guarantees are
+made.</p>
+
+<h2>How do acceptance and unit tests fit together?</h2>
+
+<p>A great way to understand how acceptance and unit tests work in
+concert is to read <a href="http://www.amazon.com/gp/product/1934356379/ref=as_li_ss_tl?ie=UTF8&amp;tag=jakgousblo-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399369&amp;creativeASIN=1934356379">The RSpec Book</a>. If you are too lazy
+and/or cheap to read it, here's one extremely salient picture:</p>
+
+<p><img src="http://jakegoulding.com/images/blog/bdd-cycle.png" alt="The BDD test/develop cycle" /></p>
+
+<p>The extremely abridged version is that you write an <strong>acceptance
+test</strong> for the feature you want. This test should be written from the
+point-of-view of the user and using terms that a user would use.</p>
+
+<p>As you try to make the acceptance test pass, you will realize that you
+need to write smaller components to solve the larger problem. In an
+object-oriented language, these components will probably be
+objects. The test for each component is a <strong>unit test</strong>.</p>
+
+<h2>Acceptance tests</h2>
+
+<p>Acceptance tests tell you that the software as a whole does what it is
+supposed to do. It's important to write acceptance tests as if you
+were the user. This makes it so that the test exposes the actual
+<em>value</em> of the code, explaining <em>why</em> the code even exists.</p>
+
+<p>To write proper acceptance tests, you need to have complete control
+over the entire environment your software runs in. If you interact
+with a database, you must be able to change data in the database. If
+you need to be able to parse an empty RSS feed, then you must be able
+to create an empty RSS feed to test that functionality.</p>
+
+<p>Because acceptance tests exercise the entire system, it's very easy
+for them to be slow, but there are a few techniques that you can use
+to help keep your total time down.</p>
+
+<p>Acceptance tests should cover the "happy path" of your software. If
+there are any extremely important failure cases, then cover those with
+acceptance tests as well. However, you don't need to cover every
+possible case. For example, use unit tests to ensure that things that
+generate errors do so consistently, and then use one acceptance test
+to make sure errors are shown correctly.</p>
+
+<p>Make sure that you minimize what data you need for an acceptance
+test. You probably don't need to load 10,000 rows into your database
+just to make sure that a user can view their profile. Use the smallest
+amount of data you can get away with.</p>
+
+<p>Don't get lazy and reuse one giant piece of setup code for every
+test. This is an example of the tests telling you that your design is
+painful to use. In this case, a user would have to duplicate all of
+the steps in the setup in order to use the function you are
+testing. Maybe that's the way it has to be, but try to make it
+easier on the user.</p>
+
+<h2>Unit tests</h2>
+
+<p>Unit tests have some exciting qualities for a developer. Generally,
+unit tests are <em>fast</em> and can isolate exactly the one thing that is
+broken. Achieving these goals takes hard work.</p>
+
+<p>Limiting each unit test to one assertion enables isolation of
+faults. If a test fails, the name of the test by itself should serve
+to tell you exactly what went wrong. If you have multiple assertions,
+then you have to look at the failing line number to determine the real
+issue.</p>
+
+<h3>Mock objects</h3>
+
+<p>One way to achieve isolation and speed in your unit tests is to
+introduce <em>mock objects</em>. Mock objects are <em>test doubles</em> that
+surround the real code under test and assert on the messages sent
+between objects. Since they aren't real objects, they can't affect
+your test correctness, and they are extremely lightweight so they will
+be fast.</p>
+
+<p>Seems easy to use mocks, right? Just create some dummy objects that
+responds to the necessary methods and returns values as needed. Then
+point the object under test at the mock objects, run the code, and
+assert that tested object has used any returned values correctly.</p>
+
+<p>Here's an example of doing that in Ruby. I'm eschewing using any
+libraries in an attempt to make the code as obvious as possible.</p>
+
+<p>```ruby
+class Foo
+  attr_reader foo</p>
+
+<p>  def calculate_foo(bar)</p>
+
+<pre><code>@foo = bar.quux * 2
+</code></pre>
+
+<p>  end
+end</p>
+
+<p>class BarDouble
+  def quux</p>
+
+<pre><code>100
+</code></pre>
+
+<p>  end
+end</p>
+
+<p>f = Foo.new
+f.calculate_foo(BarDouble.new)
+puts f.foo == 200
+```</p>
+
+<p>Sorry, I lied to you; that last example was <em>not</em> a mock - although I
+thought it was for the longest time. The double shown is actually a
+<em>stub</em>. The key point is that a mock <strong>asserts messages are
+sent</strong>. The example above asserts a state.</p>
+
+<p>Here is a test that correctly uses a mock:</p>
+
+<p>```ruby
+class Foo
+  def calculate_foo(bar)</p>
+
+<pre><code>@foo = bar.quux * 2
+</code></pre>
+
+<p>  end
+end</p>
+
+<p>class BarMock
+  def quux_called?</p>
+
+<pre><code>@quux_called
+</code></pre>
+
+<p>  end</p>
+
+<p>  def quux</p>
+
+<pre><code>@quux_called = true
+100
+</code></pre>
+
+<p>  end
+end</p>
+
+<p>f = Foo.new
+b = BarMock.new
+f.calculate_foo(b)
+puts b.quux_called?
+```</p>
+
+<p>This last example uses a mock to assert that the right messages were
+sent. Note that we removed the <code>foo</code> accessor from the first class; we
+don't need it anymore! The state of the object is now kept where it
+should be - inside the object.</p>
+
+<p>The difference between stubs and mocks can seem subtle, but it is
+important. For a much richer discussion, read <a href="http://martinfowler.com/articles/mocksArentStubs.html">Mocks Aren't Stubs</a> by Martin Fowler.</p>
+
+<p>I make no claim that this example is a <em>good</em> use of mocks, just that
+it is how mocks are to be used.</p>
+
+<h3>Object-oriented programming and mocks</h3>
+
+<p>This is all recent information that started to worm its way into my
+brain after watching <a href="http://confreaks.net/videos/659-rubyconf2011-why-you-don-t-get-mock-objects">Why You Don't Get Mock Objects</a>
+- you should watch it too.</p>
+
+<p>The code example above may still have a problem. The <code>Foo</code> object asks
+the <code>Bar</code> object for the value of <code>quux</code> and then manipulates the
+result. This goes against the <a href="http://pragprog.com/articles/tell-dont-ask">Tell, Don't Ask</a> principle, and
+could be a warning sign of <a href="http://c2.com/cgi/wiki?FeatureEnvySmell">Feature Envy</a>.</p>
+
+<p>You should only mock collaborators. Collaborators are objects that are
+peers of the object under test. Collaborators should not be confused
+with objects that simply serve as implementation details. If you store
+a bit of state in a string or some integers, those are internal
+details and should not be mocked out.</p>
+
+<h3>Example of applying these ideas to real code</h3>
+
+<p>This is a real (but anonymized) feature and test example. We have a
+piece of code that manipulates data retrieved via HTTP. This retrieval
+can be fairly expensive, so we want to cache the final manipulated
+result. The code that does the manipulation and caching is separated
+from the HTTP call by a few intermediate objects.</p>
+
+<p><img src="http://jakegoulding.com/images/blog/mock-example-current.png" alt="The current code setup" /></p>
+
+<p>Our current testing strategy is to provide fake data at the end of the
+chain, effectively short-circuiting the HTTP call. We also count the
+number of times that the HTTP call is made, and the test fails if the
+call is made more than once.</p>
+
+<p><img src="http://jakegoulding.com/images/blog/mock-example-current-test.png" alt="The current test setup" /></p>
+
+<p>One obvious downside is that if <em>any</em> of the intermediate objects
+decide they need to make an HTTP call themselves, our test will
+fail. What's worse is that the failure will seem to indicate that the
+caching is not working, so we will start debugging there. When we
+finally figure out that the test is "lying" to us, we will have wasted
+time and started to distrust our tests.</p>
+
+<p>We can make the test better if we move the test double closer to the
+code under test. This lets us ignore all the other objects in the call
+chain - if one of these other objects does not behave properly, this
+test will not fail. This is no free lunch; there <strong>must</strong> be unit
+tests that focus on the other objects so you can tell when they break!</p>
+
+<p><img src="http://jakegoulding.com/images/blog/mock-example-next-test.png" alt="A better test setup" /></p>
+
+<p>While writing the caching tests, we should notice that there are two
+sets of unrelated tests: one that checks that the core functionality
+works, and one that checks that the caching works. This should
+influence us to split the object apart (better known as the
+<a href="http://en.wikipedia.org/wiki/Single_responsibility_principle">Single Responsibility Principle</a>).</p>
+
+<p><img src="http://jakegoulding.com/images/blog/mock-example-srp.png" alt="A better code setup" /></p>
+
+<p>Splitting the caching into a separate object will allow us to test the
+caching behavior in isolation.</p>
+
+<p><img src="http://jakegoulding.com/images/blog/mock-example-srp-test.png" alt="Even better test setup" /></p>
+
+<h2>A handful of things to learn next</h2>
+
+<p>My learning isn't over, and hopefully never will be. Here is a sample
+of some questions currently percolating in my brain.</p>
+
+<p>Acceptance tests are often slow because they hit an external
+resource. Ruby has a gem called <a href="https://github.com/myronmarston/vcr">VCR</a> (and Java has a clone
+called <a href="https://github.com/robfletcher/betamax">Betamax</a>) that record HTTP requests and responses and
+then play them back during subsequent test runs. By definition, using
+one of these tools means you are no longer always doing true
+integration tests. However, the speedup is usually noticeable.</p>
+
+<ul>
+<li>When should you use this type of tool?</li>
+<li>What are the positives and negatives of this kind of tool?</li>
+<li>How frequently do you clear the cache of saved responses?</li>
+<li>Can the concept be easily extended to non-HTTP protocols?</li>
+</ul>
+
+
+<p>Ideally, you should never add code simply to make something
+testable. At that point, you are adding complexity to a system that
+will not benefit from that complexity. My pragmatic side says that
+sometimes you have to add hooks only to be used for testing.</p>
+
+<ul>
+<li>Do you really need to add these hooks?</li>
+<li>Is there a general type of design that avoids the need for the
+hooks?</li>
+<li>Is adding this kind of hook worth it?</li>
+</ul>
+
+
+<h2>Things you should read or watch</h2>
+
+<h5><a href="http://www.amazon.com/gp/product/1934356379/ref=as_li_ss_tl?ie=UTF8&amp;tag=jakgousblo-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399369&amp;creativeASIN=1934356379">The RSpec Book</a> (book)</h5>
+
+<p>Although the book seems like it will only be about Ruby, it actually
+covers the concepts of testing thoroughly. Introduced me to the
+{acceptance,unit}-test cycle. Also contains practical information if
+you will be testing in Ruby.</p>
+
+<h5><a href="http://martinfowler.com/articles/mocksArentStubs.html">Mocks Aren't Stubs</a> (article)</h5>
+
+<p>Provides an overview of terms used as well as examples to help
+separate the different concepts (in Java, but don't be
+scared). Defines "classicist" and "mockist"; you don't need to pick
+one or the other, but understanding them is vital.</p>
+
+<h5><a href="http://confreaks.net/videos/659-rubyconf2011-why-you-don-t-get-mock-objects">Why You Don't Get Mock Objects</a> (video)</h5>
+
+<p>Session from RubyConf 2011 that started to clarify certain aspects of
+mocking and testing. Gregory Moeck also introduced me to the term
+"secondary teacher".</p>
+
+<h5><a href="http://www.amazon.com/gp/product/0321503627/ref=as_li_ss_tl?ie=UTF8&amp;tag=jakgousblo-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399369&amp;creativeASIN=0321503627">Growing Object-Oriented Software</a> (book)</h5>
+
+<p>On my list of books to order and read. I used to think that I
+understood Object-Oriented Programming, but recent developments have
+changed that belief.  I hope that reading this can help guide me to a
+better understanding.</p>
+
+<h5><a href="http://www.amazon.com/gp/product/0131177052/ref=as_li_ss_tl?ie=UTF8&amp;tag=jakgousblo-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399369&amp;creativeASIN=0131177052">Working Effectively with Legacy Code</a> (book)</h5>
+
+<p>Excellent information about how to take legacy code (defined as code
+without tests) and make it non-legacy. Clarified how tests let you be
+confident about changes. Provides heaps of practical advice.</p>
+
+<h2>Tell me what I've said wrong</h2>
+
+<p>I'm certain that I've said something that someone will disagree
+with. If you'd care to correct my false ideas, feel free to contact me
+via Twitter. If you think it will take longer than a tweet, create a
+blog post and let me know about it!</p>
+
+<h2>Edits</h2>
+
+<h5>2011-10-11 9:27 EDT</h5>
+
+<p>Fixed bad link and cleaned up some poor wording.</p>
+]]></content>
+  </entry>
+  
+</feed>

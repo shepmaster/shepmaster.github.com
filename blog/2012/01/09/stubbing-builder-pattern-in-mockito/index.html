@@ -7,6 +7,11 @@
   <meta charset="utf-8">
   <title>Stubbing the Builder pattern in Mockito - Jake Goulding</title>
   <meta name="author" content="Jake Goulding">
+
+  
+  <meta name="description" content="Recently, I was asked to help review new tests for production code
+that made use of the Builder pattern. The code in question
+did not lend itself to &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -15,37 +20,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-
-  <link rel="canonical" href="http://jakegoulding.com/blog/2012/01/09/stubbing-builder-pattern-in-mockito/"/>
-  <link href="/favicon.png" rel="shortcut icon" />
+  <link rel="canonical" href="http://jakegoulding.com/blog/2012/01/09/stubbing-builder-pattern-in-mockito/">
+  <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="http://s3.amazonaws.com/ender-js/jeesh.min.js"></script>
+  <script src="/javascripts/ender.js"></script>
   <script src="/javascripts/octopress.js" type="text/javascript"></script>
-  <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml"/>
+  <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml">
   <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
 <link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
 
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-20521797-2']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
 </head>
 
-<body  >
-  <header><hgroup>
+<body   >
+  <header role="banner"><hgroup>
   <h1><a href="/">Jake Goulding</a></h1>
   
 </hgroup>
 
 </header>
-  <nav role=navigation><ul role=subscription data-subscription="rss">
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
   <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
   
 </ul>
+  
 <form action="http://google.com/search" method="get">
-  <fieldset role="site-search">
+  <fieldset role="search">
     <input type="hidden" name="q" value="site:jakegoulding.com" />
     <input class="search" type="text" name="q" results="0" placeholder="Search"/>
   </fieldset>
 </form>
+  
 <ul role=main-navigation>
   <li><a href="/">Blog</a></li>
   <li><a href="/blog/archives">Archives</a></li>
@@ -55,14 +75,18 @@
   <div id="main">
     <div id="content">
       <div>
-<article class="hentry">
+<article class="hentry" role="article">
   
   <header>
     
-      <h1 class="entry-title">Stubbing the Builder Pattern in Mockito</h1>
+      <h1 class="entry-title">Stubbing the Builder pattern in Mockito</h1>
     
     
       <p class="meta">
+        
+
+
+
 
 
 
@@ -71,8 +95,9 @@
   
 
 
-
-<time datetime="2012-01-09T12:00:00-05:00" pubdate  data-updated="true" >Jan 9<span>th</span>, 2012</time></p>
+<time datetime="2012-01-09T12:00:00-05:00" pubdate data-updated="true">Jan 9<span>th</span>, 2012</time>
+        
+      </p>
     
   </header>
 
@@ -90,45 +115,45 @@ code better.</p>
 then stubbed all of the methods on the builder to return the builder
 double itself. The code looked a bit like:</p>
 
-<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
-<span class='line'>2</span>
-<span class='line'>3</span>
-<span class='line'>4</span>
-<span class='line'>5</span>
-<span class='line'>6</span>
-<span class='line'>7</span>
-<span class='line'>8</span>
-<span class='line'>9</span>
-<span class='line'>10</span>
-<span class='line'>11</span>
-<span class='line'>12</span>
-<span class='line'>13</span>
-<span class='line'>14</span>
-<span class='line'>15</span>
-<span class='line'>16</span>
-<span class='line'>17</span>
-<span class='line'>18</span>
-<span class='line'>19</span>
-</pre></td><td class='code' width='100%'><pre><code class='java'><div class='line'><span class="nd">@Test</span>
-</div><div class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">builder_test_v1</span><span class="o">()</span>
-</div><div class='line'><span class="o">{</span>
-</div><div class='line'>    <span class="n">Foo</span> <span class="n">f</span> <span class="o">=</span> <span class="n">mock</span><span class="o">(</span><span class="n">Foo</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
-</div><div class='line'>    <span class="n">FooBuilder</span> <span class="n">b</span> <span class="o">=</span> <span class="n">mock</span><span class="o">(</span><span class="n">FooBuilder</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
-</div><div class='line'>    <span class="n">when</span><span class="o">(</span><span class="n">b</span><span class="o">.</span><span class="na">enableAlpha</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
-</div><div class='line'>    <span class="n">when</span><span class="o">(</span><span class="n">b</span><span class="o">.</span><span class="na">disableBeta</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
-</div><div class='line'>    <span class="n">when</span><span class="o">(</span><span class="n">b</span><span class="o">.</span><span class="na">increaseGamma</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
-</div><div class='line'>    <span class="n">when</span><span class="o">(</span><span class="n">b</span><span class="o">.</span><span class="na">build</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">f</span><span class="o">);</span>
-</div><div class='line'>
-</div><div class='line'>    <span class="n">productionCode</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
-</div><div class='line'>    <span class="n">verify</span><span class="o">(</span><span class="n">f</span><span class="o">).</span><span class="na">someMethod</span><span class="o">();</span>
-</div><div class='line'><span class="o">}</span>
-</div><div class='line'>
-</div><div class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">productionCode</span><span class="o">(</span><span class="n">FooBuilder</span> <span class="n">builder</span><span class="o">)</span>
-</div><div class='line'><span class="o">{</span>
-</div><div class='line'>    <span class="c1">// code that uses the builder...</span>
-</div><div class='line'>    <span class="n">Foo</span> <span class="n">foo</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="na">enableAlpha</span><span class="o">().</span><span class="na">disableBeta</span><span class="o">().</span><span class="na">increaseGamma</span><span class="o">().</span><span class="na">build</span><span class="o">();</span>
-</div><div class='line'><span class="o">}</span>
-</div></code></pre></td></tr></table></div></figure>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Test</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">builder_test_v1</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="n">Foo</span> <span class="n">f</span> <span class="o">=</span> <span class="n">mock</span><span class="o">(</span><span class="n">Foo</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">FooBuilder</span> <span class="n">b</span> <span class="o">=</span> <span class="n">mock</span><span class="o">(</span><span class="n">FooBuilder</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">when</span><span class="o">(</span><span class="n">b</span><span class="o">.</span><span class="na">enableAlpha</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">when</span><span class="o">(</span><span class="n">b</span><span class="o">.</span><span class="na">disableBeta</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">when</span><span class="o">(</span><span class="n">b</span><span class="o">.</span><span class="na">increaseGamma</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">when</span><span class="o">(</span><span class="n">b</span><span class="o">.</span><span class="na">build</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">f</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">productionCode</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">verify</span><span class="o">(</span><span class="n">f</span><span class="o">).</span><span class="na">someMethod</span><span class="o">();</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">productionCode</span><span class="o">(</span><span class="n">FooBuilder</span> <span class="n">builder</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="c1">// code that uses the builder...</span>
+</span><span class='line'>    <span class="n">Foo</span> <span class="n">foo</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="na">enableAlpha</span><span class="o">().</span><span class="na">disableBeta</span><span class="o">().</span><span class="na">increaseGamma</span><span class="o">().</span><span class="na">build</span><span class="o">();</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 <p>There are a few downsides to this approach. The first thing we noticed
@@ -137,45 +162,45 @@ of the test. All that line noise distracts us from the meaning of the
 test. This can be easily improved by pulling the builder setup into a
 separate method:</p>
 
-<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
-<span class='line'>2</span>
-<span class='line'>3</span>
-<span class='line'>4</span>
-<span class='line'>5</span>
-<span class='line'>6</span>
-<span class='line'>7</span>
-<span class='line'>8</span>
-<span class='line'>9</span>
-<span class='line'>10</span>
-<span class='line'>11</span>
-<span class='line'>12</span>
-<span class='line'>13</span>
-<span class='line'>14</span>
-<span class='line'>15</span>
-<span class='line'>16</span>
-<span class='line'>17</span>
-<span class='line'>18</span>
-<span class='line'>19</span>
-</pre></td><td class='code' width='100%'><pre><code class='java'><div class='line'><span class="nd">@Test</span>
-</div><div class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">builder_test_v2</span><span class="o">()</span>
-</div><div class='line'><span class="o">{</span>
-</div><div class='line'>    <span class="n">Foo</span> <span class="n">f</span> <span class="o">=</span> <span class="n">mock</span><span class="o">(</span><span class="n">Foo</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
-</div><div class='line'>    <span class="n">FooBuilder</span> <span class="n">b</span> <span class="o">=</span> <span class="n">newBuilderMock</span><span class="o">();</span>
-</div><div class='line'>    <span class="n">when</span><span class="o">(</span><span class="n">b</span><span class="o">.</span><span class="na">build</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">f</span><span class="o">);</span>
-</div><div class='line'>
-</div><div class='line'>    <span class="n">productionCode</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
-</div><div class='line'>    <span class="n">verify</span><span class="o">(</span><span class="n">f</span><span class="o">).</span><span class="na">someMethod</span><span class="o">();</span>
-</div><div class='line'><span class="o">}</span>
-</div><div class='line'>
-</div><div class='line'><span class="kd">private</span> <span class="n">FooBuilder</span> <span class="nf">newBuilderMock</span><span class="o">()</span>
-</div><div class='line'><span class="o">{</span>
-</div><div class='line'>    <span class="n">FooBuilder</span> <span class="n">b</span> <span class="o">=</span> <span class="n">mock</span><span class="o">(</span><span class="n">FooBuilder</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
-</div><div class='line'>    <span class="n">when</span><span class="o">(</span><span class="n">b</span><span class="o">.</span><span class="na">enableAlpha</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
-</div><div class='line'>    <span class="n">when</span><span class="o">(</span><span class="n">b</span><span class="o">.</span><span class="na">disableBeta</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
-</div><div class='line'>    <span class="n">when</span><span class="o">(</span><span class="n">b</span><span class="o">.</span><span class="na">increaseGamma</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
-</div><div class='line'>    <span class="k">return</span> <span class="n">b</span><span class="o">;</span>
-</div><div class='line'><span class="o">}</span>
-</div></code></pre></td></tr></table></div></figure>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Test</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">builder_test_v2</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="n">Foo</span> <span class="n">f</span> <span class="o">=</span> <span class="n">mock</span><span class="o">(</span><span class="n">Foo</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">FooBuilder</span> <span class="n">b</span> <span class="o">=</span> <span class="n">newBuilderMock</span><span class="o">();</span>
+</span><span class='line'>    <span class="n">when</span><span class="o">(</span><span class="n">b</span><span class="o">.</span><span class="na">build</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">f</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">productionCode</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">verify</span><span class="o">(</span><span class="n">f</span><span class="o">).</span><span class="na">someMethod</span><span class="o">();</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">private</span> <span class="n">FooBuilder</span> <span class="nf">newBuilderMock</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="n">FooBuilder</span> <span class="n">b</span> <span class="o">=</span> <span class="n">mock</span><span class="o">(</span><span class="n">FooBuilder</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">when</span><span class="o">(</span><span class="n">b</span><span class="o">.</span><span class="na">enableAlpha</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">when</span><span class="o">(</span><span class="n">b</span><span class="o">.</span><span class="na">disableBeta</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">when</span><span class="o">(</span><span class="n">b</span><span class="o">.</span><span class="na">increaseGamma</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">b</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 <p>While the test is now easier to read and the new method is reusable in
@@ -186,88 +211,88 @@ builder change.</p>
 an implementation of that interface that you can easily configure for
 testing. Something like:</p>
 
-<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
-<span class='line'>2</span>
-<span class='line'>3</span>
-<span class='line'>4</span>
-<span class='line'>5</span>
-<span class='line'>6</span>
-<span class='line'>7</span>
-<span class='line'>8</span>
-<span class='line'>9</span>
-<span class='line'>10</span>
-<span class='line'>11</span>
-<span class='line'>12</span>
-<span class='line'>13</span>
-<span class='line'>14</span>
-<span class='line'>15</span>
-<span class='line'>16</span>
-<span class='line'>17</span>
-<span class='line'>18</span>
-<span class='line'>19</span>
-<span class='line'>20</span>
-<span class='line'>21</span>
-<span class='line'>22</span>
-<span class='line'>23</span>
-<span class='line'>24</span>
-<span class='line'>25</span>
-<span class='line'>26</span>
-<span class='line'>27</span>
-<span class='line'>28</span>
-<span class='line'>29</span>
-</pre></td><td class='code' width='100%'><pre><code class='java'><div class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">TestingFooBuilder</span> <span class="kd">implements</span> <span class="n">FooBuilder</span>
-</div><div class='line'><span class="o">{</span>
-</div><div class='line'>    <span class="kd">private</span> <span class="n">Foo</span> <span class="n">returnValue</span><span class="o">;</span>
-</div><div class='line'>
-</div><div class='line'>    <span class="kd">public</span> <span class="nf">TestingFooBuilder</span><span class="o">(</span><span class="n">Foo</span> <span class="n">returnValue</span><span class="o">)</span>
-</div><div class='line'>    <span class="o">{</span>
-</div><div class='line'>        <span class="k">this</span><span class="o">.</span><span class="na">returnValue</span> <span class="o">=</span> <span class="n">returnValue</span><span class="o">;</span>
-</div><div class='line'>    <span class="o">}</span>
-</div><div class='line'>
-</div><div class='line'>    <span class="kd">public</span> <span class="n">FooBuilder</span> <span class="nf">enableAlpha</span><span class="o">()</span>
-</div><div class='line'>    <span class="o">{</span>
-</div><div class='line'>        <span class="k">return</span> <span class="k">this</span><span class="o">;</span>
-</div><div class='line'>    <span class="o">}</span>
-</div><div class='line'>
-</div><div class='line'>    <span class="kd">public</span> <span class="n">FooBuilder</span> <span class="nf">disableBeta</span><span class="o">()</span>
-</div><div class='line'>    <span class="o">{</span>
-</div><div class='line'>        <span class="k">return</span> <span class="k">this</span><span class="o">;</span>
-</div><div class='line'>    <span class="o">}</span>
-</div><div class='line'>
-</div><div class='line'>    <span class="kd">public</span> <span class="n">FooBuilder</span> <span class="nf">increaseGamma</span><span class="o">()</span>
-</div><div class='line'>    <span class="o">{</span>
-</div><div class='line'>        <span class="k">return</span> <span class="k">this</span><span class="o">;</span>
-</div><div class='line'>    <span class="o">}</span>
-</div><div class='line'>
-</div><div class='line'>    <span class="kd">public</span> <span class="n">Foo</span> <span class="nf">build</span><span class="o">()</span>
-</div><div class='line'>    <span class="o">{</span>
-</div><div class='line'>        <span class="k">return</span> <span class="n">returnValue</span><span class="o">;</span>
-</div><div class='line'>    <span class="o">}</span>
-</div><div class='line'><span class="o">}</span>
-</div></code></pre></td></tr></table></div></figure>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">TestingFooBuilder</span> <span class="kd">implements</span> <span class="n">FooBuilder</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="n">Foo</span> <span class="n">returnValue</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="nf">TestingFooBuilder</span><span class="o">(</span><span class="n">Foo</span> <span class="n">returnValue</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">this</span><span class="o">.</span><span class="na">returnValue</span> <span class="o">=</span> <span class="n">returnValue</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="n">FooBuilder</span> <span class="nf">enableAlpha</span><span class="o">()</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="k">this</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="n">FooBuilder</span> <span class="nf">disableBeta</span><span class="o">()</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="k">this</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="n">FooBuilder</span> <span class="nf">increaseGamma</span><span class="o">()</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="k">this</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="n">Foo</span> <span class="nf">build</span><span class="o">()</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">returnValue</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 
 
-<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
-<span class='line'>2</span>
-<span class='line'>3</span>
-<span class='line'>4</span>
-<span class='line'>5</span>
-<span class='line'>6</span>
-<span class='line'>7</span>
-<span class='line'>8</span>
-<span class='line'>9</span>
-</pre></td><td class='code' width='100%'><pre><code class='java'><div class='line'><span class="nd">@Test</span>
-</div><div class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">builder_test_v3</span><span class="o">()</span>
-</div><div class='line'><span class="o">{</span>
-</div><div class='line'>    <span class="n">Foo</span> <span class="n">f</span> <span class="o">=</span> <span class="n">mock</span><span class="o">(</span><span class="n">Foo</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
-</div><div class='line'>    <span class="n">FooBuilder</span> <span class="n">b</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TestingFooBuilder</span><span class="o">(</span><span class="n">f</span><span class="o">);</span>
-</div><div class='line'>
-</div><div class='line'>    <span class="n">productionCode</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
-</div><div class='line'>    <span class="n">verify</span><span class="o">(</span><span class="n">f</span><span class="o">).</span><span class="na">someMethod</span><span class="o">();</span>
-</div><div class='line'><span class="o">}</span>
-</div></code></pre></td></tr></table></div></figure>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Test</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">builder_test_v3</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="n">Foo</span> <span class="n">f</span> <span class="o">=</span> <span class="n">mock</span><span class="o">(</span><span class="n">Foo</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">FooBuilder</span> <span class="n">b</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TestingFooBuilder</span><span class="o">(</span><span class="n">f</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">productionCode</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">verify</span><span class="o">(</span><span class="n">f</span><span class="o">).</span><span class="na">someMethod</span><span class="o">();</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 <p>An implementation like this allows you to lean on the compiler when
@@ -284,73 +309,73 @@ strange test failures.</p>
 new mock, an <code>Answer</code> can be used to provide default behavior for
 methods. Here&#8217;s the custom <code>Answer</code> we came up with:</p>
 
-<figure role=code><figcaption><span> (AnswerWithSelf.java)</span> <a href='/downloads/code/AnswerWithSelf.java'>download</a></figcaption>
- <div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
-<span class='line'>2</span>
-<span class='line'>3</span>
-<span class='line'>4</span>
-<span class='line'>5</span>
-<span class='line'>6</span>
-<span class='line'>7</span>
-<span class='line'>8</span>
-<span class='line'>9</span>
-<span class='line'>10</span>
-<span class='line'>11</span>
-<span class='line'>12</span>
-<span class='line'>13</span>
-<span class='line'>14</span>
-<span class='line'>15</span>
-<span class='line'>16</span>
-<span class='line'>17</span>
-<span class='line'>18</span>
-<span class='line'>19</span>
-<span class='line'>20</span>
-</pre></td><td class='code' width='100%'><pre><code class='java'><div class='line'><span class="cm">/**</span>
-</div><div class='line'><span class="cm"> * Returns the mock object itself for any method that returns the specified class.</span>
-</div><div class='line'><span class="cm"> */</span>
-</div><div class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">AnswerWithSelf</span> <span class="kd">implements</span> <span class="n">Answer</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">&gt;</span> <span class="o">{</span>
-</div><div class='line'>    <span class="kd">private</span> <span class="kd">final</span> <span class="n">Answer</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">&gt;</span> <span class="n">delegate</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ReturnsEmptyValues</span><span class="o">();</span>
-</div><div class='line'>    <span class="kd">private</span> <span class="kd">final</span> <span class="n">Class</span><span class="o">&lt;?&gt;</span> <span class="n">clazz</span><span class="o">;</span>
-</div><div class='line'>
-</div><div class='line'>    <span class="kd">public</span> <span class="nf">AnswerWithSelf</span><span class="o">(</span><span class="n">Class</span><span class="o">&lt;?&gt;</span> <span class="n">clazz</span><span class="o">)</span> <span class="o">{</span>
-</div><div class='line'>        <span class="k">this</span><span class="o">.</span><span class="na">clazz</span> <span class="o">=</span> <span class="n">clazz</span><span class="o">;</span>
-</div><div class='line'>    <span class="o">}</span>
-</div><div class='line'>
-</div><div class='line'>    <span class="kd">public</span> <span class="n">Object</span> <span class="nf">answer</span><span class="o">(</span><span class="n">InvocationOnMock</span> <span class="n">invocation</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Throwable</span> <span class="o">{</span>
-</div><div class='line'>        <span class="n">Class</span><span class="o">&lt;?&gt;</span> <span class="n">returnType</span> <span class="o">=</span> <span class="n">invocation</span><span class="o">.</span><span class="na">getMethod</span><span class="o">().</span><span class="na">getReturnType</span><span class="o">();</span>
-</div><div class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">returnType</span> <span class="o">==</span> <span class="n">clazz</span><span class="o">)</span> <span class="o">{</span>
-</div><div class='line'>            <span class="k">return</span> <span class="n">invocation</span><span class="o">.</span><span class="na">getMock</span><span class="o">();</span>
-</div><div class='line'>        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
-</div><div class='line'>            <span class="k">return</span> <span class="n">delegate</span><span class="o">.</span><span class="na">answer</span><span class="o">(</span><span class="n">invocation</span><span class="o">);</span>
-</div><div class='line'>        <span class="o">}</span>
-</div><div class='line'>    <span class="o">}</span>
-</div><div class='line'><span class="o">}</span>
-</div></code></pre></td></tr></table></div></figure>
+<figure class='code'><figcaption><span> (AnswerWithSelf.java)</span> <a href='/downloads/code/AnswerWithSelf.java'>download</a></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> * Returns the mock object itself for any method that returns the specified class.</span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">AnswerWithSelf</span> <span class="kd">implements</span> <span class="n">Answer</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">&gt;</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="kd">final</span> <span class="n">Answer</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">&gt;</span> <span class="n">delegate</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ReturnsEmptyValues</span><span class="o">();</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="kd">final</span> <span class="n">Class</span><span class="o">&lt;?&gt;</span> <span class="n">clazz</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="nf">AnswerWithSelf</span><span class="o">(</span><span class="n">Class</span><span class="o">&lt;?&gt;</span> <span class="n">clazz</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">this</span><span class="o">.</span><span class="na">clazz</span> <span class="o">=</span> <span class="n">clazz</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="n">Object</span> <span class="nf">answer</span><span class="o">(</span><span class="n">InvocationOnMock</span> <span class="n">invocation</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Throwable</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">Class</span><span class="o">&lt;?&gt;</span> <span class="n">returnType</span> <span class="o">=</span> <span class="n">invocation</span><span class="o">.</span><span class="na">getMethod</span><span class="o">().</span><span class="na">getReturnType</span><span class="o">();</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">returnType</span> <span class="o">==</span> <span class="n">clazz</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>            <span class="k">return</span> <span class="n">invocation</span><span class="o">.</span><span class="na">getMock</span><span class="o">();</span>
+</span><span class='line'>        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span><span class='line'>            <span class="k">return</span> <span class="n">delegate</span><span class="o">.</span><span class="na">answer</span><span class="o">(</span><span class="n">invocation</span><span class="o">);</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 <p>The answer can be used like this:</p>
 
-<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
-<span class='line'>2</span>
-<span class='line'>3</span>
-<span class='line'>4</span>
-<span class='line'>5</span>
-<span class='line'>6</span>
-<span class='line'>7</span>
-<span class='line'>8</span>
-<span class='line'>9</span>
-<span class='line'>10</span>
-</pre></td><td class='code' width='100%'><pre><code class='java'><div class='line'><span class="nd">@Test</span>
-</div><div class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">builder_test_v4</span><span class="o">()</span>
-</div><div class='line'><span class="o">{</span>
-</div><div class='line'>    <span class="n">Foo</span> <span class="n">f</span> <span class="o">=</span> <span class="n">mock</span><span class="o">(</span><span class="n">Foo</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
-</div><div class='line'>    <span class="n">FooBuilder</span> <span class="n">b</span> <span class="o">=</span> <span class="n">mock</span><span class="o">(</span><span class="n">FooBuilder</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="k">new</span> <span class="n">AnswerWithSelf</span><span class="o">(</span><span class="n">FooBuilder</span><span class="o">.</span><span class="na">class</span><span class="o">));</span>
-</div><div class='line'>    <span class="n">when</span><span class="o">(</span><span class="n">b</span><span class="o">.</span><span class="na">build</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">f</span><span class="o">);</span>
-</div><div class='line'>
-</div><div class='line'>    <span class="n">productionCode</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
-</div><div class='line'>    <span class="n">verify</span><span class="o">(</span><span class="n">f</span><span class="o">).</span><span class="na">someMethod</span><span class="o">();</span>
-</div><div class='line'><span class="o">}</span>
-</div></code></pre></td></tr></table></div></figure>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Test</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">builder_test_v4</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="n">Foo</span> <span class="n">f</span> <span class="o">=</span> <span class="n">mock</span><span class="o">(</span><span class="n">Foo</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">FooBuilder</span> <span class="n">b</span> <span class="o">=</span> <span class="n">mock</span><span class="o">(</span><span class="n">FooBuilder</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="k">new</span> <span class="n">AnswerWithSelf</span><span class="o">(</span><span class="n">FooBuilder</span><span class="o">.</span><span class="na">class</span><span class="o">));</span>
+</span><span class='line'>    <span class="n">when</span><span class="o">(</span><span class="n">b</span><span class="o">.</span><span class="na">build</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">f</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">productionCode</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">verify</span><span class="o">(</span><span class="n">f</span><span class="o">).</span><span class="na">someMethod</span><span class="o">();</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 <p>This <code>Answer</code> can be used with any <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent interface</a> that
@@ -371,11 +396,13 @@ returns the original object.</p>
 
 
 
+
+
+
   
 
 
-
-<time datetime="2012-01-09T12:00:00-05:00" pubdate  data-updated="true" >Jan 9<span>th</span>, 2012</time>
+<time datetime="2012-01-09T12:00:00-05:00" pubdate data-updated="true">Jan 9<span>th</span>, 2012</time>
       
 
 <span class="categories">
@@ -392,15 +419,24 @@ returns the original object.</p>
   <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2012/01/09/stubbing-builder-pattern-in-mockito/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2012/01/09/stubbing-builder-pattern-in-mockito/" >Tweet</a>
   
   
+  
 </div>
 
     
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2012/01/02/when-refactoring-isnt-refactoring/" title="Previous Post: When refactoring isn't refactoring">&laquo; When refactoring isn't refactoring</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2012/01/12/test-double-terminology/" title="Next Post: Test Double Terminology">Test Double Terminology &raquo;</a>
+      
+    </p>
   </footer>
 </article>
 
 </div>
 
-<aside role=sidebar>
+<aside class="sidebar">
   
     <section>
   <h1>Recent Posts</h1>
@@ -442,9 +478,10 @@ returns the original object.</p>
   </script>
   <script src="/javascripts/twitter.js" type="text/javascript"> </script>
   
-    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @jakegoulding</a>
+    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-show-count="false">Follow @jakegoulding</a>
   
 </section>
+
 
 
 
@@ -455,29 +492,20 @@ returns the original object.</p>
 
     </div>
   </div>
-  <footer><p>
+  <footer role="contentinfo"><p>
   Copyright &copy; 2012 - Jake Goulding -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 
 </footer>
   
-  <script type="text/javascript">
-    var _gaq = _gaq || [];
-    _gaq.push(['_setAccount', 'UA-20521797-2']);
-    _gaq.push(['_trackPageview']);
-
-    (function() {
-      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-    })();
-  </script>
 
 
-  
 
-  
+
+
+
+
   <script type="text/javascript">
     (function(){
       var twitterWidgets = document.createElement('script');
@@ -487,6 +515,9 @@ returns the original object.</p>
       document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
     })();
   </script>
+
+
+
 
 
 </body>

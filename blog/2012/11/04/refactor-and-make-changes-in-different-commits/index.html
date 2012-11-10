@@ -7,6 +7,10 @@
   <meta charset="utf-8">
   <title>Refactor and make changes in different commits - Jake Goulding</title>
   <meta name="author" content="Jake Goulding">
+
+  
+  <meta name="description" content="If you combine refactoring and making a change to your code into the
+same commit, you are going to have a bad time. Just in case you&#8217;ve &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -15,37 +19,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-
-  <link rel="canonical" href="http://jakegoulding.com/blog/2012/11/04/refactor-and-make-changes-in-different-commits/"/>
-  <link href="/favicon.png" rel="shortcut icon" />
+  <link rel="canonical" href="http://jakegoulding.com/blog/2012/11/04/refactor-and-make-changes-in-different-commits/">
+  <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="http://s3.amazonaws.com/ender-js/jeesh.min.js"></script>
+  <script src="/javascripts/ender.js"></script>
   <script src="/javascripts/octopress.js" type="text/javascript"></script>
-  <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml"/>
+  <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml">
   <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
 <link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
 
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-20521797-2']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
 </head>
 
-<body  >
-  <header><hgroup>
+<body   >
+  <header role="banner"><hgroup>
   <h1><a href="/">Jake Goulding</a></h1>
   
 </hgroup>
 
 </header>
-  <nav role=navigation><ul role=subscription data-subscription="rss">
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
   <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
   
 </ul>
+  
 <form action="http://google.com/search" method="get">
-  <fieldset role="site-search">
+  <fieldset role="search">
     <input type="hidden" name="q" value="site:jakegoulding.com" />
     <input class="search" type="text" name="q" results="0" placeholder="Search"/>
   </fieldset>
 </form>
+  
 <ul role=main-navigation>
   <li><a href="/">Blog</a></li>
   <li><a href="/blog/archives">Archives</a></li>
@@ -55,14 +74,18 @@
   <div id="main">
     <div id="content">
       <div>
-<article class="hentry">
+<article class="hentry" role="article">
   
   <header>
     
-      <h1 class="entry-title">Refactor and Make Changes in Different Commits</h1>
+      <h1 class="entry-title">Refactor and make changes in different commits</h1>
     
     
       <p class="meta">
+        
+
+
+
 
 
 
@@ -71,8 +94,9 @@
   
 
 
-
-<time datetime="2012-11-04T14:31:00-05:00" pubdate  data-updated="true" >Nov 4<span>th</span>, 2012</time></p>
+<time datetime="2012-11-04T14:31:00-05:00" pubdate data-updated="true">Nov 4<span>th</span>, 2012</time>
+        
+      </p>
     
   </header>
 
@@ -209,11 +233,13 @@ right track!</li>
 
 
 
+
+
+
   
 
 
-
-<time datetime="2012-11-04T14:31:00-05:00" pubdate  data-updated="true" >Nov 4<span>th</span>, 2012</time>
+<time datetime="2012-11-04T14:31:00-05:00" pubdate data-updated="true">Nov 4<span>th</span>, 2012</time>
       
 
 <span class="categories">
@@ -230,15 +256,22 @@ right track!</li>
   <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2012/11/04/refactor-and-make-changes-in-different-commits/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2012/11/04/refactor-and-make-changes-in-different-commits/" >Tweet</a>
   
   
+  
 </div>
 
     
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2012/10/18/run-your-tests-in-a-deterministic-random-order/" title="Previous Post: Run your tests in a deterministic random order">&laquo; Run your tests in a deterministic random order</a>
+      
+      
+    </p>
   </footer>
 </article>
 
 </div>
 
-<aside role=sidebar>
+<aside class="sidebar">
   
     <section>
   <h1>Recent Posts</h1>
@@ -280,9 +313,10 @@ right track!</li>
   </script>
   <script src="/javascripts/twitter.js" type="text/javascript"> </script>
   
-    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @jakegoulding</a>
+    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-show-count="false">Follow @jakegoulding</a>
   
 </section>
+
 
 
 
@@ -293,29 +327,20 @@ right track!</li>
 
     </div>
   </div>
-  <footer><p>
+  <footer role="contentinfo"><p>
   Copyright &copy; 2012 - Jake Goulding -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 
 </footer>
   
-  <script type="text/javascript">
-    var _gaq = _gaq || [];
-    _gaq.push(['_setAccount', 'UA-20521797-2']);
-    _gaq.push(['_trackPageview']);
-
-    (function() {
-      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-    })();
-  </script>
 
 
-  
 
-  
+
+
+
+
   <script type="text/javascript">
     (function(){
       var twitterWidgets = document.createElement('script');
@@ -325,6 +350,9 @@ right track!</li>
       document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
     })();
   </script>
+
+
+
 
 
 </body>

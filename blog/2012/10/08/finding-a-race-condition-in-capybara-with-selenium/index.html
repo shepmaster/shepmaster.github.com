@@ -7,6 +7,11 @@
   <meta charset="utf-8">
   <title>Finding a race condition in Capybara with Selenium - Jake Goulding</title>
   <meta name="author" content="Jake Goulding">
+
+  
+  <meta name="description" content="At work, we&#8217;ve been using Capybara and
+Selenium to test our newest web application. Many of us
+have used this combination before for our own &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -15,37 +20,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-
-  <link rel="canonical" href="http://jakegoulding.com/blog/2012/10/08/finding-a-race-condition-in-capybara-with-selenium/"/>
-  <link href="/favicon.png" rel="shortcut icon" />
+  <link rel="canonical" href="http://jakegoulding.com/blog/2012/10/08/finding-a-race-condition-in-capybara-with-selenium/">
+  <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="http://s3.amazonaws.com/ender-js/jeesh.min.js"></script>
+  <script src="/javascripts/ender.js"></script>
   <script src="/javascripts/octopress.js" type="text/javascript"></script>
-  <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml"/>
+  <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml">
   <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
 <link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
 
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-20521797-2']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
 </head>
 
-<body  >
-  <header><hgroup>
+<body   >
+  <header role="banner"><hgroup>
   <h1><a href="/">Jake Goulding</a></h1>
   
 </hgroup>
 
 </header>
-  <nav role=navigation><ul role=subscription data-subscription="rss">
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
   <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
   
 </ul>
+  
 <form action="http://google.com/search" method="get">
-  <fieldset role="site-search">
+  <fieldset role="search">
     <input type="hidden" name="q" value="site:jakegoulding.com" />
     <input class="search" type="text" name="q" results="0" placeholder="Search"/>
   </fieldset>
 </form>
+  
 <ul role=main-navigation>
   <li><a href="/">Blog</a></li>
   <li><a href="/blog/archives">Archives</a></li>
@@ -55,14 +75,18 @@
   <div id="main">
     <div id="content">
       <div>
-<article class="hentry">
+<article class="hentry" role="article">
   
   <header>
     
-      <h1 class="entry-title">Finding a Race Condition in Capybara With Selenium</h1>
+      <h1 class="entry-title">Finding a race condition in Capybara with Selenium</h1>
     
     
       <p class="meta">
+        
+
+
+
 
 
 
@@ -71,8 +95,9 @@
   
 
 
-
-<time datetime="2012-10-08T20:40:00-04:00" pubdate  data-updated="true" >Oct 8<span>th</span>, 2012</time></p>
+<time datetime="2012-10-08T20:40:00-04:00" pubdate data-updated="true">Oct 8<span>th</span>, 2012</time>
+        
+      </p>
     
   </header>
 
@@ -84,10 +109,10 @@ territory for a work project.</p>
 
 <p>Every so often, we would get this error from a specific test:</p>
 
-<figure role=code><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
-<span class='line'>2</span>
-</pre></td><td class='code' width='100%'><pre><code class=''><div class='line'>Selenium::WebDriver::Error::StaleElementReferenceError:
-</div><div class='line'>  Element not found in the cache - perhaps the page has changed since it was looked up</div></code></pre></td></tr></table></div></figure>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Selenium::WebDriver::Error::StaleElementReferenceError:
+</span><span class='line'>  Element not found in the cache - perhaps the page has changed since it was looked up</span></code></pre></td></tr></table></div></figure>
 
 
 <p>The error was intermittent, so we fell into the seductive but
@@ -109,32 +134,32 @@ test passed locally a few times.</p>
 again while I wandered away from my computer. The script looked
 something like:</p>
 
-<figure role=code><figcaption><span> (test-script-runner.sh)</span> <a href='/downloads/code/test-script-runner.sh'>download</a></figcaption>
- <div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
-<span class='line'>2</span>
-<span class='line'>3</span>
-<span class='line'>4</span>
-<span class='line'>5</span>
-<span class='line'>6</span>
-<span class='line'>7</span>
-<span class='line'>8</span>
-<span class='line'>9</span>
-<span class='line'>10</span>
-<span class='line'>11</span>
-<span class='line'>12</span>
-</pre></td><td class='code' width='100%'><pre><code class='sh'><div class='line'><span class="c">#!/bin/bash</span>
-</div><div class='line'><span class="nb">set</span> -eu
-</div><div class='line'>
-</div><div class='line'><span class="nv">failures</span><span class="o">=</span>0
-</div><div class='line'>
-</div><div class='line'><span class="k">for </span>run in <span class="sb">`</span>seq 20<span class="sb">`</span>; <span class="k">do</span>
-</div><div class='line'><span class="k">    if</span> ! rspec -e <span class="s1">&#39;the bad test&#39;</span>; <span class="k">then</span>
-</div><div class='line'><span class="k">        </span><span class="nv">failures</span><span class="o">=</span><span class="k">$((</span><span class="nv">$failures</span> <span class="o">+</span> <span class="m">1</span><span class="k">))</span>
-</div><div class='line'>    <span class="k">fi</span>
-</div><div class='line'>
-</div><div class='line'><span class="k">    </span><span class="nb">echo</span> <span class="s2">&quot;Test run $run complete, $failures failures&quot;</span>
-</div><div class='line'><span class="k">done</span>
-</div></code></pre></td></tr></table></div></figure>
+<figure class='code'><figcaption><span> (test-script-runner.sh)</span> <a href='/downloads/code/test-script-runner.sh'>download</a></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="c">#!/bin/bash</span>
+</span><span class='line'><span class="nb">set</span> -eu
+</span><span class='line'>
+</span><span class='line'><span class="nv">failures</span><span class="o">=</span>0
+</span><span class='line'>
+</span><span class='line'><span class="k">for </span>run in <span class="sb">`</span>seq 20<span class="sb">`</span>; <span class="k">do</span>
+</span><span class='line'><span class="k">    if</span> ! rspec -e <span class="s1">&#39;the bad test&#39;</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">        </span><span class="nv">failures</span><span class="o">=</span><span class="k">$((</span><span class="nv">$failures</span> <span class="o">+</span> <span class="m">1</span><span class="k">))</span>
+</span><span class='line'>    <span class="k">fi</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">    </span><span class="nb">echo</span> <span class="s2">&quot;Test run $run complete, $failures failures&quot;</span>
+</span><span class='line'><span class="k">done</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 <p>I&#8217;m sure there&#8217;s a proper statistical manner to determine how many
@@ -146,17 +171,17 @@ that - the test failed somewhere within the first ten or so runs.</p>
 dig into what the test was doing. The test was fairly concise and
 readable (which I highly appreciated) and looked something like:</p>
 
-<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
-<span class='line'>2</span>
-<span class='line'>3</span>
-<span class='line'>4</span>
-<span class='line'>5</span>
-</pre></td><td class='code' width='100%'><pre><code class='ruby'><div class='line'><span class="n">it</span> <span class="s1">&#39;deletes the element&#39;</span><span class="p">,</span> <span class="ss">:js</span> <span class="o">=&gt;</span> <span class="kp">true</span>  <span class="k">do</span>
-</div><div class='line'>  <span class="n">visit</span> <span class="n">path_to_the_page</span>
-</div><div class='line'>  <span class="n">click_on</span> <span class="s1">&#39;Remove item&#39;</span>
-</div><div class='line'>  <span class="n">page</span><span class="o">.</span><span class="n">should_not</span> <span class="n">have_css</span><span class="p">(</span><span class="s2">&quot;.item&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="s2">&quot;Old text&quot;</span><span class="p">)</span>
-</div><div class='line'><span class="k">end</span>
-</div></code></pre></td></tr></table></div></figure>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">it</span> <span class="s1">&#39;deletes the element&#39;</span><span class="p">,</span> <span class="ss">:js</span> <span class="o">=&gt;</span> <span class="kp">true</span>  <span class="k">do</span>
+</span><span class='line'>  <span class="n">visit</span> <span class="n">path_to_the_page</span>
+</span><span class='line'>  <span class="n">click_on</span> <span class="s1">&#39;Remove item&#39;</span>
+</span><span class='line'>  <span class="n">page</span><span class="o">.</span><span class="n">should_not</span> <span class="n">have_css</span><span class="p">(</span><span class="s2">&quot;.item&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="s2">&quot;Old text&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 <p>The exception was coming from line #4 - when the test made the first
@@ -252,11 +277,13 @@ way to being fixed. Yay for Open Source!</p>
 
 
 
+
+
+
   
 
 
-
-<time datetime="2012-10-08T20:40:00-04:00" pubdate  data-updated="true" >Oct 8<span>th</span>, 2012</time>
+<time datetime="2012-10-08T20:40:00-04:00" pubdate data-updated="true">Oct 8<span>th</span>, 2012</time>
       
 
 <span class="categories">
@@ -273,15 +300,24 @@ way to being fixed. Yay for Open Source!</p>
   <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2012/10/08/finding-a-race-condition-in-capybara-with-selenium/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2012/10/08/finding-a-race-condition-in-capybara-with-selenium/" >Tweet</a>
   
   
+  
 </div>
 
     
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2012/10/03/name-your-variables-by-the-roles-they-play/" title="Previous Post: Name your variables by the roles they play">&laquo; Name your variables by the roles they play</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2012/10/10/watch-out-for-lost-updates-when-using-capybara-with-selenium/" title="Next Post: Watch out for lost updates when using Capybara with Selenium">Watch out for lost updates when using Capybara with Selenium &raquo;</a>
+      
+    </p>
   </footer>
 </article>
 
 </div>
 
-<aside role=sidebar>
+<aside class="sidebar">
   
     <section>
   <h1>Recent Posts</h1>
@@ -323,9 +359,10 @@ way to being fixed. Yay for Open Source!</p>
   </script>
   <script src="/javascripts/twitter.js" type="text/javascript"> </script>
   
-    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @jakegoulding</a>
+    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-show-count="false">Follow @jakegoulding</a>
   
 </section>
+
 
 
 
@@ -336,29 +373,20 @@ way to being fixed. Yay for Open Source!</p>
 
     </div>
   </div>
-  <footer><p>
+  <footer role="contentinfo"><p>
   Copyright &copy; 2012 - Jake Goulding -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 
 </footer>
   
-  <script type="text/javascript">
-    var _gaq = _gaq || [];
-    _gaq.push(['_setAccount', 'UA-20521797-2']);
-    _gaq.push(['_trackPageview']);
-
-    (function() {
-      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-    })();
-  </script>
 
 
-  
 
-  
+
+
+
+
   <script type="text/javascript">
     (function(){
       var twitterWidgets = document.createElement('script');
@@ -368,6 +396,9 @@ way to being fixed. Yay for Open Source!</p>
       document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
     })();
   </script>
+
+
+
 
 
 </body>

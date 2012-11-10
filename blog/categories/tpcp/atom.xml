@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: TPCP | Jake Goulding]]></title>
+  <link href="http://jakegoulding.com/blog/categories/tpcp/atom.xml" rel="self"/>
+  <link href="http://jakegoulding.com/"/>
+  <updated>2012-11-10T17:27:44-05:00</updated>
+  <id>http://jakegoulding.com/</id>
+  <author>
+    <name><![CDATA[Jake Goulding]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[The Psychology of Computer Programming]]></title>
+    <link href="http://jakegoulding.com/blog/2011/02/05/the-psychology-of-computer-programming/"/>
+    <updated>2011-02-05T12:00:00-05:00</updated>
+    <id>http://jakegoulding.com/blog/2011/02/05/the-psychology-of-computer-programming</id>
+    <content type="html"><![CDATA[<p>Over New Year's break, we visited one of Carol's friends in New
+Orleans. While we did quite a lot of touristy things (the French
+Quarter is very exciting when the new year rolls around), we also got
+to visit the lovely used bookstore <strong>Beckham's Book
+Shop</strong>. Unfortunately, we got there late in the day and I didn't
+realize that there was an entire second floor until very near closing
+time. I'm glad I took the time to look upstairs, as that is where I
+discovered <a href="http://www.geraldmweinberg.com/Site/Programming_Psychology.html"><em>The Psychology of Computer Programming</em></a> by Gerald
+M. Weinberg.</p>
+
+<!--more-->
+
+
+<p>I grabbed the book from the shelf and glanced at the copyright date -
+1971. I figured that any insights from that long ago would be
+hilarious, to say the very least, so I purchased it. Upon returning
+home for the evening, I was finally able to crack it open and read a
+bit. Put simply, I was floored - an amazing amount of issues that were
+identified <em>40 years</em> ago are still problems today.</p>
+
+<p>When we made our way back to Pittsburgh, we had to leave our new books
+behind to be shipped separately as they wouldn't fit in our
+luggage. We finally got our package on Friday, and today I've been
+darting in and out of chapters trying to get a feel for the
+book. Every few pages I chuckle to myself (the laughter of programmers
+is itself addressed in the book) and every blurb I've read aloud has
+caused Carol to nod or sigh in agreement, as the case warrants.</p>
+
+<p>My goal is to read through the book and blog about just how things
+have or haven't changed and see how my experiences relate to those of
+programmers from 40 years ago. One positive thing that has already
+happened is that I've found out about <a href="http://bensimo.qualityfrog.com/">Ben Simo</a>, who regularly
+tweets about programming papers from the 70's, both good and bad.</p>
+
+<hr />
+
+<p>The book itself is still available to purchase in a 25th anniversary
+edition, which contains a new forward and per-chapter reflections by
+the author. Maybe I will buy the updated version when I have made my
+way through this edition and see how the two commentaries compare.</p>
+
+<p>Beckham's doesn't seem to have a website, so I'll just point out thier
+address and phone number in case anyone is interested.</p>
+
+<p>Beckham's Book Shop<br/>
+228 Decatur St<br/>
+New Orleans, LA 70130<br/>
+(504) 522-9875</p>
+]]></content>
+  </entry>
+  
+</feed>

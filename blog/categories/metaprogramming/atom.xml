@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: metaprogramming | Jake Goulding]]></title>
+  <link href="http://jakegoulding.com/blog/categories/metaprogramming/atom.xml" rel="self"/>
+  <link href="http://jakegoulding.com/"/>
+  <updated>2012-11-10T17:27:44-05:00</updated>
+  <id>http://jakegoulding.com/</id>
+  <author>
+    <name><![CDATA[Jake Goulding]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Attaching top-level methods to an object in Ruby]]></title>
+    <link href="http://jakegoulding.com/blog/2012/03/03/attaching-top-level-methods-to-an-object-in-ruby/"/>
+    <updated>2012-03-03T10:48:00-05:00</updated>
+    <id>http://jakegoulding.com/blog/2012/03/03/attaching-top-level-methods-to-an-object-in-ruby</id>
+    <content type="html"><![CDATA[<p>Sometimes when you are doing rapid development, you need to create a
+new method <em>right now</em>, but you don't put the method in the right
+spot. Maybe you aren't sure what object should ultimately have the
+functionality. Maybe you are simply too lazy to open the correct
+file. Whatever the reason, you decide to define the method right there
+at the top-level, pretending you are a procedural programmer.</p>
+
+<!-- more -->
+
+
+<p>Time passes, and you finally decide it is time to move that method to
+where it belongs. The problem is that someone (certainly not you...)
+has been calling that method from <em>everywhere</em>. Fixing all the calls
+to the method at once will be a huge change; you prefer to make
+smaller, easier to review changes. Or maybe you don't have control
+over all code that calls the method, and so you <em>can't</em> change all the
+the calls.</p>
+
+<p>Here's an example of the problem</p>
+
+<p>```ruby
+def add_value(object, param)
+  object.value + param
+end</p>
+
+<p>class MyObject
+  def value</p>
+
+<pre><code>10
+</code></pre>
+
+<p>  end
+end</p>
+
+<p>obj = MyObject.new
+add_value(obj, 5)
+```</p>
+
+<p>You'd really like <code>MyObject</code> to have an <code>add_value</code> method, instead of
+it just floating around at the top-level. However, you don't want to
+just copy code around - what if one of the implementations changes?
+Your first instinct might be to do something like this:</p>
+
+<p>```ruby
+class MyObject
+  def add_value(param)</p>
+
+<pre><code>add_value(self, param)
+</code></pre>
+
+<p>  end
+end
+```</p>
+
+<p>The problem with this is that once you are inside the class
+definition, all calls to <code>add_value</code> will be handled by the instance,
+not the top-level method.</p>
+
+<p>You could avoid this by making the top-level method and the instance
+method have unique names. If you like the existing name for both
+methods, you could alias the original name to a more unique one to
+avoid shadowing it:</p>
+
+<p>```ruby
+alias :i_am_secret_method_add_value :add_value</p>
+
+<p>class MyObject
+  def add_value(param)</p>
+
+<pre><code>i_am_secret_method_add_value(self, param)
+</code></pre>
+
+<p>  end
+end
+```</p>
+
+<p>Another solution is to qualify access to the top-level method. This
+can be done by maintaining a reference to the object that defines the
+method.</p>
+
+<p>```ruby
+reference_to_main = self                            # 1
+MyObject.class_eval do                              # 2
+  define_method :add_value do |param|</p>
+
+<pre><code>reference_to_main.send(:add_value, self, param) # 3
+</code></pre>
+
+<p>  end
+end
+```</p>
+
+<ol>
+<li>We start by stashing a reference to the object that defines the
+top-level method. This object is named "main".</li>
+<li>If we reopened our class the traditional way, using <code>class MyObject</code>,
+the reference to main would fall out of scope. Instead, we use
+<code>class_eval</code>.</li>
+<li>The definition of the <code>add_value</code> instance method must use <code>send</code> as
+the top-level method is private.</li>
+</ol>
+
+
+<p>If you don't want to modify the object directly, you can apply the
+same techniques to a module:</p>
+
+<p>```ruby
+module MathModule
+end</p>
+
+<p>reference_to_main = self
+MathModule.module_eval do
+  define_method :add_value do |param|</p>
+
+<pre><code>reference_to_main.send(:add_value, self, param)
+</code></pre>
+
+<p>  end
+end</p>
+
+<p>obj = MyObject.new
+obj.extend(MathModule)
+```</p>
+
+<p>Using modules leads to another solution. You can move the top-level
+method into a module, and use the module with both the class and the
+main object.</p>
+
+<p>```ruby
+module MathModule
+  def add_value(object, param)</p>
+
+<pre><code>object.value + param
+</code></pre>
+
+<p>  end
+end</p>
+
+<p>extend MathModule</p>
+
+<p>class MyObject
+  include MathModule</p>
+
+<p>  def add_value(param)</p>
+
+<pre><code>super(self, param)
+</code></pre>
+
+<p>  end
+end
+```</p>
+
+<p>The downside to this solution is that the object now has two
+<code>add_value</code> methods. One of the methods takes any instance of the
+class, which would be confusing to anyone trying to figure out how to
+use the object.</p>
+
+<p>The easiest and clearest solution to this problem is not to use clever
+metaprogramming, but just flip the way you think about the
+problem. Move the entire method into the object and leave a stub
+method that redirects to the object's implementation:</p>
+
+<p>```ruby
+def add_value(object, param)
+  object.add_value(param)
+end</p>
+
+<p>class MyObject
+  def add_value(param)</p>
+
+<pre><code>value + param
+</code></pre>
+
+<p>  end
+end
+```</p>
+]]></content>
+  </entry>
+  
+</feed>

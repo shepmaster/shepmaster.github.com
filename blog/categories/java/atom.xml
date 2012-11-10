@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: java | Jake Goulding]]></title>
+  <link href="http://jakegoulding.com/blog/categories/java/atom.xml" rel="self"/>
+  <link href="http://jakegoulding.com/"/>
+  <updated>2012-11-10T17:27:44-05:00</updated>
+  <id>http://jakegoulding.com/</id>
+  <author>
+    <name><![CDATA[Jake Goulding]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Stubbing the Builder pattern in Mockito]]></title>
+    <link href="http://jakegoulding.com/blog/2012/01/09/stubbing-builder-pattern-in-mockito/"/>
+    <updated>2012-01-09T12:00:00-05:00</updated>
+    <id>http://jakegoulding.com/blog/2012/01/09/stubbing-builder-pattern-in-mockito</id>
+    <content type="html"><![CDATA[<p>Recently, I was asked to help review new tests for production code
+that made use of the <a href="http://en.wikipedia.org/wiki/Builder_pattern">Builder</a> pattern. The code in question
+did not lend itself to nice and easy testing, but leveraging a
+lesser-used bit of <a href="http://code.google.com/p/mockito/">Mockito</a> functionality helped make the
+code better.</p>
+
+<!-- more -->
+
+
+<p>Originally, the tests created a test double for the builder object and
+then stubbed all of the methods on the builder to return the builder
+double itself. The code looked a bit like:</p>
+
+<p>```java
+@Test
+public void builder_test_v1()
+{</p>
+
+<pre><code>Foo f = mock(Foo.class);
+FooBuilder b = mock(FooBuilder.class);
+when(b.enableAlpha()).thenReturn(b);
+when(b.disableBeta()).thenReturn(b);
+when(b.increaseGamma()).thenReturn(b);
+when(b.build()).thenReturn(f);
+
+productionCode(b);
+verify(f).someMethod();
+</code></pre>
+
+<p>}</p>
+
+<p>public void productionCode(FooBuilder builder)
+{</p>
+
+<pre><code>// code that uses the builder...
+Foo foo = b.enableAlpha().disableBeta().increaseGamma().build();
+</code></pre>
+
+<p>}
+```</p>
+
+<p>There are a few downsides to this approach. The first thing we noticed
+was the amount of work done to set up the builder compared to the rest
+of the test. All that line noise distracts us from the meaning of the
+test. This can be easily improved by pulling the builder setup into a
+separate method:</p>
+
+<p>```java
+@Test
+public void builder_test_v2()
+{</p>
+
+<pre><code>Foo f = mock(Foo.class);
+FooBuilder b = newBuilderMock();
+when(b.build()).thenReturn(f);
+
+productionCode(b);
+verify(f).someMethod();
+</code></pre>
+
+<p>}</p>
+
+<p>private FooBuilder newBuilderMock()
+{</p>
+
+<pre><code>FooBuilder b = mock(FooBuilder.class);
+when(b.enableAlpha()).thenReturn(b);
+when(b.disableBeta()).thenReturn(b);
+when(b.increaseGamma()).thenReturn(b);
+return b;
+</code></pre>
+
+<p>}
+```</p>
+
+<p>While the test is now easier to read and the new method is reusable in
+other tests, we still will be in trouble when the methods of the
+builder change.</p>
+
+<p>If your builder implements an interface, you should consider creating
+an implementation of that interface that you can easily configure for
+testing. Something like:</p>
+
+<p>```java
+public class TestingFooBuilder implements FooBuilder
+{</p>
+
+<pre><code>private Foo returnValue;
+
+public TestingFooBuilder(Foo returnValue)
+{
+    this.returnValue = returnValue;
+}
+
+public FooBuilder enableAlpha()
+{
+    return this;
+}
+
+public FooBuilder disableBeta()
+{
+    return this;
+}
+
+public FooBuilder increaseGamma()
+{
+    return this;
+}
+
+public Foo build()
+{
+    return returnValue;
+}
+</code></pre>
+
+<p>}
+```</p>
+
+<p>```java
+@Test
+public void builder_test_v3()
+{</p>
+
+<pre><code>Foo f = mock(Foo.class);
+FooBuilder b = new TestingFooBuilder(f);
+
+productionCode(b);
+verify(f).someMethod();
+</code></pre>
+
+<p>}
+```</p>
+
+<p>An implementation like this allows you to lean on the compiler when
+the interface changes.</p>
+
+<p>If you don't have a interface to implement, you could subclass
+the concrete builder class and insert your test-specific logic
+there. The downside to this is that newly-added methods will inherit
+their implementation from the parent class, which can cause very
+strange test failures.</p>
+
+<p>We did not have an interface to adhere to, so we used Mockito's
+<code>Answer</code> class to provide a middle ground solution. When you create a
+new mock, an <code>Answer</code> can be used to provide default behavior for
+methods. Here's the custom <code>Answer</code> we came up with:</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span> (AnswerWithSelf.java)</span> <a href='/downloads/code/AnswerWithSelf.java'>download</a></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> * Returns the mock object itself for any method that returns the specified class.</span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">AnswerWithSelf</span> <span class="kd">implements</span> <span class="n">Answer</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">&gt;</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="kd">final</span> <span class="n">Answer</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">&gt;</span> <span class="n">delegate</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ReturnsEmptyValues</span><span class="o">();</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="kd">final</span> <span class="n">Class</span><span class="o">&lt;?&gt;</span> <span class="n">clazz</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="nf">AnswerWithSelf</span><span class="o">(</span><span class="n">Class</span><span class="o">&lt;?&gt;</span> <span class="n">clazz</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">this</span><span class="o">.</span><span class="na">clazz</span> <span class="o">=</span> <span class="n">clazz</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="n">Object</span> <span class="nf">answer</span><span class="o">(</span><span class="n">InvocationOnMock</span> <span class="n">invocation</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Throwable</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">Class</span><span class="o">&lt;?&gt;</span> <span class="n">returnType</span> <span class="o">=</span> <span class="n">invocation</span><span class="o">.</span><span class="na">getMethod</span><span class="o">().</span><span class="na">getReturnType</span><span class="o">();</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">returnType</span> <span class="o">==</span> <span class="n">clazz</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>            <span class="k">return</span> <span class="n">invocation</span><span class="o">.</span><span class="na">getMock</span><span class="o">();</span>
+</span><span class='line'>        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span><span class='line'>            <span class="k">return</span> <span class="n">delegate</span><span class="o">.</span><span class="na">answer</span><span class="o">(</span><span class="n">invocation</span><span class="o">);</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>The answer can be used like this:</p>
+
+<p>```java
+@Test
+public void builder_test_v4()
+{</p>
+
+<pre><code>Foo f = mock(Foo.class);
+FooBuilder b = mock(FooBuilder.class, new AnswerWithSelf(FooBuilder.class));
+when(b.build()).thenReturn(f);
+
+productionCode(b);
+verify(f).someMethod();
+</code></pre>
+
+<p>}
+```</p>
+
+<p>This <code>Answer</code> can be used with any <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent interface</a> that
+returns the original object.</p>
+]]></content>
+  </entry>
+  
+</feed>

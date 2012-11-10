@@ -7,6 +7,11 @@
   <meta charset="utf-8">
   <title>Uninitialized variable warnings and compiler optimizations - Jake Goulding</title>
   <meta name="author" content="Jake Goulding">
+
+  
+  <meta name="description" content="A coworker recently got the may be used uninitialized in this
+function warning from GCC and asked me to take a look at it to see if
+the warning was &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -15,37 +20,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-
-  <link rel="canonical" href="http://jakegoulding.com/blog/2011/01/27/uninitialized-variable-warnings-and-compiler-optimizations/"/>
-  <link href="/favicon.png" rel="shortcut icon" />
+  <link rel="canonical" href="http://jakegoulding.com/blog/2011/01/27/uninitialized-variable-warnings-and-compiler-optimizations/">
+  <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="http://s3.amazonaws.com/ender-js/jeesh.min.js"></script>
+  <script src="/javascripts/ender.js"></script>
   <script src="/javascripts/octopress.js" type="text/javascript"></script>
-  <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml"/>
+  <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml">
   <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
 <link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
 
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-20521797-2']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
 </head>
 
-<body  >
-  <header><hgroup>
+<body   >
+  <header role="banner"><hgroup>
   <h1><a href="/">Jake Goulding</a></h1>
   
 </hgroup>
 
 </header>
-  <nav role=navigation><ul role=subscription data-subscription="rss">
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
   <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
   
 </ul>
+  
 <form action="http://google.com/search" method="get">
-  <fieldset role="site-search">
+  <fieldset role="search">
     <input type="hidden" name="q" value="site:jakegoulding.com" />
     <input class="search" type="text" name="q" results="0" placeholder="Search"/>
   </fieldset>
 </form>
+  
 <ul role=main-navigation>
   <li><a href="/">Blog</a></li>
   <li><a href="/blog/archives">Archives</a></li>
@@ -55,14 +75,18 @@
   <div id="main">
     <div id="content">
       <div>
-<article class="hentry">
+<article class="hentry" role="article">
   
   <header>
     
-      <h1 class="entry-title">Uninitialized Variable Warnings and Compiler Optimizations</h1>
+      <h1 class="entry-title">Uninitialized variable warnings and compiler optimizations</h1>
     
     
       <p class="meta">
+        
+
+
+
 
 
 
@@ -71,8 +95,9 @@
   
 
 
-
-<time datetime="2011-01-27T12:00:00-05:00" pubdate  data-updated="true" >Jan 27<span>th</span>, 2011</time></p>
+<time datetime="2011-01-27T12:00:00-05:00" pubdate data-updated="true">Jan 27<span>th</span>, 2011</time>
+        
+      </p>
     
   </header>
 
@@ -92,54 +117,54 @@ should set <code>value</code> when the parameter is true. If the parameter is no
 set, then <code>value</code> is undefined. The main simply calls <code>foo</code>, using the
 command-line argument count to control what is passed to the function.</p>
 
-<figure role=code><figcaption><span> (uninit-warning.c)</span> <a href='/downloads/code/uninit-warning.c'>download</a></figcaption>
- <div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
-<span class='line'>2</span>
-<span class='line'>3</span>
-<span class='line'>4</span>
-<span class='line'>5</span>
-<span class='line'>6</span>
-<span class='line'>7</span>
-<span class='line'>8</span>
-<span class='line'>9</span>
-<span class='line'>10</span>
-<span class='line'>11</span>
-<span class='line'>12</span>
-<span class='line'>13</span>
-<span class='line'>14</span>
-<span class='line'>15</span>
-<span class='line'>16</span>
-<span class='line'>17</span>
-<span class='line'>18</span>
-<span class='line'>19</span>
-<span class='line'>20</span>
-<span class='line'>21</span>
-<span class='line'>22</span>
-<span class='line'>23</span>
-</pre></td><td class='code' width='100%'><pre><code class='c'><div class='line'><span class="cp">#include &lt;stdio.h&gt;</span>
-</div><div class='line'><span class="cp">#include &lt;stdlib.h&gt;</span>
-</div><div class='line'>
-</div><div class='line'><span class="kt">void</span>
-</div><div class='line'><span class="nf">foo</span><span class="p">(</span><span class="kt">int</span> <span class="n">do_it</span><span class="p">)</span> <span class="p">{</span>
-</div><div class='line'>  <span class="kt">int</span> <span class="n">value</span><span class="p">;</span>
-</div><div class='line'>
-</div><div class='line'>  <span class="k">if</span> <span class="p">(</span><span class="n">do_it</span><span class="p">)</span> <span class="p">{</span>
-</div><div class='line'>    <span class="n">value</span> <span class="o">=</span> <span class="mi">7</span><span class="p">;</span>
-</div><div class='line'>  <span class="p">}</span>
-</div><div class='line'>
-</div><div class='line'>  <span class="k">if</span> <span class="p">(</span><span class="mi">7</span> <span class="o">==</span> <span class="n">value</span><span class="p">)</span> <span class="p">{</span>
-</div><div class='line'>    <span class="n">printf</span><span class="p">(</span><span class="s">&quot;It is 7</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
-</div><div class='line'>  <span class="p">}</span>
-</div><div class='line'><span class="p">}</span>
-</div><div class='line'>
-</div><div class='line'><span class="kt">int</span>
-</div><div class='line'><span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span>
-</div><div class='line'><span class="p">{</span>
-</div><div class='line'>  <span class="n">foo</span><span class="p">(</span><span class="n">argc</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">);</span>
-</div><div class='line'>
-</div><div class='line'>  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-</div><div class='line'><span class="p">}</span>
-</div></code></pre></td></tr></table></div></figure>
+<figure class='code'><figcaption><span> (uninit-warning.c)</span> <a href='/downloads/code/uninit-warning.c'>download</a></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="cp">#include &lt;stdio.h&gt;</span>
+</span><span class='line'><span class="cp">#include &lt;stdlib.h&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">void</span>
+</span><span class='line'><span class="nf">foo</span><span class="p">(</span><span class="kt">int</span> <span class="n">do_it</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="kt">int</span> <span class="n">value</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="n">do_it</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">value</span> <span class="o">=</span> <span class="mi">7</span><span class="p">;</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="mi">7</span> <span class="o">==</span> <span class="n">value</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">printf</span><span class="p">(</span><span class="s">&quot;It is 7</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">int</span>
+</span><span class='line'><span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="n">foo</span><span class="p">(</span><span class="n">argc</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 <p>We compiled it with GCC, expecting to see a warning.</p>
@@ -283,11 +308,13 @@ can silence instead of no warning at all.</p>
 
 
 
+
+
+
   
 
 
-
-<time datetime="2011-01-27T12:00:00-05:00" pubdate  data-updated="true" >Jan 27<span>th</span>, 2011</time>
+<time datetime="2011-01-27T12:00:00-05:00" pubdate data-updated="true">Jan 27<span>th</span>, 2011</time>
       
 
 <span class="categories">
@@ -304,15 +331,24 @@ can silence instead of no warning at all.</p>
   <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2011/01/27/uninitialized-variable-warnings-and-compiler-optimizations/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2011/01/27/uninitialized-variable-warnings-and-compiler-optimizations/" >Tweet</a>
   
   
+  
 </div>
 
     
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2011/01/09/the-meh-programmer/" title="Previous Post: The "meh" programmer">&laquo; The "meh" programmer</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2011/02/05/the-psychology-of-computer-programming/" title="Next Post: The Psychology of Computer Programming">The Psychology of Computer Programming &raquo;</a>
+      
+    </p>
   </footer>
 </article>
 
 </div>
 
-<aside role=sidebar>
+<aside class="sidebar">
   
     <section>
   <h1>Recent Posts</h1>
@@ -354,9 +390,10 @@ can silence instead of no warning at all.</p>
   </script>
   <script src="/javascripts/twitter.js" type="text/javascript"> </script>
   
-    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @jakegoulding</a>
+    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-show-count="false">Follow @jakegoulding</a>
   
 </section>
+
 
 
 
@@ -367,29 +404,20 @@ can silence instead of no warning at all.</p>
 
     </div>
   </div>
-  <footer><p>
+  <footer role="contentinfo"><p>
   Copyright &copy; 2012 - Jake Goulding -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 
 </footer>
   
-  <script type="text/javascript">
-    var _gaq = _gaq || [];
-    _gaq.push(['_setAccount', 'UA-20521797-2']);
-    _gaq.push(['_trackPageview']);
-
-    (function() {
-      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-    })();
-  </script>
 
 
-  
 
-  
+
+
+
+
   <script type="text/javascript">
     (function(){
       var twitterWidgets = document.createElement('script');
@@ -399,6 +427,9 @@ can silence instead of no warning at all.</p>
       document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
     })();
   </script>
+
+
+
 
 
 </body>

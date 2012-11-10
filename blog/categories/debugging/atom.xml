@@ -1,0 +1,521 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: debugging | Jake Goulding]]></title>
+  <link href="http://jakegoulding.com/blog/categories/debugging/atom.xml" rel="self"/>
+  <link href="http://jakegoulding.com/"/>
+  <updated>2012-11-10T17:27:44-05:00</updated>
+  <id>http://jakegoulding.com/</id>
+  <author>
+    <name><![CDATA[Jake Goulding]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Watch out for lost updates when using Capybara with Selenium]]></title>
+    <link href="http://jakegoulding.com/blog/2012/10/10/watch-out-for-lost-updates-when-using-capybara-with-selenium/"/>
+    <updated>2012-10-10T19:41:00-04:00</updated>
+    <id>http://jakegoulding.com/blog/2012/10/10/watch-out-for-lost-updates-when-using-capybara-with-selenium</id>
+    <content type="html"><![CDATA[<p>At work, I am still working on finding and squashing fun test
+failures. In this case, "fun" means tests that have an intermittent
+failure rate of 5% (or less!). The test issue I worked on today had to
+do with the "lost update" problem.</p>
+
+<!-- more -->
+
+
+<h3>The lost update problem</h3>
+
+<p><a href="http://www.amazon.com/gp/product/0321503627/ref=as_li_ss_tl?ie=UTF8&amp;tag=jakgousblo-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399369&amp;creativeASIN=0321503627">Growing Object-Oriented Software, Guided by Tests</a> has a great
+description and diagram of the problem:</p>
+
+<p><img src="http://jakegoulding.com/images/blog/lost-update.png" alt="The lost update problem" /></p>
+
+<p>The short version is that when you poll a system for its state, it's
+entirely possible to miss the state you are looking for. In the
+diagram, the color changes to red and then to blue before the test
+ever has a chance to see that it was red. Since this system will never
+go back to red, the test will incorrectly fail.</p>
+
+<h3>The lost update problem in Capybara</h3>
+
+<p>Like many other sites, we use the <a href="http://datatables.net/">DataTables</a> jQuery
+plugin to show tabular data. A test that ensured that the filtering
+worked looked something like this:</p>
+
+<p>```ruby
+def wait_for_table_loading
+  dialog = page.find('.loading_dialog')
+  wait_until { dialog.visible? }
+end</p>
+
+<p>def wait_for_table_ready
+  dialog = page.find('.loading_dialog')
+  wait_until { ! dialog.visible? }
+end</p>
+
+<p>it 'filters the list' do
+  visit list_path
+  click_on 'Filter by active'
+  wait_for_table_loading
+  wait_for_table_ready
+  page.all('.data-item').should have(3).items
+end
+```</p>
+
+<p>Enabling filtering triggers some slow backend activity, which brings
+up the loading dialog. The test waits for that dialog to appear and
+disappear before continuing on. Now the entire table is populated and
+we can safely see how many elements are in the table.</p>
+
+<p>However, the test will fail if the backend is <em>too fast</em>. The loading
+dialog will appear and disappear almost immediately. The test will
+time out waiting for the loading dialog that will never appear
+again. This behavior can be reliably replicated by adding a sleep to
+the test between lines 13 and 14.</p>
+
+<h3>A Capybara solution</h3>
+
+<p>In order to make the test more robust, I rewrote it as:</p>
+
+<p><code>
+it 'filters the list' do
+  visit list_path
+  click_on 'Filter by active'
+  page.should have_css('.data-item', :count =&gt; 3)
+end
+</code></p>
+
+<p>The test now ignores the loading dialogs completely, instead asking
+Capybara to find a particular number of elements. Asking Capybara to
+find things in this manner will let the test leverage the built-in
+waiting facilities of Capybara.</p>
+
+<p>In this test, the number of data items won't change once the table is
+loaded, so it is a safe state to poll. As an additional benefit, the
+test now has fewer lines of code and is clearer.</p>
+
+<p>As a downside, when the test fails, the Capybara error message doesn't
+include how many items were found, which isn't as informative as the
+equivalent message from the RSpec matcher.</p>
+
+<p>Also, this test still ultimately relies on polling the DOM, so it's
+possible for similar bugs to pop up in the future.</p>
+
+<h3>The GOOS solution to the lost update problem</h3>
+
+<p>GOOS provides a solution to the lost update problem that can avoid the
+problems with polling completely:</p>
+
+<p><img src="http://jakegoulding.com/images/blog/lost-update-fixed.png" alt="The solution to the lost update problem" /></p>
+
+<p>The system under test must be modified to provide notifications when
+something interesting happens. This system now has a listener that is
+notified when the color changes and what the color is changed to. The
+test supplies a simple listener that accumulates the changes and
+offers a nice API suited for the tests.</p>
+
+<h3>A hypothetical Capybara solution without polling</h3>
+
+<p>I can imagine a Capybara test that looks something like this:</p>
+
+<p>```ruby
+it 'filters the list' do
+  visit list_path
+  wait_for_js_event('table.loaded') do</p>
+
+<pre><code>click_on 'Filter by active'
+</code></pre>
+
+<p>  end
+  page.all('.data-item').should have(3).items
+end
+```</p>
+
+<p>Under the hood, there's some extra JavaScript going on. The
+<code>wait_for_js_event</code> method would inject some JavaScript into the
+running Selenium session that creates an event listener and binds it
+to the given event. This listener just collects all the events it
+receives. After yielding the block, the test code then polls the event
+listener, waiting for the event to be captured.</p>
+
+<p>It's entirely possible that code that does this already exists, but I
+don't know of it. It wouldn't be a large amount of code to write, but
+it would straddle the borders of Capybara, Selenium and JavaScript.</p>
+
+<p>This might be a useful thing for <a href="http://pivotal.github.com/jasmine/">Jasmine</a> tests, so it might
+already exist in that ecosystem.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Finding a race condition in Capybara with Selenium]]></title>
+    <link href="http://jakegoulding.com/blog/2012/10/08/finding-a-race-condition-in-capybara-with-selenium/"/>
+    <updated>2012-10-08T20:40:00-04:00</updated>
+    <id>http://jakegoulding.com/blog/2012/10/08/finding-a-race-condition-in-capybara-with-selenium</id>
+    <content type="html"><![CDATA[<p>At work, we've been using <a href="https://github.com/jnicklas/capybara">Capybara</a> and
+<a href="https://code.google.com/p/selenium/">Selenium</a> to test our newest web application. Many of us
+have used this combination before for our own projects, but it's new
+territory for a work project.</p>
+
+<p>Every so often, we would get this error from a specific test:</p>
+
+<p><code>
+Selenium::WebDriver::Error::StaleElementReferenceError:
+  Element not found in the cache - perhaps the page has changed since it was looked up
+</code></p>
+
+<p>The error was intermittent, so we fell into the seductive but
+dangerous trap of simply rerunning our tests whenever it
+failed. Recently, I had a bit of time and decided to dig into it and
+fix it once and for all.</p>
+
+<!-- more -->
+
+
+<p>My first task was to see if I could reproduce the error locally. We
+often saw the error when running the tests on our <a href="http://jenkins-ci.org/">Jenkins</a>
+continuous integration server, so there was the possibility that the
+problem was environmental. However, we also knew that the failure was
+intermittent, so we couldn't be sure it was environmental even if the
+test passed locally a few times.</p>
+
+<p>I rigged up a small shell script to simply run the test over and over
+again while I wandered away from my computer. The script looked
+something like:</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span> (test-script-runner.sh)</span> <a href='/downloads/code/test-script-runner.sh'>download</a></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="c">#!/bin/bash</span>
+</span><span class='line'><span class="nb">set</span> -eu
+</span><span class='line'>
+</span><span class='line'><span class="nv">failures</span><span class="o">=</span>0
+</span><span class='line'>
+</span><span class='line'><span class="k">for </span>run in <span class="sb">`</span>seq 20<span class="sb">`</span>; <span class="k">do</span>
+</span><span class='line'><span class="k">    if</span> ! rspec -e <span class="s1">&#39;the bad test&#39;</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">        </span><span class="nv">failures</span><span class="o">=</span><span class="k">$((</span><span class="nv">$failures</span> <span class="o">+</span> <span class="m">1</span><span class="k">))</span>
+</span><span class='line'>    <span class="k">fi</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">    </span><span class="nb">echo</span> <span class="s2">&quot;Test run $run complete, $failures failures&quot;</span>
+</span><span class='line'><span class="k">done</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>I'm sure there's a proper statistical manner to determine how many
+times the test would have to be run without failing to be reasonably
+certain that the test won't fail, but I didn't have to worry about
+that - the test failed somewhere within the first ten or so runs.</p>
+
+<p>Now that I knew the test could fail on my local setup, it was time to
+dig into what the test was doing. The test was fairly concise and
+readable (which I highly appreciated) and looked something like:</p>
+
+<p><code>ruby
+it 'deletes the element', :js =&gt; true  do
+  visit path_to_the_page
+  click_on 'Remove item'
+  page.should_not have_css(".item", text: "Old text")
+end
+</code></p>
+
+<p>The exception was coming from line #4 - when the test made the first
+assertion about the elements. Unfortunately, the stacktrace isn't very
+useful, as it mostly contains references to the JavaScript running
+inside of Firefox. The exception text indicates that the test has a
+reference to an element, but it isn't available in the cache
+anymore. Considering that the test just deleted the element, this is
+certainly suspicious.</p>
+
+<p>At this point, I cloned the capybara repository and started poking
+around. A <code>git grep</code> quickly found where <code>has_no_css?</code> was
+<a href="https://github.com/jnicklas/capybara/blob/1.1_stable/lib/capybara/node/matchers.rb#L171">defined</a>. Following the thread of code led to
+<code>has_no_selector?</code>, which calls the <code>all</code> <a href="https://github.com/jnicklas/capybara/blob/1.1_stable/lib/capybara/node/finders.rb#L109">method</a>. This method
+had a pretty clear split between the "finding" part of the code and
+the "filtering" part. There was no magic I used here to see this, just
+previous experience debugging race conditions.</p>
+
+<p>I opened up the installed gem and inserted a sleep directly into the
+code between the "finding" and "filtering" sections. It's ugly doing
+this, but it's good to try to not change too many things at once when
+debugging. I played with the sleep value a bit and eventually found a
+value that reliably reproduced the failure. Success!</p>
+
+<p>Well, maybe not <em>complete</em> success, but at least a step in the right
+direction. Even though I could reproduce the problem, I had only
+reproduced it in our production application, and I had modified my
+installed gem directly. It was time to make a nice test case.</p>
+
+<p>I created a new Rails app and added the requisite RSpec gems. Since we
+only need a simple HTML page with a bit of JavaScript to remove the
+element, I modified the index.html that ships with Rails to have the
+JavaScript inline and created an element and link to wire the action
+to.</p>
+
+<p>Since I knew that I would want to make changes to Capybara, I used the
+<code>:path</code> parameter in the Gemfile to point to my local checkout of
+Capybara. This is an awesome feature of <a href="http://gembundler.com/">Bundler</a> that you might not
+know about. It also means I'm not messing with my generally-available
+copy of Capybara, which is good for my sanity.</p>
+
+<p>I then created a stripped-down version of the test, the same as the
+example above. After getting everything hooked up, I ran the test but
+it didn't fail. This was bad news - I had done a few big steps between
+the production app and the smaller test case - which one of them could
+have changed the behavior?</p>
+
+<p>This is where my knowledge of our production system came in useful. In
+that application, we aren't just removing something from the page, we
+are persisting that deletion to disk. Doing that can add some time
+before the JavaScript fires to remove the item. I changed the test
+JavaScript to have a delay less than the delay in Capybara and ran the
+test again. It failed, just like we wanted it to. To be sure, I ran
+the test case a bunch of times to make sure it always failed and for
+the expected reason. Success!</p>
+
+<p>Well, almost. Even though I had a test case, I still needed to show
+that code to someone who could do something about it. Checking back at
+the <a href="https://github.com/jnicklas/capybara">Capybara website</a>, I looked for how to submit a
+ticket. Right at the top is a nice, clear comment:</p>
+
+<blockquote><p>Need help? Ask on the mailing list (please do not open an issue on GitHub)</p></blockquote>
+
+<p>So, I pushed my changes to Capybara to <a href="https://github.com/shepmaster/capybara">my fork</a> and
+updated my test app to use a remote git version of the gem (another
+cool Bundler feature). I then pushed <a href="https://github.com/shepmaster/capybara-race">my test case</a> to
+GitHub as well. I took a bit of time to create a short README so that
+anyone stumbling on the test app would have a clue as to what it was.</p>
+
+<p>After that, it was just a small matter to write up a clear email to
+the Capybara list. I still find emailing new lists scary. Who knows
+how the list will respond? This time I got a <a href="https://groups.google.com/forum/?fromgroups=#!topic/ruby-capybara/O3Ib6INOP58">nice surprise</a>:</p>
+
+<blockquote><p>That's a very nice bug report, Jake.</p>
+
+<p>It appears to be a bug indeed. I've been able to reproduce it on master as well.</p></blockquote>
+
+<p>A GitHub issue <a href="https://github.com/jnicklas/capybara/issues/843">has been opened</a>, and the bug is well on the
+way to being fixed. Yay for Open Source!</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[SQLite, 64-bit integers, and the impossible number]]></title>
+    <link href="http://jakegoulding.com/blog/2011/02/06/sqlite-64-bit-integers/"/>
+    <updated>2011-02-06T12:00:00-05:00</updated>
+    <id>http://jakegoulding.com/blog/2011/02/06/sqlite-64-bit-integers</id>
+    <content type="html"><![CDATA[<p>We recently tackled an issue that seemed rather impossible - an
+unsigned 64-bit value was <em>greater than</em> the maximum value that a
+64-bit value can hold. What unfolded was a dark, gritty look at the
+underbelly of everything we hold dear (or a normal debugging session,
+as we like to call them).</p>
+
+<!--more-->
+
+
+<h2>SQLite3 and 64-bit integers</h2>
+
+<p>First off, lets create a table with some big numbers:</p>
+
+<p><code>sql
+CREATE TABLE big_numbers (i INTEGER, r REAL, t TEXT, b BLOB);
+INSERT INTO big_numbers VALUES (9223372036854775807, 9223372036854775807, 9223372036854775807, 9223372036854775807); -- 2^63 - 1
+INSERT INTO big_numbers VALUES (9223372036854775808, 9223372036854775808, 9223372036854775808, 9223372036854775808); -- 2^63
+</code></p>
+
+<p>Let's sanity check our data to make sure it looks like what we would
+expect:</p>
+
+<p>``` sql</p>
+
+<blockquote><p>SELECT * FROM big_numbers;
+i                     r                     t                     b</p>
+
+<hr />
+
+<p>9223372036854775807   9.22337203685478e+18  9223372036854775807   9223372036854775807
+9.22337203685478e+18  9.22337203685478e+18  9.22337203685478e+18  9.22337203685478e+18
+```</p></blockquote>
+
+<p>Huh. We definitely were not expecting most of those floating point
+numbers, so let's see what types are being returned:</p>
+
+<p>``` sql</p>
+
+<blockquote><p>SELECT typeof(i),typeof(r),typeof(t),typeof(b) FROM big_numbers;
+typeof(i)   typeof(r)   typeof(t)   typeof(b)</p>
+
+<hr />
+
+<p>integer     real        text        integer
+real        real        text        real
+```</p></blockquote>
+
+<p>Sure enough, the numeric types in the second row are all reals. Let's
+do a nice simple addition operation on our data:</p>
+
+<p>``` sql</p>
+
+<blockquote><p>SELECT i+1,r+1,t+1,b+1 FROM big_numbers;
+i+1                   r+1                   t+1                   b+1</p>
+
+<hr />
+
+<p>-9223372036854775808  9.22337203685478e+18  -9223372036854775808  -9223372036854775808
+9.22337203685478e+18  9.22337203685478e+18  9.22337203685478e+18  9.22337203685478e+18
+```</p></blockquote>
+
+<p>Woah, what happened here? Those familiar with signed and unsigned
+integers are already nodding and going "Mmm-hmm". For everyone else, I
+suggest brushing up on <a href="http://en.wikipedia.org/wiki/Two's_complement">two's compliment</a> notation. Suffice it to
+say that integers are usually represented by a fixed number of bits,
+and once you run out of bits you roll over back to the beginning, in
+this case a large negative number.</p>
+
+<p>As it turns out, SQLite is pretty straight-forward about this. From
+the <a href="http://www.sqlite.org/datatype3.html">datatype reference</a> in SQLite (emphasis mine):</p>
+
+<blockquote><p>INTEGER. The value is a <strong>signed</strong> integer, stored in 1, 2, 3, 4, 6,
+or 8 bytes depending on the magnitude of the value.</p></blockquote>
+
+<p>That is, you can only store values from -2**63 to (2**63-1). What
+does SQLite do for a value outside of this range? As we saw earlier,
+it switches over into floating point. Again, quoting from the SQLite
+reference:</p>
+
+<blockquote><p>REAL. The value is a floating point value, stored as an 8-byte IEEE
+floating point number.</p></blockquote>
+
+<p>Many programmers are familiar with this type under the name
+<a href="http://en.wikipedia.org/wiki/Double_precision_floating-point_format">double</a>.</p>
+
+<h2>Are you smarter than a SQLite engineer?</h2>
+
+<p>In our case, we are trying to store an unsigned 64-bit integer. For
+reasons now lost to the past, we marshall native C types to strings
+ourselves before handing them off to SQLite, rather than using the
+appropriate <a href="http://www.sqlite.org/capi3ref.html">SQLite API</a> functions.</p>
+
+<p>An unrelated issue elsewhere caused this value to go negative. Similar
+to the issue above when we overflow a integer type, when you underflow
+you get a very large positive number. Since we have an <em>unsigned</em>
+number, the resultant number is far over the maximum of a <em>signed</em>
+64-bit integer. This causes SQLite to switch into floating-point mode
+when the value is saved to the database.</p>
+
+<p>Of course, our particular tale of woe doesn't end there. Indeed, we
+need to report this value in a status response. As an example of what
+I can only assume is premature optimization, we simply grab the string
+value from SQLite and report that. This causes another part of the
+application to choke when trying to parse the value, as it can no
+longer fit within a 64-bit type.</p>
+
+<h2>Wait, what?</h2>
+
+<p>How did we go from simply over- or under-flowing a 64-bit value to
+exceeding the range of the datatype? It shouldn't even be possible to
+have a 64-bit value that is larger than a 64-bit value, by definition!
+As a coworker said: "It would violate the logic of the reality of the
+number". The answer stems from how the value is converted into a
+double by SQLite.</p>
+
+<p>Here is a simple example that shows what happens when you mess around
+with 64-bit integer types and doubles the wrong way:</p>
+
+<pre><code>#!C
+</code></pre>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span> (64bit-integer-float.c)</span> <a href='/downloads/code/64bit-integer-float.c'>download</a></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="cp">#include &lt;stdio.h&gt;</span>
+</span><span class='line'><span class="cp">#include &lt;stdlib.h&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">int</span>
+</span><span class='line'><span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">long</span> <span class="kt">long</span> <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+</span><span class='line'>  <span class="kt">double</span> <span class="n">d</span> <span class="o">=</span> <span class="n">i</span><span class="p">;</span>
+</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">long</span> <span class="kt">long</span> <span class="kt">int</span> <span class="n">i2</span> <span class="o">=</span> <span class="n">d</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;%llu</span><span class="se">\n</span><span class="s">%.20g</span><span class="se">\n</span><span class="s">%llu</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">i2</span><span class="p">);</span>
+</span><span class='line'>  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>On Windows (Microsoft (R) C/C++ Optimizing Compiler Version
+14.00.50727.762 for x64), we see:</p>
+
+<pre><code>18446744073709551615
+18446744073709552000
+18446744073709551615
+</code></pre>
+
+<p>On Linux (gcc (Gentoo 4.4.4-r2 p1.2, pie-0.4.5) 4.4.4), we get
+different but equally surprising output:</p>
+
+<pre><code>18446744073709551615
+18446744073709551616
+0
+</code></pre>
+
+<p>In both cases, the intermediate double representation is greater than
+the original integral representation. The double value is much greater
+than the original on Windows, but the cast back to an integer has the
+same value as the original. On Linux, the double value is just a
+little bit greater, but casting back rolls all the way back to
+zero. Floating point numbers are <strong>hard</strong>, and we programmers far too
+often forget exactly how hard they are.</p>
+
+<p>When we grabbed the string value directly from the database, there was
+no cast back to a 64-bit type to truncate the value. This causes
+<a href="http://www.youtube.com/watch?v=KFLq7cyHKMg">the rest of the dominoes to fall like a house of cards</a>.</p>
+
+<h2>Lessons learned</h2>
+
+<p><strong>Be careful when you need to store large numbers in SQLite.</strong> If you
+really need to support unsigned 64-bit numbers, you could always shift
+your numbers down by 2**63. Of course, this means that you will
+need to massage any access to that column to correct for the
+offset. If you don't need to perform any calculations or sorting on
+that column inside of SQLite, it's possible that you could give the
+column a text affinity, preventing SQLite from messing with the
+data.</p>
+
+<p><strong>Don't write your own marshaling code unless you really need it.</strong> If
+we had used the actual SQLite C API for storing and retrieving our
+values, I assume (but have not verified) that this wouldn't have
+happened, not to mention we would have likely realized that SQLite
+only natively supports <strong>signed</strong> 64-bit integers. This would have led
+us to test the edge cases that were more obvious.</p>
+
+<p><strong>Test maximal and minimal values.</strong> This is such a basic testing
+strategy that it is surprising that we forget it so
+much. I'mdefinitely in the camp of people that don't do this kind of
+testing as much as I should.</p>
+]]></content>
+  </entry>
+  
+</feed>

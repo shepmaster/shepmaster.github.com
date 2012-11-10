@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: rails | Jake Goulding]]></title>
+  <link href="http://jakegoulding.com/blog/categories/rails/atom.xml" rel="self"/>
+  <link href="http://jakegoulding.com/"/>
+  <updated>2012-11-10T17:27:44-05:00</updated>
+  <id>http://jakegoulding.com/</id>
+  <author>
+    <name><![CDATA[Jake Goulding]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Using named routes in ActionMailer tests with Rails 3]]></title>
+    <link href="http://jakegoulding.com/blog/2011/02/26/using-named-routes-in-actionmailer-tests-with-rails-3/"/>
+    <updated>2011-02-26T12:00:00-05:00</updated>
+    <id>http://jakegoulding.com/blog/2011/02/26/using-named-routes-in-actionmailer-tests-with-rails-3</id>
+    <content type="html"><![CDATA[<p>The version of ActionMailer included with Rails 3.0.4 allows you to
+use named routes in the mailer view by default, but writing a
+functional test that tests those named routes isn't as out-of-the-box.</p>
+
+<!--more-->
+
+
+<p>Say you had created a "Notifications" object with a subscribe method,
+like such:</p>
+
+<p>``` ruby
+class Notifications &lt; ActionMailer::Base
+  def subscribe(user)</p>
+
+<pre><code>mail(:to      =&gt; 'test@example.com',
+ :subject =&gt; "You are now subscribed")
+</code></pre>
+
+<p>  end
+end
+```</p>
+
+<p>The subscribe method creates a simple text email format that includes
+a link back to your application:</p>
+
+<pre><code>Thanks for subscribing. Would you like to unsubscribe?
+&lt;%= unsubscribe_url(:email =&gt; 'test@example.com') %&gt;
+</code></pre>
+
+<p>Here is what a test that checks that the important unsubscribe link
+exists might look like:</p>
+
+<p>``` ruby
+require 'test_helper'</p>
+
+<p>class NotificationsTest &lt; ActionMailer::TestCase
+  test "subscribe" do</p>
+
+<pre><code>mail = Notifications.subscribe
+assert_match unsubscribe_url(:email =&gt; 'test@example.com'), mail.body.encoded
+</code></pre>
+
+<p>  end
+end
+```</p>
+
+<p>However, running that test will give you an error like:</p>
+
+<pre><code>NoMethodError: undefined method `unsubscribe_url' for #&lt;NotificationsTest:0x000001039dbe40&gt;
+    test/functional/notifications_test.rb:6:in `block in &lt;class:NotificationsTest&gt;'
+</code></pre>
+
+<p>To get around this, you need to include the URL helpers (to define
+those methods) and point to your default URL options (to define
+options such as the default host). Modify the test to look like:</p>
+
+<p>``` ruby
+require 'test_helper'</p>
+
+<p>class NotificationsTest &lt; ActionMailer::TestCase
+  include Rails.application.routes.url_helpers</p>
+
+<p>  def default_url_options</p>
+
+<pre><code>Rails.application.config.action_mailer.default_url_options
+</code></pre>
+
+<p>  end</p>
+
+<p>  test "subscribe" do</p>
+
+<pre><code>mail = Notifications.subscribe
+assert_match unsubscribe_url(:email =&gt; 'test@example.com'), mail.body.encoded
+</code></pre>
+
+<p>  end
+end
+```</p>
+]]></content>
+  </entry>
+  
+</feed>

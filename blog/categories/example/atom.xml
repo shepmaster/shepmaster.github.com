@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: example | Jake Goulding]]></title>
+  <link href="http://jakegoulding.com/blog/categories/example/atom.xml" rel="self"/>
+  <link href="http://jakegoulding.com/"/>
+  <updated>2012-11-10T17:27:44-05:00</updated>
+  <id>http://jakegoulding.com/</id>
+  <author>
+    <name><![CDATA[Jake Goulding]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[A refactoring example: lots of if-else statements on strings]]></title>
+    <link href="http://jakegoulding.com/blog/2012/09/24/a-refactoring-example-if-else-on-strings/"/>
+    <updated>2012-09-24T12:00:00-04:00</updated>
+    <id>http://jakegoulding.com/blog/2012/09/24/a-refactoring-example-if-else-on-strings</id>
+    <content type="html"><![CDATA[<p>I recently did a bit of work that turned out to be a great exercise
+for refactoring a huge sequence of if-else statements based on
+strings. There are a few ugly bits left, so I'm still poking at it,
+but I am pleased with my progress so far.</p>
+
+<!-- more -->
+
+
+<p>While the original code was Java, the meat of the problem can be
+easily shown in Ruby. Translating it to Ruby also makes it easier to
+make sure I don't accidentally share any proprietary information!</p>
+
+<p>The problem involves processing a hunk of XML to create nested
+configuration objects. The original implementation used a sequence of
+if-else blocks, but the Ruby version would have used a <code>case</code>
+statement.</p>
+
+<p>```ruby
+class ObjectsFromXML
+  def process(parent, element)</p>
+
+<pre><code>new_object = nil
+
+case element.name
+when 'foo'
+  f = Foo.new(element['name'])
+  parent.add(f)
+  new_object = f
+when 'bar'
+  b = Bar.new(element['name'])
+  b.weight = element['weight'].to_f
+  parent.add(b)
+  new_object = b
+# ... about 20 of these cases in total
+else
+  raise "Invalid node"
+end
+
+element.children.each { |c| process(new_object, c) }
+</code></pre>
+
+<p>  end
+end
+```</p>
+
+<p>This function has some issues: it is pretty long, and each case has
+some similarity to the next but are different enough to be
+annoying. The code certainly doesn't try to adhere to the Single
+Responsibility Principle!</p>
+
+<p>My first step was to split the blocks into classes with a common interface.</p>
+
+<p>```ruby
+class FooHandler
+  def process(parent, element)</p>
+
+<pre><code>Foo.new(element['name']).tap |f|
+  parent.add(f)
+end
+</code></pre>
+
+<p>  end
+end</p>
+
+<p>class BarHandler
+  def process(parent, element)</p>
+
+<pre><code>Bar.new(element['name']).tap
+  b.weight = element['weight'].to_f
+  parent.add(b)
+end
+</code></pre>
+
+<p>  end
+end</p>
+
+<p>class ObjectsFromXML
+  def process(parent, element)</p>
+
+<pre><code>new_object = nil
+
+case element.name
+when 'foo'
+  new_object = FooHandler.new.process(parent, element)
+when 'bar'
+  new_object = BarHandler.new.process(parent, element)
+# ... other cases
+else
+  raise "Invalid node"
+end
+
+element.children.each { |c| process(new_object, c) }
+</code></pre>
+
+<p>  end
+end
+```</p>
+
+<p>This corrals the item-specific code to an item-specific class. If I
+need to change how the Bar class is created, only the BarHandler class
+needs to be updated.</p>
+
+<p>```ruby
+class FooHandler
+  # As above...
+end</p>
+
+<p>class BarHandler
+  # As above...
+end</p>
+
+<p>class ObjectsFromXML
+  attr_reader :handlers</p>
+
+<p>  def initialize</p>
+
+<pre><code>@handlers = {}
+handlers['foo'] = FooHandler.new
+handlers['bar'] = BarHandler.new
+# ... other cases
+</code></pre>
+
+<p>  end</p>
+
+<p>  def process(parent, element)</p>
+
+<pre><code>handler = handlers.fetch(element.name) { raise "Invalid node" }
+new_object = handler.process(parent, element)
+element.children.each { |c| process(new_object, c) }
+</code></pre>
+
+<p>  end
+end
+```</p>
+
+<p>Now all the handlers are in a hash, keyed by the expected element
+name. This allows me to pull out the correct handler and go. The
+<code>process</code> function now only needs to be concerned with picking the
+right handler and dealing with children elements.</p>
+
+<p>```ruby
+class FooHandler
+  # As above...</p>
+
+<p>  def element_name</p>
+
+<pre><code>'foo'
+</code></pre>
+
+<p>  end
+end</p>
+
+<p>class BarHandler
+  # As above...</p>
+
+<p>  def element_name</p>
+
+<pre><code>'bar'
+</code></pre>
+
+<p>  end
+end</p>
+
+<p>class Handlers
+  def initialize</p>
+
+<pre><code>@handlers = {}
+</code></pre>
+
+<p>  end</p>
+
+<p>  def add(handler)</p>
+
+<pre><code>@handlers[handler.element_name] = handler
+</code></pre>
+
+<p>  end</p>
+
+<p>  def process(parent, element)</p>
+
+<pre><code>handler = handlers.fetch(element.name) { raise "Invalid node" }
+handler.process(parent, element)
+</code></pre>
+
+<p>  end
+end</p>
+
+<p>class ObjectsFromXML
+  attr_reader :handlers</p>
+
+<p>  def initialize</p>
+
+<pre><code>@handlers = Handlers.new
+handlers.add(FooHandler.new)
+handlers.add(BarHandler.new)
+# ... other cases
+</code></pre>
+
+<p>  end</p>
+
+<p>  def process(parent, element)</p>
+
+<pre><code>new_object = handlers.process(parent, element)
+element.children.each { |c| process(new_object, c) }
+</code></pre>
+
+<p>  end
+end
+```</p>
+
+<p>Now we have moved the concept of the expected element name into the
+handler itself. This makes sense, as each handler should know what
+name it expects, not some other piece of code. I also took the
+opportunity to move the code purely related to the handlers to a new
+class that is highly focused on that one responsibility.</p>
+
+<p>Some further refinements happened after this last point. The
+<code>ObjectsFromXML</code> class became another <code>Handler</code> class, which made it
+the same level of abstraction as the other handlers and removed a
+redundant <code>process</code> method. The return code was removed because it
+wasn't used except in a few tests. Iterating over children was moved
+to each class that could contain children.</p>
+]]></content>
+  </entry>
+  
+</feed>

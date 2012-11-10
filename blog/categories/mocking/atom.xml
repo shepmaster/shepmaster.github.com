@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: mocking | Jake Goulding]]></title>
+  <link href="http://jakegoulding.com/blog/categories/mocking/atom.xml" rel="self"/>
+  <link href="http://jakegoulding.com/"/>
+  <updated>2012-11-10T17:27:44-05:00</updated>
+  <id>http://jakegoulding.com/</id>
+  <author>
+    <name><![CDATA[Jake Goulding]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Test Double Terminology]]></title>
+    <link href="http://jakegoulding.com/blog/2012/01/12/test-double-terminology/"/>
+    <updated>2012-01-12T07:37:00-05:00</updated>
+    <id>http://jakegoulding.com/blog/2012/01/12/test-double-terminology</id>
+    <content type="html"><![CDATA[<p>While listening to the Code Quality panel discussion at
+<a href="http://codemash.org/">CodeMash</a>, I <a href="https://twitter.com/#!/JakeGoulding/status/157261614448521216">tweeted</a> about "the state
+of mocking":</p>
+
+<blockquote><p>The state of "mocking" is that the term "mocking" is misused by
+everyone. You often mean "test double" or "stub".</p></blockquote>
+
+<p>This garnered some retweets and some great replies, so I wanted to
+have the opportunity to respond in a little longer form. I've written
+this post between sessions and in the halls, so give me a little
+leeway and feel free to send me a tweet with corrections, arguments,
+whatever.</p>
+
+<!-- more -->
+
+
+<h2>Test frameworks encourage misuse</h2>
+
+<blockquote><p>[I]t doesn't help that most mocking frameworks are used for stubs</p></blockquote>
+
+<p><a href="https://twitter.com/#!/F1nglas/status/157421334220120065">@F1nglas</a> mentions that <a href="http://code.google.com/p/moq/">moq</a> does this, and I
+know that <a href="http://code.google.com/p/mockito/">Mockito</a> does as well. <a href="https://www.relishapp.com/rspec">RSpec</a> does better
+in this area. From the <a href="https://www.relishapp.com/rspec/rspec-mocks">rspec-mock</a> documentation:</p>
+
+<blockquote><p>Use the <code>double</code> method to create [a test double.] You can also use
+the <code>mock</code> and <code>stub</code> methods to create test doubles, however these
+methods are there for backward compatibility only</p></blockquote>
+
+<p>Remember that most of these tools we use are open source: we can
+submit patches to improve them. In the meantime, we can add local
+alias methods that better express our intent.</p>
+
+<h2>Saying "mock" is just more fluid</h2>
+
+<blockquote><p>[P]eople find it easier to say "I'll mock that out" than "I'll
+test-double that out".</p></blockquote>
+
+<p><a href="https://twitter.com/#!/jitterted/status/157265770403987456">@jitterted</a>'s point is spot on; it <em>is</em> easier to say
+"mock". However, I don't usually want to use just a test double. I
+always want to do/use something particular: stub, mock, dummy, etc.</p>
+
+<p>I'd love it if we as a community could come up with a better verb to
+use to mean the generic "use a test double".</p>
+
+<h2>Doesn't language evolve?</h2>
+
+<blockquote><p>[A] term takes on the meaning that "everyone" gives it</p></blockquote>
+
+<p><a href="https://twitter.com/#!/JuliansThoughts/status/157372211840299009">@JuliansThoughts</a></p>
+
+<blockquote><p>The meaning of a word is defined by common understanding</p></blockquote>
+
+<p><a href="https://twitter.com/#!/roblally/status/157361888420827137">@roblally</a></p>
+
+<blockquote><p>[M]isused by everyone is an evolving definition</p></blockquote>
+
+<p><a href="https://twitter.com/#!/boulderDanH/status/157262539372249088">@boulderDanH</a></p>
+
+<p>Let me get this out of the way first: I <strong>love</strong> the evolution of
+language. Dropping irrelevant words, new words being created, and
+expanding the meaning of existing words are all good things.</p>
+
+<p>The root issue here is not that language is evolving. The root issue
+is that our understanding of the tools and techniques we are referring
+to by that language hasn't gotten to the point where we can substitute
+one for the other and know <strong>conclusively</strong> what we really mean.</p>
+
+<p>If I said to you, the programmer: "Use a list to store the names". You
+go off and write whatever you need, then come back for code review and
+I now say: "Why can't I look up a specific name efficiently?". You
+would be outraged; why did I tell you to use a list when I really
+meant a hashtable instead? My response? "Oh, you know that language
+evolves".</p>
+
+<p>If I'd originally said to use a "collection", a more abstract concept
+than either list or hashtable, that would force you to think about
+what you need to do and how you were going to do it. I'm not
+conflating a specific idea with a general concept.</p>
+
+<p>As community, we have heaps of experience with various types of
+collections; we don't have that same strong background with test
+doubles yet. When we use "mock" when we should use "dummy" or "stub"
+or "test double", we avoid thinking about what we really need to do
+and why we need to do it.</p>
+
+<p>By using "mock" inappropriately, we confuse two distinct concepts. We
+then complain that "mocks" suck and don't do what we need them to
+do. Mocks, stubs, fakes and dummies all have a place and a
+purpose. Just as using a list when you should use a hashtable reflects
+poorly on the programmer, so does using a mock when you should use a
+stub.</p>
+
+<p>Mocks are <strong>not</strong> stubs. Don't believe me. Believe
+<a href="http://martinfowler.com/articles/mocksArentStubs.html#TheDifferenceBetweenMocksAndStubs">Martin Fowler</a>. Believe
+<a href="http://xunitpatterns.com/">Gerard Meszaros</a>. Watch
+<a href="http://confreaks.net/videos/659-rubyconf2011-why-you-don-t-get-mock-objects">Why You Don't Get Mock Objects</a> by Gregory
+Moeck. Whatever you do, make sure you understand what a mock object
+truly is before you start conflating terms.</p>
+
+<p><em>Note:</em> Don't take from this post that I always do or say the right
+thing. I have other posts on this same blog that incorrectly refer to
+test doubles as "mocks". Most of those posts were written before I
+learned the difference myself. I should edit those posts to clarify my
+real intent. The important thing is that as we go forward we should be
+careful and precise about what we mean.</p>
+
+<p>Discuss on <a href="http://www.reddit.com/r/programming/comments/off9p/test_double_terminology_the_misuse_of_the_term/">reddit</a> or <a href="http://news.ycombinator.com/item?id=3460509">Hacker News</a>.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Stubbing the Builder pattern in Mockito]]></title>
+    <link href="http://jakegoulding.com/blog/2012/01/09/stubbing-builder-pattern-in-mockito/"/>
+    <updated>2012-01-09T12:00:00-05:00</updated>
+    <id>http://jakegoulding.com/blog/2012/01/09/stubbing-builder-pattern-in-mockito</id>
+    <content type="html"><![CDATA[<p>Recently, I was asked to help review new tests for production code
+that made use of the <a href="http://en.wikipedia.org/wiki/Builder_pattern">Builder</a> pattern. The code in question
+did not lend itself to nice and easy testing, but leveraging a
+lesser-used bit of <a href="http://code.google.com/p/mockito/">Mockito</a> functionality helped make the
+code better.</p>
+
+<!-- more -->
+
+
+<p>Originally, the tests created a test double for the builder object and
+then stubbed all of the methods on the builder to return the builder
+double itself. The code looked a bit like:</p>
+
+<p>```java
+@Test
+public void builder_test_v1()
+{</p>
+
+<pre><code>Foo f = mock(Foo.class);
+FooBuilder b = mock(FooBuilder.class);
+when(b.enableAlpha()).thenReturn(b);
+when(b.disableBeta()).thenReturn(b);
+when(b.increaseGamma()).thenReturn(b);
+when(b.build()).thenReturn(f);
+
+productionCode(b);
+verify(f).someMethod();
+</code></pre>
+
+<p>}</p>
+
+<p>public void productionCode(FooBuilder builder)
+{</p>
+
+<pre><code>// code that uses the builder...
+Foo foo = b.enableAlpha().disableBeta().increaseGamma().build();
+</code></pre>
+
+<p>}
+```</p>
+
+<p>There are a few downsides to this approach. The first thing we noticed
+was the amount of work done to set up the builder compared to the rest
+of the test. All that line noise distracts us from the meaning of the
+test. This can be easily improved by pulling the builder setup into a
+separate method:</p>
+
+<p>```java
+@Test
+public void builder_test_v2()
+{</p>
+
+<pre><code>Foo f = mock(Foo.class);
+FooBuilder b = newBuilderMock();
+when(b.build()).thenReturn(f);
+
+productionCode(b);
+verify(f).someMethod();
+</code></pre>
+
+<p>}</p>
+
+<p>private FooBuilder newBuilderMock()
+{</p>
+
+<pre><code>FooBuilder b = mock(FooBuilder.class);
+when(b.enableAlpha()).thenReturn(b);
+when(b.disableBeta()).thenReturn(b);
+when(b.increaseGamma()).thenReturn(b);
+return b;
+</code></pre>
+
+<p>}
+```</p>
+
+<p>While the test is now easier to read and the new method is reusable in
+other tests, we still will be in trouble when the methods of the
+builder change.</p>
+
+<p>If your builder implements an interface, you should consider creating
+an implementation of that interface that you can easily configure for
+testing. Something like:</p>
+
+<p>```java
+public class TestingFooBuilder implements FooBuilder
+{</p>
+
+<pre><code>private Foo returnValue;
+
+public TestingFooBuilder(Foo returnValue)
+{
+    this.returnValue = returnValue;
+}
+
+public FooBuilder enableAlpha()
+{
+    return this;
+}
+
+public FooBuilder disableBeta()
+{
+    return this;
+}
+
+public FooBuilder increaseGamma()
+{
+    return this;
+}
+
+public Foo build()
+{
+    return returnValue;
+}
+</code></pre>
+
+<p>}
+```</p>
+
+<p>```java
+@Test
+public void builder_test_v3()
+{</p>
+
+<pre><code>Foo f = mock(Foo.class);
+FooBuilder b = new TestingFooBuilder(f);
+
+productionCode(b);
+verify(f).someMethod();
+</code></pre>
+
+<p>}
+```</p>
+
+<p>An implementation like this allows you to lean on the compiler when
+the interface changes.</p>
+
+<p>If you don't have a interface to implement, you could subclass
+the concrete builder class and insert your test-specific logic
+there. The downside to this is that newly-added methods will inherit
+their implementation from the parent class, which can cause very
+strange test failures.</p>
+
+<p>We did not have an interface to adhere to, so we used Mockito's
+<code>Answer</code> class to provide a middle ground solution. When you create a
+new mock, an <code>Answer</code> can be used to provide default behavior for
+methods. Here's the custom <code>Answer</code> we came up with:</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span> (AnswerWithSelf.java)</span> <a href='/downloads/code/AnswerWithSelf.java'>download</a></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> * Returns the mock object itself for any method that returns the specified class.</span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">AnswerWithSelf</span> <span class="kd">implements</span> <span class="n">Answer</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">&gt;</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="kd">final</span> <span class="n">Answer</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">&gt;</span> <span class="n">delegate</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ReturnsEmptyValues</span><span class="o">();</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="kd">final</span> <span class="n">Class</span><span class="o">&lt;?&gt;</span> <span class="n">clazz</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="nf">AnswerWithSelf</span><span class="o">(</span><span class="n">Class</span><span class="o">&lt;?&gt;</span> <span class="n">clazz</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">this</span><span class="o">.</span><span class="na">clazz</span> <span class="o">=</span> <span class="n">clazz</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="n">Object</span> <span class="nf">answer</span><span class="o">(</span><span class="n">InvocationOnMock</span> <span class="n">invocation</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Throwable</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">Class</span><span class="o">&lt;?&gt;</span> <span class="n">returnType</span> <span class="o">=</span> <span class="n">invocation</span><span class="o">.</span><span class="na">getMethod</span><span class="o">().</span><span class="na">getReturnType</span><span class="o">();</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">returnType</span> <span class="o">==</span> <span class="n">clazz</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>            <span class="k">return</span> <span class="n">invocation</span><span class="o">.</span><span class="na">getMock</span><span class="o">();</span>
+</span><span class='line'>        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span><span class='line'>            <span class="k">return</span> <span class="n">delegate</span><span class="o">.</span><span class="na">answer</span><span class="o">(</span><span class="n">invocation</span><span class="o">);</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>The answer can be used like this:</p>
+
+<p>```java
+@Test
+public void builder_test_v4()
+{</p>
+
+<pre><code>Foo f = mock(Foo.class);
+FooBuilder b = mock(FooBuilder.class, new AnswerWithSelf(FooBuilder.class));
+when(b.build()).thenReturn(f);
+
+productionCode(b);
+verify(f).someMethod();
+</code></pre>
+
+<p>}
+```</p>
+
+<p>This <code>Answer</code> can be used with any <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent interface</a> that
+returns the original object.</p>
+]]></content>
+  </entry>
+  
+</feed>

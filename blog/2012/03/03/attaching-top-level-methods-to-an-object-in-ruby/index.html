@@ -7,6 +7,11 @@
   <meta charset="utf-8">
   <title>Attaching top-level methods to an object in Ruby - Jake Goulding</title>
   <meta name="author" content="Jake Goulding">
+
+  
+  <meta name="description" content="Sometimes when you are doing rapid development, you need to create a
+new method right now, but you don&#8217;t put the method in the right
+spot. &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -15,37 +20,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-
-  <link rel="canonical" href="http://jakegoulding.com/blog/2012/03/03/attaching-top-level-methods-to-an-object-in-ruby/"/>
-  <link href="/favicon.png" rel="shortcut icon" />
+  <link rel="canonical" href="http://jakegoulding.com/blog/2012/03/03/attaching-top-level-methods-to-an-object-in-ruby/">
+  <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="http://s3.amazonaws.com/ender-js/jeesh.min.js"></script>
+  <script src="/javascripts/ender.js"></script>
   <script src="/javascripts/octopress.js" type="text/javascript"></script>
-  <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml"/>
+  <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml">
   <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
 <link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
 
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-20521797-2']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
 </head>
 
-<body  >
-  <header><hgroup>
+<body   >
+  <header role="banner"><hgroup>
   <h1><a href="/">Jake Goulding</a></h1>
   
 </hgroup>
 
 </header>
-  <nav role=navigation><ul role=subscription data-subscription="rss">
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
   <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
   
 </ul>
+  
 <form action="http://google.com/search" method="get">
-  <fieldset role="site-search">
+  <fieldset role="search">
     <input type="hidden" name="q" value="site:jakegoulding.com" />
     <input class="search" type="text" name="q" results="0" placeholder="Search"/>
   </fieldset>
 </form>
+  
 <ul role=main-navigation>
   <li><a href="/">Blog</a></li>
   <li><a href="/blog/archives">Archives</a></li>
@@ -55,14 +75,18 @@
   <div id="main">
     <div id="content">
       <div>
-<article class="hentry">
+<article class="hentry" role="article">
   
   <header>
     
-      <h1 class="entry-title">Attaching Top-level Methods to an Object in Ruby</h1>
+      <h1 class="entry-title">Attaching top-level methods to an object in Ruby</h1>
     
     
       <p class="meta">
+        
+
+
+
 
 
 
@@ -71,8 +95,9 @@
   
 
 
-
-<time datetime="2012-03-03T10:48:00-05:00" pubdate  data-updated="true" >Mar 3<span>rd</span>, 2012</time></p>
+<time datetime="2012-03-03T10:48:00-05:00" pubdate data-updated="true">Mar 3<span>rd</span>, 2012</time>
+        
+      </p>
     
   </header>
 
@@ -97,31 +122,31 @@ the calls.</p>
 
 <p>Here&#8217;s an example of the problem</p>
 
-<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
-<span class='line'>2</span>
-<span class='line'>3</span>
-<span class='line'>4</span>
-<span class='line'>5</span>
-<span class='line'>6</span>
-<span class='line'>7</span>
-<span class='line'>8</span>
-<span class='line'>9</span>
-<span class='line'>10</span>
-<span class='line'>11</span>
-<span class='line'>12</span>
-</pre></td><td class='code' width='100%'><pre><code class='ruby'><div class='line'><span class="k">def</span> <span class="nf">add_value</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
-</div><div class='line'>  <span class="n">object</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">param</span>
-</div><div class='line'><span class="k">end</span>
-</div><div class='line'>
-</div><div class='line'><span class="k">class</span> <span class="nc">MyObject</span>
-</div><div class='line'>  <span class="k">def</span> <span class="nf">value</span>
-</div><div class='line'>    <span class="mi">10</span>
-</div><div class='line'>  <span class="k">end</span>
-</div><div class='line'><span class="k">end</span>
-</div><div class='line'>
-</div><div class='line'><span class="n">obj</span> <span class="o">=</span> <span class="no">MyObject</span><span class="o">.</span><span class="n">new</span>
-</div><div class='line'><span class="n">add_value</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
-</div></code></pre></td></tr></table></div></figure>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">add_value</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">object</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">param</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">MyObject</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">value</span>
+</span><span class='line'>    <span class="mi">10</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">obj</span> <span class="o">=</span> <span class="no">MyObject</span><span class="o">.</span><span class="n">new</span>
+</span><span class='line'><span class="n">add_value</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 <p>You&#8217;d really like <code>MyObject</code> to have an <code>add_value</code> method, instead of
@@ -129,17 +154,17 @@ it just floating around at the top-level. However, you don&#8217;t want to
 just copy code around - what if one of the implementations changes?
 Your first instinct might be to do something like this:</p>
 
-<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
-<span class='line'>2</span>
-<span class='line'>3</span>
-<span class='line'>4</span>
-<span class='line'>5</span>
-</pre></td><td class='code' width='100%'><pre><code class='ruby'><div class='line'><span class="k">class</span> <span class="nc">MyObject</span>
-</div><div class='line'>  <span class="k">def</span> <span class="nf">add_value</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
-</div><div class='line'>    <span class="n">add_value</span><span class="p">(</span><span class="nb">self</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
-</div><div class='line'>  <span class="k">end</span>
-</div><div class='line'><span class="k">end</span>
-</div></code></pre></td></tr></table></div></figure>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">MyObject</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">add_value</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">add_value</span><span class="p">(</span><span class="nb">self</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 <p>The problem with this is that once you are inside the class
@@ -151,40 +176,40 @@ method have unique names. If you like the existing name for both
 methods, you could alias the original name to a more unique one to
 avoid shadowing it:</p>
 
-<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
-<span class='line'>2</span>
-<span class='line'>3</span>
-<span class='line'>4</span>
-<span class='line'>5</span>
-<span class='line'>6</span>
-<span class='line'>7</span>
-</pre></td><td class='code' width='100%'><pre><code class='ruby'><div class='line'><span class="k">alias</span> <span class="ss">:i_am_secret_method_add_value</span> <span class="ss">:add_value</span>
-</div><div class='line'>
-</div><div class='line'><span class="k">class</span> <span class="nc">MyObject</span>
-</div><div class='line'>  <span class="k">def</span> <span class="nf">add_value</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
-</div><div class='line'>    <span class="n">i_am_secret_method_add_value</span><span class="p">(</span><span class="nb">self</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
-</div><div class='line'>  <span class="k">end</span>
-</div><div class='line'><span class="k">end</span>
-</div></code></pre></td></tr></table></div></figure>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">alias</span> <span class="ss">:i_am_secret_method_add_value</span> <span class="ss">:add_value</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">MyObject</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">add_value</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">i_am_secret_method_add_value</span><span class="p">(</span><span class="nb">self</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 <p>Another solution is to qualify access to the top-level method. This
 can be done by maintaining a reference to the object that defines the
 method.</p>
 
-<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
-<span class='line'>2</span>
-<span class='line'>3</span>
-<span class='line'>4</span>
-<span class='line'>5</span>
-<span class='line'>6</span>
-</pre></td><td class='code' width='100%'><pre><code class='ruby'><div class='line'><span class="n">reference_to_main</span> <span class="o">=</span> <span class="nb">self</span>                            <span class="c1"># 1</span>
-</div><div class='line'><span class="no">MyObject</span><span class="o">.</span><span class="n">class_eval</span> <span class="k">do</span>                              <span class="c1"># 2</span>
-</div><div class='line'>  <span class="n">define_method</span> <span class="ss">:add_value</span> <span class="k">do</span> <span class="o">|</span><span class="n">param</span><span class="o">|</span>
-</div><div class='line'>    <span class="n">reference_to_main</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="ss">:add_value</span><span class="p">,</span> <span class="nb">self</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span> <span class="c1"># 3</span>
-</div><div class='line'>  <span class="k">end</span>
-</div><div class='line'><span class="k">end</span>
-</div></code></pre></td></tr></table></div></figure>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">reference_to_main</span> <span class="o">=</span> <span class="nb">self</span>                            <span class="c1"># 1</span>
+</span><span class='line'><span class="no">MyObject</span><span class="o">.</span><span class="n">class_eval</span> <span class="k">do</span>                              <span class="c1"># 2</span>
+</span><span class='line'>  <span class="n">define_method</span> <span class="ss">:add_value</span> <span class="k">do</span> <span class="o">|</span><span class="n">param</span><span class="o">|</span>
+</span><span class='line'>    <span class="n">reference_to_main</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="ss">:add_value</span><span class="p">,</span> <span class="nb">self</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span> <span class="c1"># 3</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 <ol>
@@ -201,68 +226,68 @@ the top-level method is private.</li>
 <p>If you don&#8217;t want to modify the object directly, you can apply the
 same techniques to a module:</p>
 
-<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
-<span class='line'>2</span>
-<span class='line'>3</span>
-<span class='line'>4</span>
-<span class='line'>5</span>
-<span class='line'>6</span>
-<span class='line'>7</span>
-<span class='line'>8</span>
-<span class='line'>9</span>
-<span class='line'>10</span>
-<span class='line'>11</span>
-<span class='line'>12</span>
-</pre></td><td class='code' width='100%'><pre><code class='ruby'><div class='line'><span class="k">module</span> <span class="nn">MathModule</span>
-</div><div class='line'><span class="k">end</span>
-</div><div class='line'>
-</div><div class='line'><span class="n">reference_to_main</span> <span class="o">=</span> <span class="nb">self</span>
-</div><div class='line'><span class="no">MathModule</span><span class="o">.</span><span class="n">module_eval</span> <span class="k">do</span>
-</div><div class='line'>  <span class="n">define_method</span> <span class="ss">:add_value</span> <span class="k">do</span> <span class="o">|</span><span class="n">param</span><span class="o">|</span>
-</div><div class='line'>    <span class="n">reference_to_main</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="ss">:add_value</span><span class="p">,</span> <span class="nb">self</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
-</div><div class='line'>  <span class="k">end</span>
-</div><div class='line'><span class="k">end</span>
-</div><div class='line'>
-</div><div class='line'><span class="n">obj</span> <span class="o">=</span> <span class="no">MyObject</span><span class="o">.</span><span class="n">new</span>
-</div><div class='line'><span class="n">obj</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="no">MathModule</span><span class="p">)</span>
-</div></code></pre></td></tr></table></div></figure>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">module</span> <span class="nn">MathModule</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">reference_to_main</span> <span class="o">=</span> <span class="nb">self</span>
+</span><span class='line'><span class="no">MathModule</span><span class="o">.</span><span class="n">module_eval</span> <span class="k">do</span>
+</span><span class='line'>  <span class="n">define_method</span> <span class="ss">:add_value</span> <span class="k">do</span> <span class="o">|</span><span class="n">param</span><span class="o">|</span>
+</span><span class='line'>    <span class="n">reference_to_main</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="ss">:add_value</span><span class="p">,</span> <span class="nb">self</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">obj</span> <span class="o">=</span> <span class="no">MyObject</span><span class="o">.</span><span class="n">new</span>
+</span><span class='line'><span class="n">obj</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="no">MathModule</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 <p>Using modules leads to another solution. You can move the top-level
 method into a module, and use the module with both the class and the
 main object.</p>
 
-<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
-<span class='line'>2</span>
-<span class='line'>3</span>
-<span class='line'>4</span>
-<span class='line'>5</span>
-<span class='line'>6</span>
-<span class='line'>7</span>
-<span class='line'>8</span>
-<span class='line'>9</span>
-<span class='line'>10</span>
-<span class='line'>11</span>
-<span class='line'>12</span>
-<span class='line'>13</span>
-<span class='line'>14</span>
-<span class='line'>15</span>
-</pre></td><td class='code' width='100%'><pre><code class='ruby'><div class='line'><span class="k">module</span> <span class="nn">MathModule</span>
-</div><div class='line'>  <span class="k">def</span> <span class="nf">add_value</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
-</div><div class='line'>    <span class="n">object</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">param</span>
-</div><div class='line'>  <span class="k">end</span>
-</div><div class='line'><span class="k">end</span>
-</div><div class='line'>
-</div><div class='line'><span class="kp">extend</span> <span class="no">MathModule</span>
-</div><div class='line'>
-</div><div class='line'><span class="k">class</span> <span class="nc">MyObject</span>
-</div><div class='line'>  <span class="kp">include</span> <span class="no">MathModule</span>
-</div><div class='line'>
-</div><div class='line'>  <span class="k">def</span> <span class="nf">add_value</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
-</div><div class='line'>    <span class="k">super</span><span class="p">(</span><span class="nb">self</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
-</div><div class='line'>  <span class="k">end</span>
-</div><div class='line'><span class="k">end</span>
-</div></code></pre></td></tr></table></div></figure>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">module</span> <span class="nn">MathModule</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">add_value</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">object</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">param</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="kp">extend</span> <span class="no">MathModule</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">MyObject</span>
+</span><span class='line'>  <span class="kp">include</span> <span class="no">MathModule</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">add_value</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">super</span><span class="p">(</span><span class="nb">self</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 <p>The downside to this solution is that the object now has two
@@ -275,25 +300,25 @@ metaprogramming, but just flip the way you think about the
 problem. Move the entire method into the object and leave a stub
 method that redirects to the object&#8217;s implementation:</p>
 
-<figure role=code><figcaption><span></span></figcaption><div class="highlight"><table cellpadding="0" cellspacing="0"><tr><td class="gutter"><pre class="line-numbers"><span class='line'>1</span>
-<span class='line'>2</span>
-<span class='line'>3</span>
-<span class='line'>4</span>
-<span class='line'>5</span>
-<span class='line'>6</span>
-<span class='line'>7</span>
-<span class='line'>8</span>
-<span class='line'>9</span>
-</pre></td><td class='code' width='100%'><pre><code class='ruby'><div class='line'><span class="k">def</span> <span class="nf">add_value</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
-</div><div class='line'>  <span class="n">object</span><span class="o">.</span><span class="n">add_value</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
-</div><div class='line'><span class="k">end</span>
-</div><div class='line'>
-</div><div class='line'><span class="k">class</span> <span class="nc">MyObject</span>
-</div><div class='line'>  <span class="k">def</span> <span class="nf">add_value</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
-</div><div class='line'>    <span class="n">value</span> <span class="o">+</span> <span class="n">param</span>
-</div><div class='line'>  <span class="k">end</span>
-</div><div class='line'><span class="k">end</span>
-</div></code></pre></td></tr></table></div></figure>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">add_value</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">object</span><span class="o">.</span><span class="n">add_value</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">MyObject</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">add_value</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">value</span> <span class="o">+</span> <span class="n">param</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
 
 </div>
 
@@ -311,11 +336,13 @@ method that redirects to the object&#8217;s implementation:</p>
 
 
 
+
+
+
   
 
 
-
-<time datetime="2012-03-03T10:48:00-05:00" pubdate  data-updated="true" >Mar 3<span>rd</span>, 2012</time>
+<time datetime="2012-03-03T10:48:00-05:00" pubdate data-updated="true">Mar 3<span>rd</span>, 2012</time>
       
 
 <span class="categories">
@@ -332,15 +359,24 @@ method that redirects to the object&#8217;s implementation:</p>
   <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2012/03/03/attaching-top-level-methods-to-an-object-in-ruby/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2012/03/03/attaching-top-level-methods-to-an-object-in-ruby/" >Tweet</a>
   
   
+  
 </div>
 
     
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2012/01/12/test-double-terminology/" title="Previous Post: Test Double Terminology">&laquo; Test Double Terminology</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2012/07/01/the-stages-of-code-review/" title="Next Post: The stages of code review">The stages of code review &raquo;</a>
+      
+    </p>
   </footer>
 </article>
 
 </div>
 
-<aside role=sidebar>
+<aside class="sidebar">
   
     <section>
   <h1>Recent Posts</h1>
@@ -382,9 +418,10 @@ method that redirects to the object&#8217;s implementation:</p>
   </script>
   <script src="/javascripts/twitter.js" type="text/javascript"> </script>
   
-    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @jakegoulding</a>
+    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-show-count="false">Follow @jakegoulding</a>
   
 </section>
+
 
 
 
@@ -395,29 +432,20 @@ method that redirects to the object&#8217;s implementation:</p>
 
     </div>
   </div>
-  <footer><p>
+  <footer role="contentinfo"><p>
   Copyright &copy; 2012 - Jake Goulding -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 
 </footer>
   
-  <script type="text/javascript">
-    var _gaq = _gaq || [];
-    _gaq.push(['_setAccount', 'UA-20521797-2']);
-    _gaq.push(['_trackPageview']);
-
-    (function() {
-      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-    })();
-  </script>
 
 
-  
 
-  
+
+
+
+
   <script type="text/javascript">
     (function(){
       var twitterWidgets = document.createElement('script');
@@ -427,6 +455,9 @@ method that redirects to the object&#8217;s implementation:</p>
       document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
     })();
   </script>
+
+
+
 
 
 </body>

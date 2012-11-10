@@ -2,126 +2,126 @@
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
         <loc>http://jakegoulding.com/blog/2011/01/02/why-posterous/</loc>
-        <lastmod>2012-07-06T20:28:46-04:00</lastmod>
+        <lastmod>2012-11-10T17:25:21-05:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/blog/2011/01/09/the-meh-programmer/</loc>
-        <lastmod>2012-07-06T20:28:46-04:00</lastmod>
+        <lastmod>2012-11-10T17:25:21-05:00</lastmod>
     </url>
     <url>
         <loc>
             http://jakegoulding.com/blog/2011/01/27/uninitialized-variable-warnings-and-compiler-optimizations/
         </loc>
-        <lastmod>2012-07-06T20:28:46-04:00</lastmod>
+        <lastmod>2012-11-10T17:25:21-05:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/blog/2011/02/05/the-psychology-of-computer-programming/</loc>
-        <lastmod>2012-07-06T20:28:46-04:00</lastmod>
+        <lastmod>2012-11-10T17:25:21-05:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/blog/2011/02/06/sqlite-64-bit-integers/</loc>
-        <lastmod>2012-07-06T20:28:46-04:00</lastmod>
+        <lastmod>2012-11-10T17:25:21-05:00</lastmod>
     </url>
     <url>
         <loc>
             http://jakegoulding.com/blog/2011/02/26/using-named-routes-in-actionmailer-tests-with-rails-3/
         </loc>
-        <lastmod>2012-07-06T20:28:46-04:00</lastmod>
+        <lastmod>2012-11-10T17:25:21-05:00</lastmod>
     </url>
     <url>
         <loc>
             http://jakegoulding.com/blog/2011/02/27/how-mock-objects-make-gantt-charts-more-useless/
         </loc>
-        <lastmod>2012-07-06T20:28:46-04:00</lastmod>
+        <lastmod>2012-11-10T17:25:21-05:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/blog/2011/09/18/game-of-life-in-clojure/</loc>
-        <lastmod>2012-07-06T20:28:46-04:00</lastmod>
+        <lastmod>2012-11-10T17:25:21-05:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/blog/2011/09/18/quickly-fixing-your-last-git-commit/</loc>
-        <lastmod>2012-07-06T20:28:46-04:00</lastmod>
+        <lastmod>2012-11-10T17:25:21-05:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/blog/2011/10/10/learned-about-testing-last-year/</loc>
-        <lastmod>2012-07-06T20:28:46-04:00</lastmod>
+        <lastmod>2012-11-10T17:25:21-05:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/blog/2012/01/02/when-refactoring-isnt-refactoring/</loc>
-        <lastmod>2012-07-06T20:28:46-04:00</lastmod>
+        <lastmod>2012-11-10T17:25:21-05:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/blog/2012/01/09/stubbing-builder-pattern-in-mockito/</loc>
-        <lastmod>2012-07-06T20:28:46-04:00</lastmod>
+        <lastmod>2012-11-10T17:25:21-05:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/blog/2012/01/12/test-double-terminology/</loc>
-        <lastmod>2012-07-06T20:28:46-04:00</lastmod>
+        <lastmod>2012-11-10T17:25:21-05:00</lastmod>
     </url>
     <url>
         <loc>
             http://jakegoulding.com/blog/2012/03/03/attaching-top-level-methods-to-an-object-in-ruby/
         </loc>
-        <lastmod>2012-07-06T20:28:46-04:00</lastmod>
+        <lastmod>2012-11-10T17:25:21-05:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/blog/2012/07/01/the-stages-of-code-review/</loc>
-        <lastmod>2012-07-06T20:28:46-04:00</lastmod>
+        <lastmod>2012-11-10T17:25:21-05:00</lastmod>
     </url>
     <url>
         <loc>
             http://jakegoulding.com/blog/2012/09/24/a-refactoring-example-if-else-on-strings/
         </loc>
-        <lastmod>2012-11-04T14:45:44-05:00</lastmod>
+        <lastmod>2012-11-10T17:25:21-05:00</lastmod>
     </url>
     <url>
         <loc>
             http://jakegoulding.com/blog/2012/09/26/be-careful-when-using-junit-expected-exceptions/
         </loc>
-        <lastmod>2012-09-27T13:24:59-04:00</lastmod>
+        <lastmod>2012-11-10T17:25:21-05:00</lastmod>
     </url>
     <url>
         <loc>
             http://jakegoulding.com/blog/2012/10/01/using-ruby-blocks-to-ensure-resources-are-cleaned-up/
         </loc>
-        <lastmod>2012-10-01T18:06:11-04:00</lastmod>
+        <lastmod>2012-11-10T17:25:21-05:00</lastmod>
     </url>
     <url>
         <loc>
             http://jakegoulding.com/blog/2012/10/03/name-your-variables-by-the-roles-they-play/
         </loc>
-        <lastmod>2012-10-03T20:39:42-04:00</lastmod>
+        <lastmod>2012-11-10T17:25:21-05:00</lastmod>
     </url>
     <url>
         <loc>
             http://jakegoulding.com/blog/2012/10/08/finding-a-race-condition-in-capybara-with-selenium/
         </loc>
-        <lastmod>2012-10-08T22:59:33-04:00</lastmod>
+        <lastmod>2012-11-10T17:25:21-05:00</lastmod>
     </url>
     <url>
         <loc>
             http://jakegoulding.com/blog/2012/10/10/watch-out-for-lost-updates-when-using-capybara-with-selenium/
         </loc>
-        <lastmod>2012-10-10T21:10:09-04:00</lastmod>
+        <lastmod>2012-11-10T17:25:21-05:00</lastmod>
     </url>
     <url>
         <loc>
             http://jakegoulding.com/blog/2012/10/18/run-your-tests-in-a-deterministic-random-order/
         </loc>
-        <lastmod>2012-10-18T20:40:22-04:00</lastmod>
+        <lastmod>2012-11-10T17:25:21-05:00</lastmod>
     </url>
     <url>
         <loc>
             http://jakegoulding.com/blog/2012/11/04/refactor-and-make-changes-in-different-commits/
         </loc>
-        <lastmod>2012-11-04T17:54:35-05:00</lastmod>
+        <lastmod>2012-11-10T17:25:21-05:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/blog/archives/</loc>
-        <lastmod>2012-11-04T17:54:35-05:00</lastmod>
+        <lastmod>2012-11-10T17:25:21-05:00</lastmod>
     </url>
     <url>
         <loc>http://jakegoulding.com/</loc>
-        <lastmod>2012-11-04T17:54:35-05:00</lastmod>
+        <lastmod>2012-11-10T17:25:21-05:00</lastmod>
     </url>
 </urlset>
