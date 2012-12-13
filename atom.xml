@@ -4,7 +4,7 @@
   <title><![CDATA[Jake Goulding]]></title>
   <link href="http://jakegoulding.com/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2012-11-10T17:27:44-05:00</updated>
+  <updated>2012-12-13T15:34:31-05:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -12,6 +12,162 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Conway's Game of Life without return values]]></title>
+    <link href="http://jakegoulding.com/blog/2012/12/13/conways-game-of-life-without-return-values/"/>
+    <updated>2012-12-13T15:14:00-05:00</updated>
+    <id>http://jakegoulding.com/blog/2012/12/13/conways-game-of-life-without-return-values</id>
+    <content type="html"><![CDATA[<p>On 2012-12-08, I attended the Pittsburgh
+<a href="http://globalday.coderetreat.org/">Global Day of Code Retreat</a> facilitated by <a href="https://twitter.com/josephrkramer">Joe Kramer</a>
+and <a href="https://twitter.com/jthurne">Jim Hurne</a>. As usual, I had a great time, and got to meet
+new people from the Pittsburgh tech scene. It&#8217;s always good for me to
+remember that there are non-Ruby developers out there! I even started
+the day off by doing the Game of Life in C#.</p>
+
+<p>One of the more contentious constraints of the day was &#8220;no return
+values&#8221;. I feel like I was the only one in the room that liked this
+constraint at all!  As such, I wanted to finish it up to see what my
+<a href="https://github.com/shepmaster/gdcr-no-return-values">final code</a> and observations would look like.</p>
+
+<!-- more -->
+
+
+<h3>Goal</h3>
+
+<p>As I understand it, the point of this constraint is to explore
+&#8221;<a href="http://pragprog.com/articles/tell-dont-ask">tell don&#8217;t ask</a>&#8221;, with a secondary exploration of
+<a href="http://martinfowler.com/articles/mocksArentStubs.html">mocks vs. stubs</a>.</p>
+
+<h3>Constraint modifications</h3>
+
+<p>I made some small tweaks to the constraint to deal with how Ruby
+works and to avoid work orthogonal to the goal.</p>
+
+<ul>
+<li>Allow return values from constructors</li>
+<li>Allow return values from standard library classes</li>
+<li>Allow return values from private methods</li>
+</ul>
+
+
+<p>In Ruby, constructors are methods on a Class instance that return a
+new instance of the class. Since everything in Ruby is an object, it
+would be impossible to make progress if we didn&#8217;t allow creating new
+objects.</p>
+
+<p>The goal of the constraint isn&#8217;t to rewrite all of Ruby&#8217;s standard
+library. If we cannot use return values from the standard library, we
+couldn&#8217;t do something as simple as <code>a = 1 + 1</code>! Our newly-created
+code will not return values, so it is safe to use return values hidden
+away inside of our objects.</p>
+
+<p>Allowing private methods to return values isn&#8217;t strictly necessary,
+but it allows us to reduce code duplication. Technically, we could
+inline the private methods where they are used, but that would be
+ugly. Since these methods are private, they won&#8217;t add to the surface
+area of our objects and shouldn&#8217;t conflict with the goal of the
+exercise.</p>
+
+<h3>Things I liked</h3>
+
+<p>I usually start out Conway&#8217;s with the ability to see if a cell is
+alive, followed quickly by the ability to bring a cell to life. This
+means the first thing I do is rely on return values. This time, I
+began with the concept of a UI that would be told when a cell is
+alive. I found this interesting as I usually skip over the display
+completely, leaving it as a &#8220;trivial&#8221; thing to be added later.</p>
+
+<p>The <code>Board</code> class came into existence while implementing the
+<code>time_passes</code> method because I needed to have both the current and
+next board state. I like that this concept was reified; the <code>Game</code>
+class deals with coordinating the rules and a board, but the <code>Board</code>
+class deals with the particulars of the board state.</p>
+
+<p>I was forced into giving human names to more things than I usually
+would, such as <code>has_two_neighbors</code>, or <code>AliveCellRules</code>. I find that
+this is the extended version of creating a well-named temporary
+variable.</p>
+
+<h3>Things I didn&#8217;t like</h3>
+
+<p>There are two rule-related classes, one for alive cells and one for
+dead cells. The alive cell rules class is almost 100%
+duplication. This could be reduced using Ruby&#8217;s <code>alias</code> at the cost of
+reduced readability, and still wouldn&#8217;t help the duplication in the
+dead cell rules. It&#8217;s hard to tell if this would be good or bad in the
+absence of future changes, but I don&#8217;t like it as it stands now.</p>
+
+<p>I wanted to create a <code>Point</code> class to abstract the concept of x / y
+coordinates and also to have a place to hang the idea of
+&#8220;neighbors&#8221;. Unfortunately, it would have solely existed to return
+values: a list of points, equality comparisons, etc. I think this
+would be an ideal example of a value type.</p>
+
+<p>I love Ruby&#8217;s <code>Struct</code>; I have written too many class initializers
+longhand to ever want to go back. As far as I am concerned, <code>Struct</code>
+reduces the work to make an initializer from <em>O(n)</em> to <em>O(1)</em>.
+Unfortunately, it automatically creates a public <code>attr_accessor</code>,
+which would be too tempting to use. I also avoided <code>attr_reader</code> for
+the same reason, even though I could have made the reader
+private. Seeing all the bare instance variables makes me
+uncomfortable.</p>
+
+<h3>Interesting implementation details</h3>
+
+<p>For each public method, I returned <code>self</code>. In Ruby, the last executed
+statement is implicitly returned. Returning <code>self</code> avoids accidentally
+relying on a return value. In production code I wouldn&#8217;t go this
+overboard, trusting the caller to not use incidental return values. In
+a language like Java, I would declare the method as void.</p>
+
+<p>I&#8217;ve never used <code>flat_map</code> before, but I&#8217;m going to keep my eyes open
+for more places to use it. I&#8217;m not at the point where it comes without
+thinking, but looking for <code>ary.map{ ... }.flatten(1)</code> should be easy
+enough. Also, I learned that <code>flatten</code> can take an argument that
+controls how deep it will go.</p>
+
+<p>I swear that there is an existing method that does the equivalent of
+<code>ary.reject { |x| x == CONSTANT }</code>, but I couldn&#8217;t find it. <code>delete</code>
+will mutate the array in place, which isn&#8217;t quite the same.</p>
+
+<h3>Tests</h3>
+
+<p>As the code progressed, I had to start using RSpec&#8217;s <code>as_null_object</code>
+more frequently. This is because closely situated cells began
+interacting and would be output to the user interface. I wasn&#8217;t
+interested in these outputs, but they weren&#8217;t incorrect. After enough
+tests needed a null object, I changed the test-wide mock, which may
+have been too broad a change.</p>
+
+<p>All of the tests that involve time passing have two duplicated
+lines. These lines could have been pulled into the rarely-used <code>after</code>
+block. I&#8217;ve never seen code that does this, and I&#8217;m not sure how I
+feel about it.</p>
+
+<p>I don&#8217;t know what order I prefer for the <code>should_receive</code> calls
+relative to the rest of the setup. In this case, I chose to put the
+message expectations at the top of the test block.</p>
+
+<h3>Final thoughts</h3>
+
+<p>Like most exercises during Code Retreat, preventing return values has
+benefits and disadvantages. I like how certain concepts were forced to
+become reified and that I had to think more about the consumer of my
+code. Contrariwise, I missed not being able to use <code>Struct</code> and really
+wanted a <code>Point</code>.</p>
+
+<p>Will I change how I code because of this? Maybe a little bit. It
+probably would be good practice to avoid return values at first blush,
+but I certainly won&#8217;t stop using them completely. One thing I might
+look further into is Ruby 1.9&#8217;s <a href="http://www.ruby-doc.org/core-1.9.3/Enumerator.html"><code>Enumerator</code></a>. This would
+allow me to provide a nice function that takes a block or returns an
+enumerable for further chaining.</p>
+
+<p>Feel free to read over the <a href="https://github.com/shepmaster/gdcr-no-return-values">code on GitHub</a> if you are
+interested!</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Refactor and make changes in different commits]]></title>
@@ -3570,62 +3726,6 @@ us to test the edge cases that were more obvious.</p>
 strategy that it is surprising that we forget it so
 much. I&#8217;mdefinitely in the camp of people that don&#8217;t do this kind of
 testing as much as I should.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[The Psychology of Computer Programming]]></title>
-    <link href="http://jakegoulding.com/blog/2011/02/05/the-psychology-of-computer-programming/"/>
-    <updated>2011-02-05T12:00:00-05:00</updated>
-    <id>http://jakegoulding.com/blog/2011/02/05/the-psychology-of-computer-programming</id>
-    <content type="html"><![CDATA[<p>Over New Year&#8217;s break, we visited one of Carol&#8217;s friends in New
-Orleans. While we did quite a lot of touristy things (the French
-Quarter is very exciting when the new year rolls around), we also got
-to visit the lovely used bookstore <strong>Beckham&#8217;s Book
-Shop</strong>. Unfortunately, we got there late in the day and I didn&#8217;t
-realize that there was an entire second floor until very near closing
-time. I&#8217;m glad I took the time to look upstairs, as that is where I
-discovered <a href="http://www.geraldmweinberg.com/Site/Programming_Psychology.html"><em>The Psychology of Computer Programming</em></a> by Gerald
-M. Weinberg.</p>
-
-<!--more-->
-
-
-<p>I grabbed the book from the shelf and glanced at the copyright date -
-1971. I figured that any insights from that long ago would be
-hilarious, to say the very least, so I purchased it. Upon returning
-home for the evening, I was finally able to crack it open and read a
-bit. Put simply, I was floored - an amazing amount of issues that were
-identified <em>40 years</em> ago are still problems today.</p>
-
-<p>When we made our way back to Pittsburgh, we had to leave our new books
-behind to be shipped separately as they wouldn&#8217;t fit in our
-luggage. We finally got our package on Friday, and today I&#8217;ve been
-darting in and out of chapters trying to get a feel for the
-book. Every few pages I chuckle to myself (the laughter of programmers
-is itself addressed in the book) and every blurb I&#8217;ve read aloud has
-caused Carol to nod or sigh in agreement, as the case warrants.</p>
-
-<p>My goal is to read through the book and blog about just how things
-have or haven&#8217;t changed and see how my experiences relate to those of
-programmers from 40 years ago. One positive thing that has already
-happened is that I&#8217;ve found out about <a href="http://bensimo.qualityfrog.com/">Ben Simo</a>, who regularly
-tweets about programming papers from the 70&#8217;s, both good and bad.</p>
-
-<hr />
-
-<p>The book itself is still available to purchase in a 25th anniversary
-edition, which contains a new forward and per-chapter reflections by
-the author. Maybe I will buy the updated version when I have made my
-way through this edition and see how the two commentaries compare.</p>
-
-<p>Beckham&#8217;s doesn&#8217;t seem to have a website, so I&#8217;ll just point out thier
-address and phone number in case anyone is interested.</p>
-
-<p>Beckham&#8217;s Book Shop<br/>
-228 Decatur St<br/>
-New Orleans, LA 70130<br/>
-(504) 522-9875</p>
 ]]></content>
   </entry>
   

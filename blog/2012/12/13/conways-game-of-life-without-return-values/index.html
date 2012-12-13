@@ -1,0 +1,386 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Conway's Game of Life without return values - Jake Goulding</title>
+  <meta name="author" content="Jake Goulding">
+
+  
+  <meta name="description" content="On 2012-12-08, I attended the Pittsburgh
+Global Day of Code Retreat facilitated by Joe Kramer
+and Jim Hurne. As usual, I had a great time, and got to &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://jakegoulding.com/blog/2012/12/13/conways-game-of-life-without-return-values/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml">
+  <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
+<link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-20521797-2']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Jake Goulding</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:jakegoulding.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul role=main-navigation>
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Conway's Game of Life without return values</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-12-13T15:14:00-05:00" pubdate data-updated="true">Dec 13<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>On 2012-12-08, I attended the Pittsburgh
+<a href="http://globalday.coderetreat.org/">Global Day of Code Retreat</a> facilitated by <a href="https://twitter.com/josephrkramer">Joe Kramer</a>
+and <a href="https://twitter.com/jthurne">Jim Hurne</a>. As usual, I had a great time, and got to meet
+new people from the Pittsburgh tech scene. It&#8217;s always good for me to
+remember that there are non-Ruby developers out there! I even started
+the day off by doing the Game of Life in C#.</p>
+
+<p>One of the more contentious constraints of the day was &#8220;no return
+values&#8221;. I feel like I was the only one in the room that liked this
+constraint at all!  As such, I wanted to finish it up to see what my
+<a href="https://github.com/shepmaster/gdcr-no-return-values">final code</a> and observations would look like.</p>
+
+<!-- more -->
+
+
+<h3>Goal</h3>
+
+<p>As I understand it, the point of this constraint is to explore
+&#8221;<a href="http://pragprog.com/articles/tell-dont-ask">tell don&#8217;t ask</a>&#8221;, with a secondary exploration of
+<a href="http://martinfowler.com/articles/mocksArentStubs.html">mocks vs. stubs</a>.</p>
+
+<h3>Constraint modifications</h3>
+
+<p>I made some small tweaks to the constraint to deal with how Ruby
+works and to avoid work orthogonal to the goal.</p>
+
+<ul>
+<li>Allow return values from constructors</li>
+<li>Allow return values from standard library classes</li>
+<li>Allow return values from private methods</li>
+</ul>
+
+
+<p>In Ruby, constructors are methods on a Class instance that return a
+new instance of the class. Since everything in Ruby is an object, it
+would be impossible to make progress if we didn&#8217;t allow creating new
+objects.</p>
+
+<p>The goal of the constraint isn&#8217;t to rewrite all of Ruby&#8217;s standard
+library. If we cannot use return values from the standard library, we
+couldn&#8217;t do something as simple as <code>a = 1 + 1</code>! Our newly-created
+code will not return values, so it is safe to use return values hidden
+away inside of our objects.</p>
+
+<p>Allowing private methods to return values isn&#8217;t strictly necessary,
+but it allows us to reduce code duplication. Technically, we could
+inline the private methods where they are used, but that would be
+ugly. Since these methods are private, they won&#8217;t add to the surface
+area of our objects and shouldn&#8217;t conflict with the goal of the
+exercise.</p>
+
+<h3>Things I liked</h3>
+
+<p>I usually start out Conway&#8217;s with the ability to see if a cell is
+alive, followed quickly by the ability to bring a cell to life. This
+means the first thing I do is rely on return values. This time, I
+began with the concept of a UI that would be told when a cell is
+alive. I found this interesting as I usually skip over the display
+completely, leaving it as a &#8220;trivial&#8221; thing to be added later.</p>
+
+<p>The <code>Board</code> class came into existence while implementing the
+<code>time_passes</code> method because I needed to have both the current and
+next board state. I like that this concept was reified; the <code>Game</code>
+class deals with coordinating the rules and a board, but the <code>Board</code>
+class deals with the particulars of the board state.</p>
+
+<p>I was forced into giving human names to more things than I usually
+would, such as <code>has_two_neighbors</code>, or <code>AliveCellRules</code>. I find that
+this is the extended version of creating a well-named temporary
+variable.</p>
+
+<h3>Things I didn&#8217;t like</h3>
+
+<p>There are two rule-related classes, one for alive cells and one for
+dead cells. The alive cell rules class is almost 100%
+duplication. This could be reduced using Ruby&#8217;s <code>alias</code> at the cost of
+reduced readability, and still wouldn&#8217;t help the duplication in the
+dead cell rules. It&#8217;s hard to tell if this would be good or bad in the
+absence of future changes, but I don&#8217;t like it as it stands now.</p>
+
+<p>I wanted to create a <code>Point</code> class to abstract the concept of x / y
+coordinates and also to have a place to hang the idea of
+&#8220;neighbors&#8221;. Unfortunately, it would have solely existed to return
+values: a list of points, equality comparisons, etc. I think this
+would be an ideal example of a value type.</p>
+
+<p>I love Ruby&#8217;s <code>Struct</code>; I have written too many class initializers
+longhand to ever want to go back. As far as I am concerned, <code>Struct</code>
+reduces the work to make an initializer from <em>O(n)</em> to <em>O(1)</em>.
+Unfortunately, it automatically creates a public <code>attr_accessor</code>,
+which would be too tempting to use. I also avoided <code>attr_reader</code> for
+the same reason, even though I could have made the reader
+private. Seeing all the bare instance variables makes me
+uncomfortable.</p>
+
+<h3>Interesting implementation details</h3>
+
+<p>For each public method, I returned <code>self</code>. In Ruby, the last executed
+statement is implicitly returned. Returning <code>self</code> avoids accidentally
+relying on a return value. In production code I wouldn&#8217;t go this
+overboard, trusting the caller to not use incidental return values. In
+a language like Java, I would declare the method as void.</p>
+
+<p>I&#8217;ve never used <code>flat_map</code> before, but I&#8217;m going to keep my eyes open
+for more places to use it. I&#8217;m not at the point where it comes without
+thinking, but looking for <code>ary.map{ ... }.flatten(1)</code> should be easy
+enough. Also, I learned that <code>flatten</code> can take an argument that
+controls how deep it will go.</p>
+
+<p>I swear that there is an existing method that does the equivalent of
+<code>ary.reject { |x| x == CONSTANT }</code>, but I couldn&#8217;t find it. <code>delete</code>
+will mutate the array in place, which isn&#8217;t quite the same.</p>
+
+<h3>Tests</h3>
+
+<p>As the code progressed, I had to start using RSpec&#8217;s <code>as_null_object</code>
+more frequently. This is because closely situated cells began
+interacting and would be output to the user interface. I wasn&#8217;t
+interested in these outputs, but they weren&#8217;t incorrect. After enough
+tests needed a null object, I changed the test-wide mock, which may
+have been too broad a change.</p>
+
+<p>All of the tests that involve time passing have two duplicated
+lines. These lines could have been pulled into the rarely-used <code>after</code>
+block. I&#8217;ve never seen code that does this, and I&#8217;m not sure how I
+feel about it.</p>
+
+<p>I don&#8217;t know what order I prefer for the <code>should_receive</code> calls
+relative to the rest of the setup. In this case, I chose to put the
+message expectations at the top of the test block.</p>
+
+<h3>Final thoughts</h3>
+
+<p>Like most exercises during Code Retreat, preventing return values has
+benefits and disadvantages. I like how certain concepts were forced to
+become reified and that I had to think more about the consumer of my
+code. Contrariwise, I missed not being able to use <code>Struct</code> and really
+wanted a <code>Point</code>.</p>
+
+<p>Will I change how I code because of this? Maybe a little bit. It
+probably would be good practice to avoid return values at first blush,
+but I certainly won&#8217;t stop using them completely. One thing I might
+look further into is Ruby 1.9&#8217;s <a href="http://www.ruby-doc.org/core-1.9.3/Enumerator.html"><code>Enumerator</code></a>. This would
+allow me to provide a nice function that takes a block or returns an
+enumerable for further chaining.</p>
+
+<p>Feel free to read over the <a href="https://github.com/shepmaster/gdcr-no-return-values">code on GitHub</a> if you are
+interested!</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Jake Goulding</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-12-13T15:14:00-05:00" pubdate data-updated="true">Dec 13<span>th</span>, 2012</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2012/12/13/conways-game-of-life-without-return-values/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2012/12/13/conways-game-of-life-without-return-values/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2012/11/04/refactor-and-make-changes-in-different-commits/" title="Previous Post: Refactor and make changes in different commits">&laquo; Refactor and make changes in different commits</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/12/13/conways-game-of-life-without-return-values/">Conway's Game of Life without return values</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/11/04/refactor-and-make-changes-in-different-commits/">Refactor and make changes in different commits</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/10/18/run-your-tests-in-a-deterministic-random-order/">Run your tests in a deterministic random order</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/10/10/watch-out-for-lost-updates-when-using-capybara-with-selenium/">Watch out for lost updates when using Capybara with Selenium</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/10/08/finding-a-race-condition-in-capybara-with-selenium/">Finding a race condition in Capybara with Selenium</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("jakegoulding", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-show-count="false">Follow @jakegoulding</a>
+  
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2012 - Jake Goulding -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
