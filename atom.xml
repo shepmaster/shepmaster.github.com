@@ -4,7 +4,7 @@
   <title><![CDATA[Jake Goulding]]></title>
   <link href="http://jakegoulding.com/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2012-12-13T15:34:31-05:00</updated>
+  <updated>2013-01-15T20:06:55-05:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -12,6 +12,159 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[A little dip into Ruby's Marshal format]]></title>
+    <link href="http://jakegoulding.com/blog/2013/01/15/a-little-dip-into-rubys-marshal-format/"/>
+    <updated>2013-01-15T20:00:00-05:00</updated>
+    <id>http://jakegoulding.com/blog/2013/01/15/a-little-dip-into-rubys-marshal-format</id>
+    <content type="html"><![CDATA[<p>I recently tried to resolve a JRuby <a href="https://github.com/jruby/jruby/issues/456">issue involving Marshal</a>.
+I&#8217;ve used <a href="http://www.ruby-doc.org/core-1.9.3/Marshal.html">Marshal</a> before, but never needed to pay attention
+to the actual bytes written to disk. I decided to write up what I
+learned in the process.</p>
+
+<!-- more -->
+
+
+<h2>Version number</h2>
+
+<pre><span style='color: red'>0</span><span style='color: red'>4</span><span style='color: #AAF'>0</span><span style='color: #AAF'>8</span></pre>
+
+
+<p>I collected this data using Ruby 1.9.3p327, which has Marshal version
+4.8. The version number is encoded with two bytes, one each for the
+major and minor version. This version number precedes all dumps and
+I&#8217;ll ignore it for the rest of this post.</p>
+
+<h2>Nil, true, false</h2>
+
+<p><code>nil</code></p>
+
+<pre>0408 <span style='color: red'>3</span><span style='color: red'>0</span></pre>
+
+
+<p>The typecode <code>30</code> is ASCII <code>0</code>.</p>
+
+<p><code>true</code></p>
+
+<pre>0408 <span style='color: red'>5</span><span style='color: red'>4</span></pre>
+
+
+<p>The typecode <code>54</code> is ASCII <code>T</code>.</p>
+
+<p><code>false</code></p>
+
+<pre>0408 <span style='color: red'>4</span><span style='color: red'>6</span></pre>
+
+
+<p>The typecode <code>46</code> is ASCII <code>F</code>.</p>
+
+<h2>Integers (easy)</h2>
+
+<p><code>0</code></p>
+
+<pre>0408 <span style='color: red'>6</span><span style='color: red'>9</span><span style='color: #AAF'>0</span><span style='color: #AAF'>0</span></pre>
+
+
+<p>The typecode <code>69</code> is ASCII <code>i</code>. The typecode is followed by the value
+of the integer. Zero is represented as <code>00</code>.</p>
+
+<p><code>1</code></p>
+
+<pre>0408 69<span style='color: #AAF'>0</span><span style='color: #AAF'>6</span></pre>
+
+
+<p>Here we see that the encoded value for one is <code>06</code>, not <code>01</code> as we
+might expect at first. This allows for more efficient storage of
+smaller numbers. -123 &lt;= x &lt;= 122 can be encoded in just one byte.</p>
+
+<h2>Arrays</h2>
+
+<p><code>[]</code></p>
+
+<pre>0408 <span style='color: red'>5</span><span style='color: red'>b</span><span style='color: #AAF'>0</span><span style='color: #AAF'>0</span></pre>
+
+
+<p>The typecode <code>5b</code> is ASCII <code>[</code>. The typecode is followed by the
+number of elements in the array.</p>
+
+<p><code>[1]</code></p>
+
+<pre>0408 5b<span style='color: #AAF'>0</span><span style='color: #AAF'>6</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>9</span><span style='color: #CC0'>0</span><span style='color: #CC0'>6</span></pre>
+
+
+<p>The number of items in the array is encoded in the same form as
+integers. Each value in the array is encoded sequentially after the
+size of the array.</p>
+
+<h2>Hashes</h2>
+
+<p><code>{}</code></p>
+
+<pre>0408 <span style='color: red'>7</span><span style='color: red'>b</span><span style='color: #AAF'>0</span><span style='color: #AAF'>0</span></pre>
+
+
+<p>The typecode <code>7b</code> is ASCII <code>{</code>. The typecode is followed by the number
+of (key, value) pairs in the hash.</p>
+
+<p><code>{1 =&gt; 2}</code></p>
+
+<pre>0408 7b<span style='color: #AAF'>0</span><span style='color: #AAF'>6</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>9</span><span style='color: #CC0'>0</span><span style='color: #CC0'>6</span> <span style='color: #0C0'>6</span><span style='color: #0C0'>9</span><span style='color: #0C0'>0</span><span style='color: #0C0'>7</span></pre>
+
+
+<p>Like arrays, the number of items in the hash is encoded in the same
+form as integers. Each pair of (key, value) is encoded sequentially
+after the size of the hash.</p>
+
+<h2>Symbols</h2>
+
+<p><code>:hello</code></p>
+
+<pre>0408 <span style='color: red'>3</span><span style='color: red'>a</span><span style='color: #AAF'>0</span><span style='color: #AAF'>a</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>8</span><span style='color: #CC0'>6</span><span style='color: #CC0'>5</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>c</span><span style='color: #CC0'>6</span><span style='color: #CC0'>c</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>f</span></pre>
+
+
+<p>The typecode <code>3a</code> is ASCII <code>:</code>. The typecode is followed by the length
+of the symbol name and then the symbol name itself, encoded as UTF-8.</p>
+
+<h2>Symlinks</h2>
+
+<p>When a symbol is repeated multiple times, the Marshal encoding allows
+subsequent instances to reference the first instance symbols to save
+space in the stream.</p>
+
+<p><code>[:hello, :hello]</code></p>
+
+<pre>0408 5b07 <span style='color: red'>3</span><span style='color: red'>a</span><span style='color: red'>0</span><span style='color: red'>a</span> <span style='color: red'>6</span><span style='color: red'>8</span><span style='color: red'>6</span><span style='color: red'>5</span> <span style='color: red'>6</span><span style='color: red'>c</span><span style='color: red'>6</span><span style='color: red'>c</span> <span style='color: red'>6</span><span style='color: red'>f</span><span style='color: #AAF'>3</span><span style='color: #AAF'>b</span> <span style='color: #CC0'>0</span><span style='color: #CC0'>0</span></pre>
+
+
+<p>The typecode <code>3b</code> is ASCII <code>;</code>.  The typecode is followed by the
+position of the symbol in the cache table. This table is indexed by
+the order in which the symbol first appeared.</p>
+
+<h2>The rest</h2>
+
+<p>There&#8217;s a lot more to the Marshal format; I haven&#8217;t even covered
+strings yet! I&#8217;ll need to create another post to address the rest.</p>
+
+<h2>How to explore on your own</h2>
+
+<p>To generate the examples for this post, I hacked up a quick helper in
+irb:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span class='line'>  <span class="no">File</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;/tmp/out&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="no">Marshal</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">f</span><span class="p">)}</span>
+</span><span class='line'>  <span class="sb">`xxd /tmp/out`</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Conway's Game of Life without return values]]></title>
@@ -3508,224 +3661,6 @@ options such as the default host). Modify the test to look like:</p>
 </span><span class='line'><span class="k">end</span>
 </span></code></pre></td></tr></table></div></figure>
 
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[SQLite, 64-bit integers, and the impossible number]]></title>
-    <link href="http://jakegoulding.com/blog/2011/02/06/sqlite-64-bit-integers/"/>
-    <updated>2011-02-06T12:00:00-05:00</updated>
-    <id>http://jakegoulding.com/blog/2011/02/06/sqlite-64-bit-integers</id>
-    <content type="html"><![CDATA[<p>We recently tackled an issue that seemed rather impossible - an
-unsigned 64-bit value was <em>greater than</em> the maximum value that a
-64-bit value can hold. What unfolded was a dark, gritty look at the
-underbelly of everything we hold dear (or a normal debugging session,
-as we like to call them).</p>
-
-<!--more-->
-
-
-<h2>SQLite3 and 64-bit integers</h2>
-
-<p>First off, lets create a table with some big numbers:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">big_numbers</span> <span class="p">(</span><span class="n">i</span> <span class="nb">INTEGER</span><span class="p">,</span> <span class="n">r</span> <span class="nb">REAL</span><span class="p">,</span> <span class="n">t</span> <span class="nb">TEXT</span><span class="p">,</span> <span class="n">b</span> <span class="nb">BLOB</span><span class="p">);</span>
-</span><span class='line'><span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">big_numbers</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">9223372036854775807</span><span class="p">,</span> <span class="mi">9223372036854775807</span><span class="p">,</span> <span class="mi">9223372036854775807</span><span class="p">,</span> <span class="mi">9223372036854775807</span><span class="p">);</span> <span class="c1">-- 2^63 - 1</span>
-</span><span class='line'><span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">big_numbers</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">9223372036854775808</span><span class="p">,</span> <span class="mi">9223372036854775808</span><span class="p">,</span> <span class="mi">9223372036854775808</span><span class="p">,</span> <span class="mi">9223372036854775808</span><span class="p">);</span> <span class="c1">-- 2^63</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Let&#8217;s sanity check our data to make sure it looks like what we would
-expect:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">big_numbers</span><span class="p">;</span>
-</span><span class='line'><span class="n">i</span>                     <span class="n">r</span>                     <span class="n">t</span>                     <span class="n">b</span>
-</span><span class='line'><span class="c1">--------------------  --------------------  --------------------  --------------------</span>
-</span><span class='line'><span class="mi">9223372036854775807</span>   <span class="mi">9</span><span class="p">.</span><span class="mi">22337203685478</span><span class="n">e</span><span class="o">+</span><span class="mi">18</span>  <span class="mi">9223372036854775807</span>   <span class="mi">9223372036854775807</span>
-</span><span class='line'><span class="mi">9</span><span class="p">.</span><span class="mi">22337203685478</span><span class="n">e</span><span class="o">+</span><span class="mi">18</span>  <span class="mi">9</span><span class="p">.</span><span class="mi">22337203685478</span><span class="n">e</span><span class="o">+</span><span class="mi">18</span>  <span class="mi">9</span><span class="p">.</span><span class="mi">22337203685478</span><span class="n">e</span><span class="o">+</span><span class="mi">18</span>  <span class="mi">9</span><span class="p">.</span><span class="mi">22337203685478</span><span class="n">e</span><span class="o">+</span><span class="mi">18</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Huh. We definitely were not expecting most of those floating point
-numbers, so let&#8217;s see what types are being returned:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="n">typeof</span><span class="p">(</span><span class="n">i</span><span class="p">),</span><span class="n">typeof</span><span class="p">(</span><span class="n">r</span><span class="p">),</span><span class="n">typeof</span><span class="p">(</span><span class="n">t</span><span class="p">),</span><span class="n">typeof</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="k">FROM</span> <span class="n">big_numbers</span><span class="p">;</span>
-</span><span class='line'><span class="n">typeof</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>   <span class="n">typeof</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>   <span class="n">typeof</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>   <span class="n">typeof</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
-</span><span class='line'><span class="c1">----------  ----------  ----------  ----------</span>
-</span><span class='line'><span class="nb">integer</span>     <span class="nb">real</span>        <span class="nb">text</span>        <span class="nb">integer</span>
-</span><span class='line'><span class="nb">real</span>        <span class="nb">real</span>        <span class="nb">text</span>        <span class="nb">real</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Sure enough, the numeric types in the second row are all reals. Let&#8217;s
-do a nice simple addition operation on our data:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">r</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">t</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">b</span><span class="o">+</span><span class="mi">1</span> <span class="k">FROM</span> <span class="n">big_numbers</span><span class="p">;</span>
-</span><span class='line'><span class="n">i</span><span class="o">+</span><span class="mi">1</span>                   <span class="n">r</span><span class="o">+</span><span class="mi">1</span>                   <span class="n">t</span><span class="o">+</span><span class="mi">1</span>                   <span class="n">b</span><span class="o">+</span><span class="mi">1</span>
-</span><span class='line'><span class="c1">--------------------  --------------------  --------------------  --------------------</span>
-</span><span class='line'><span class="o">-</span><span class="mi">9223372036854775808</span>  <span class="mi">9</span><span class="p">.</span><span class="mi">22337203685478</span><span class="n">e</span><span class="o">+</span><span class="mi">18</span>  <span class="o">-</span><span class="mi">9223372036854775808</span>  <span class="o">-</span><span class="mi">9223372036854775808</span>
-</span><span class='line'><span class="mi">9</span><span class="p">.</span><span class="mi">22337203685478</span><span class="n">e</span><span class="o">+</span><span class="mi">18</span>  <span class="mi">9</span><span class="p">.</span><span class="mi">22337203685478</span><span class="n">e</span><span class="o">+</span><span class="mi">18</span>  <span class="mi">9</span><span class="p">.</span><span class="mi">22337203685478</span><span class="n">e</span><span class="o">+</span><span class="mi">18</span>  <span class="mi">9</span><span class="p">.</span><span class="mi">22337203685478</span><span class="n">e</span><span class="o">+</span><span class="mi">18</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Woah, what happened here? Those familiar with signed and unsigned
-integers are already nodding and going &#8220;Mmm-hmm&#8221;. For everyone else, I
-suggest brushing up on <a href="http://en.wikipedia.org/wiki/Two's_complement">two&#8217;s compliment</a> notation. Suffice it to
-say that integers are usually represented by a fixed number of bits,
-and once you run out of bits you roll over back to the beginning, in
-this case a large negative number.</p>
-
-<p>As it turns out, SQLite is pretty straight-forward about this. From
-the <a href="http://www.sqlite.org/datatype3.html">datatype reference</a> in SQLite (emphasis mine):</p>
-
-<blockquote><p>INTEGER. The value is a <strong>signed</strong> integer, stored in 1, 2, 3, 4, 6,
-or 8 bytes depending on the magnitude of the value.</p></blockquote>
-
-<p>That is, you can only store values from -2**63 to (2**63-1). What
-does SQLite do for a value outside of this range? As we saw earlier,
-it switches over into floating point. Again, quoting from the SQLite
-reference:</p>
-
-<blockquote><p>REAL. The value is a floating point value, stored as an 8-byte IEEE
-floating point number.</p></blockquote>
-
-<p>Many programmers are familiar with this type under the name
-<a href="http://en.wikipedia.org/wiki/Double_precision_floating-point_format">double</a>.</p>
-
-<h2>Are you smarter than a SQLite engineer?</h2>
-
-<p>In our case, we are trying to store an unsigned 64-bit integer. For
-reasons now lost to the past, we marshall native C types to strings
-ourselves before handing them off to SQLite, rather than using the
-appropriate <a href="http://www.sqlite.org/capi3ref.html">SQLite API</a> functions.</p>
-
-<p>An unrelated issue elsewhere caused this value to go negative. Similar
-to the issue above when we overflow a integer type, when you underflow
-you get a very large positive number. Since we have an <em>unsigned</em>
-number, the resultant number is far over the maximum of a <em>signed</em>
-64-bit integer. This causes SQLite to switch into floating-point mode
-when the value is saved to the database.</p>
-
-<p>Of course, our particular tale of woe doesn&#8217;t end there. Indeed, we
-need to report this value in a status response. As an example of what
-I can only assume is premature optimization, we simply grab the string
-value from SQLite and report that. This causes another part of the
-application to choke when trying to parse the value, as it can no
-longer fit within a 64-bit type.</p>
-
-<h2>Wait, what?</h2>
-
-<p>How did we go from simply over- or under-flowing a 64-bit value to
-exceeding the range of the datatype? It shouldn&#8217;t even be possible to
-have a 64-bit value that is larger than a 64-bit value, by definition!
-As a coworker said: &#8220;It would violate the logic of the reality of the
-number&#8221;. The answer stems from how the value is converted into a
-double by SQLite.</p>
-
-<p>Here is a simple example that shows what happens when you mess around
-with 64-bit integer types and doubles the wrong way:</p>
-
-<pre><code>#!C
-</code></pre>
-
-<figure class='code'><figcaption><span> (64bit-integer-float.c)</span> <a href='http://jakegoulding.com/downloads/code/64bit-integer-float.c'>download</a></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="cp">#include &lt;stdio.h&gt;</span>
-</span><span class='line'><span class="cp">#include &lt;stdlib.h&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kt">int</span>
-</span><span class='line'><span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">long</span> <span class="kt">long</span> <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">double</span> <span class="n">d</span> <span class="o">=</span> <span class="n">i</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">long</span> <span class="kt">long</span> <span class="kt">int</span> <span class="n">i2</span> <span class="o">=</span> <span class="n">d</span><span class="p">;</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;%llu</span><span class="se">\n</span><span class="s">%.20g</span><span class="se">\n</span><span class="s">%llu</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">i2</span><span class="p">);</span>
-</span><span class='line'>  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>On Windows (Microsoft (R) C/C++ Optimizing Compiler Version
-14.00.50727.762 for x64), we see:</p>
-
-<pre><code>18446744073709551615
-18446744073709552000
-18446744073709551615
-</code></pre>
-
-<p>On Linux (gcc (Gentoo 4.4.4-r2 p1.2, pie-0.4.5) 4.4.4), we get
-different but equally surprising output:</p>
-
-<pre><code>18446744073709551615
-18446744073709551616
-0
-</code></pre>
-
-<p>In both cases, the intermediate double representation is greater than
-the original integral representation. The double value is much greater
-than the original on Windows, but the cast back to an integer has the
-same value as the original. On Linux, the double value is just a
-little bit greater, but casting back rolls all the way back to
-zero. Floating point numbers are <strong>hard</strong>, and we programmers far too
-often forget exactly how hard they are.</p>
-
-<p>When we grabbed the string value directly from the database, there was
-no cast back to a 64-bit type to truncate the value. This causes
-<a href="http://www.youtube.com/watch?v=KFLq7cyHKMg">the rest of the dominoes to fall like a house of cards</a>.</p>
-
-<h2>Lessons learned</h2>
-
-<p><strong>Be careful when you need to store large numbers in SQLite.</strong> If you
-really need to support unsigned 64-bit numbers, you could always shift
-your numbers down by 2**63. Of course, this means that you will
-need to massage any access to that column to correct for the
-offset. If you don&#8217;t need to perform any calculations or sorting on
-that column inside of SQLite, it&#8217;s possible that you could give the
-column a text affinity, preventing SQLite from messing with the
-data.</p>
-
-<p><strong>Don&#8217;t write your own marshaling code unless you really need it.</strong> If
-we had used the actual SQLite C API for storing and retrieving our
-values, I assume (but have not verified) that this wouldn&#8217;t have
-happened, not to mention we would have likely realized that SQLite
-only natively supports <strong>signed</strong> 64-bit integers. This would have led
-us to test the edge cases that were more obvious.</p>
-
-<p><strong>Test maximal and minimal values.</strong> This is such a basic testing
-strategy that it is surprising that we forget it so
-much. I&#8217;mdefinitely in the camp of people that don&#8217;t do this kind of
-testing as much as I should.</p>
 ]]></content>
   </entry>
   

@@ -1,0 +1,389 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>A little dip into Ruby's Marshal format - Jake Goulding</title>
+  <meta name="author" content="Jake Goulding">
+
+  
+  <meta name="description" content="I recently tried to resolve a JRuby issue involving Marshal.
+I&#8217;ve used Marshal before, but never needed to pay attention
+to the actual bytes &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://jakegoulding.com/blog/2013/01/15/a-little-dip-into-rubys-marshal-format/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml">
+  <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
+<link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-20521797-2']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Jake Goulding</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:jakegoulding.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul role=main-navigation>
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">A little dip into Ruby's Marshal format</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-01-15T20:00:00-05:00" pubdate data-updated="true">Jan 15<span>th</span>, 2013</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>I recently tried to resolve a JRuby <a href="https://github.com/jruby/jruby/issues/456">issue involving Marshal</a>.
+I&#8217;ve used <a href="http://www.ruby-doc.org/core-1.9.3/Marshal.html">Marshal</a> before, but never needed to pay attention
+to the actual bytes written to disk. I decided to write up what I
+learned in the process.</p>
+
+<!-- more -->
+
+
+<h2>Version number</h2>
+
+<pre><span style='color: red'>0</span><span style='color: red'>4</span><span style='color: #AAF'>0</span><span style='color: #AAF'>8</span></pre>
+
+
+<p>I collected this data using Ruby 1.9.3p327, which has Marshal version
+4.8. The version number is encoded with two bytes, one each for the
+major and minor version. This version number precedes all dumps and
+I&#8217;ll ignore it for the rest of this post.</p>
+
+<h2>Nil, true, false</h2>
+
+<p><code>nil</code></p>
+
+<pre>0408 <span style='color: red'>3</span><span style='color: red'>0</span></pre>
+
+
+<p>The typecode <code>30</code> is ASCII <code>0</code>.</p>
+
+<p><code>true</code></p>
+
+<pre>0408 <span style='color: red'>5</span><span style='color: red'>4</span></pre>
+
+
+<p>The typecode <code>54</code> is ASCII <code>T</code>.</p>
+
+<p><code>false</code></p>
+
+<pre>0408 <span style='color: red'>4</span><span style='color: red'>6</span></pre>
+
+
+<p>The typecode <code>46</code> is ASCII <code>F</code>.</p>
+
+<h2>Integers (easy)</h2>
+
+<p><code>0</code></p>
+
+<pre>0408 <span style='color: red'>6</span><span style='color: red'>9</span><span style='color: #AAF'>0</span><span style='color: #AAF'>0</span></pre>
+
+
+<p>The typecode <code>69</code> is ASCII <code>i</code>. The typecode is followed by the value
+of the integer. Zero is represented as <code>00</code>.</p>
+
+<p><code>1</code></p>
+
+<pre>0408 69<span style='color: #AAF'>0</span><span style='color: #AAF'>6</span></pre>
+
+
+<p>Here we see that the encoded value for one is <code>06</code>, not <code>01</code> as we
+might expect at first. This allows for more efficient storage of
+smaller numbers. -123 &lt;= x &lt;= 122 can be encoded in just one byte.</p>
+
+<h2>Arrays</h2>
+
+<p><code>[]</code></p>
+
+<pre>0408 <span style='color: red'>5</span><span style='color: red'>b</span><span style='color: #AAF'>0</span><span style='color: #AAF'>0</span></pre>
+
+
+<p>The typecode <code>5b</code> is ASCII <code>[</code>. The typecode is followed by the
+number of elements in the array.</p>
+
+<p><code>[1]</code></p>
+
+<pre>0408 5b<span style='color: #AAF'>0</span><span style='color: #AAF'>6</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>9</span><span style='color: #CC0'>0</span><span style='color: #CC0'>6</span></pre>
+
+
+<p>The number of items in the array is encoded in the same form as
+integers. Each value in the array is encoded sequentially after the
+size of the array.</p>
+
+<h2>Hashes</h2>
+
+<p><code>{}</code></p>
+
+<pre>0408 <span style='color: red'>7</span><span style='color: red'>b</span><span style='color: #AAF'>0</span><span style='color: #AAF'>0</span></pre>
+
+
+<p>The typecode <code>7b</code> is ASCII <code>{</code>. The typecode is followed by the number
+of (key, value) pairs in the hash.</p>
+
+<p><code>{1 =&gt; 2}</code></p>
+
+<pre>0408 7b<span style='color: #AAF'>0</span><span style='color: #AAF'>6</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>9</span><span style='color: #CC0'>0</span><span style='color: #CC0'>6</span> <span style='color: #0C0'>6</span><span style='color: #0C0'>9</span><span style='color: #0C0'>0</span><span style='color: #0C0'>7</span></pre>
+
+
+<p>Like arrays, the number of items in the hash is encoded in the same
+form as integers. Each pair of (key, value) is encoded sequentially
+after the size of the hash.</p>
+
+<h2>Symbols</h2>
+
+<p><code>:hello</code></p>
+
+<pre>0408 <span style='color: red'>3</span><span style='color: red'>a</span><span style='color: #AAF'>0</span><span style='color: #AAF'>a</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>8</span><span style='color: #CC0'>6</span><span style='color: #CC0'>5</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>c</span><span style='color: #CC0'>6</span><span style='color: #CC0'>c</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>f</span></pre>
+
+
+<p>The typecode <code>3a</code> is ASCII <code>:</code>. The typecode is followed by the length
+of the symbol name and then the symbol name itself, encoded as UTF-8.</p>
+
+<h2>Symlinks</h2>
+
+<p>When a symbol is repeated multiple times, the Marshal encoding allows
+subsequent instances to reference the first instance symbols to save
+space in the stream.</p>
+
+<p><code>[:hello, :hello]</code></p>
+
+<pre>0408 5b07 <span style='color: red'>3</span><span style='color: red'>a</span><span style='color: red'>0</span><span style='color: red'>a</span> <span style='color: red'>6</span><span style='color: red'>8</span><span style='color: red'>6</span><span style='color: red'>5</span> <span style='color: red'>6</span><span style='color: red'>c</span><span style='color: red'>6</span><span style='color: red'>c</span> <span style='color: red'>6</span><span style='color: red'>f</span><span style='color: #AAF'>3</span><span style='color: #AAF'>b</span> <span style='color: #CC0'>0</span><span style='color: #CC0'>0</span></pre>
+
+
+<p>The typecode <code>3b</code> is ASCII <code>;</code>.  The typecode is followed by the
+position of the symbol in the cache table. This table is indexed by
+the order in which the symbol first appeared.</p>
+
+<h2>The rest</h2>
+
+<p>There&#8217;s a lot more to the Marshal format; I haven&#8217;t even covered
+strings yet! I&#8217;ll need to create another post to address the rest.</p>
+
+<h2>How to explore on your own</h2>
+
+<p>To generate the examples for this post, I hacked up a quick helper in
+irb:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span class='line'>  <span class="no">File</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;/tmp/out&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="no">Marshal</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">f</span><span class="p">)}</span>
+</span><span class='line'>  <span class="sb">`xxd /tmp/out`</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Jake Goulding</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-01-15T20:00:00-05:00" pubdate data-updated="true">Jan 15<span>th</span>, 2013</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/ruby/'>ruby</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2013/01/15/a-little-dip-into-rubys-marshal-format/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2013/01/15/a-little-dip-into-rubys-marshal-format/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2012/12/13/conways-game-of-life-without-return-values/" title="Previous Post: Conway's Game of Life without return values">&laquo; Conway's Game of Life without return values</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/01/15/a-little-dip-into-rubys-marshal-format/">A little dip into Ruby's Marshal format</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/12/13/conways-game-of-life-without-return-values/">Conway's Game of Life without return values</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/11/04/refactor-and-make-changes-in-different-commits/">Refactor and make changes in different commits</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/10/18/run-your-tests-in-a-deterministic-random-order/">Run your tests in a deterministic random order</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/10/10/watch-out-for-lost-updates-when-using-capybara-with-selenium/">Watch out for lost updates when using Capybara with Selenium</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("jakegoulding", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-show-count="false">Follow @jakegoulding</a>
+  
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Jake Goulding -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
