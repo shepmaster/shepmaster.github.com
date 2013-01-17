@@ -5,11 +5,17 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Category: git - Jake Goulding</title>
+  <title>A final dip into Ruby's Marshal format - Jake Goulding</title>
   <meta name="author" content="Jake Goulding">
 
   
-  <meta name="description" content="Category: git">
+  <meta name="description" content="Instances of user objects 1
+2
+3
+4
+5
+class DumpTest def initialize(a) @a = a end
+end DumpTest.new(1) 0408 6f3a 0d44 756d 7054 6573 7406 3a07 4061 6906 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +24,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://jakegoulding.comblog/categories/git/">
+  <link rel="canonical" href="http://jakegoulding.com/blog/2013/01/16/a-final-dip-into-rubys-marshal-format/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <script src="/javascripts/modernizr-2.0.js"></script>
@@ -73,35 +79,103 @@
   <div id="main">
     <div id="content">
       <div>
-<article role="article">
+<article class="hentry" role="article">
   
   <header>
-    <h1 class="entry-title">Category: git</h1>
+    
+      <h1 class="entry-title">A final dip into Ruby's Marshal format</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-01-16T20:16:00-05:00" pubdate data-updated="true">Jan 16<span>th</span>, 2013</time>
+        
+      </p>
     
   </header>
-  
-  <div id="blog-archives" class="category">
 
 
+<div class="entry-content"><h2>Instances of user objects</h2>
 
-  
-  <h2>2011</h2>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">DumpTest</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</span><span class='line'>    <span class="vi">@a</span> <span class="o">=</span> <span class="n">a</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
 
-<article>
-  
-<h1><a href="/blog/2011/09/18/quickly-fixing-your-last-git-commit/">Quickly fixing your last Git commit</a></h1>
-<time datetime="2011-09-18T13:53:00-04:00" pubdate><span class='month'>Sep</span> <span class='day'>18</span> <span class='year'>2011</span></time>
 
-<footer>
-  <span class="categories">posted in <a class='category' href='/blog/categories/git/'>git</a></span>
-</footer>
+<p><code>DumpTest.new(1)</code></p>
+
+<pre>0408 <span style='color: red'>6</span><span style='color: red'>f</span><span style='color: #8FF'>3</span><span style='color: #8FF'>a</span> <span style='color: #CC0'>0</span><span style='color: #CC0'>d</span><span style='color: #0C0'>4</span><span style='color: #0C0'>4</span> <span style='color: #0C0'>7</span><span style='color: #0C0'>5</span><span style='color: #0C0'>6</span><span style='color: #0C0'>d</span> <span style='color: #0C0'>7</span><span style='color: #0C0'>0</span><span style='color: #0C0'>5</span><span style='color: #0C0'>4</span> <span style='color: #0C0'>6</span><span style='color: #0C0'>5</span><span style='color: #0C0'>7</span><span style='color: #0C0'>3</span> <span style='color: #0C0'>7</span><span style='color: #0C0'>4</span>06 3a07 4061 6906</pre>
 
 
-</article>
+<p><code>6f</code> ASCII <code>o</code></p>
 
+<p>: cr DumpTest
+1
+:
+2</p>
 </div>
 
+
+  <footer>
+    <p class="meta">
+      
   
+
+<span class="byline author vcard">Posted by <span class="fn">Jake Goulding</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-01-16T20:16:00-05:00" pubdate data-updated="true">Jan 16<span>th</span>, 2013</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2013/01/16/a-final-dip-into-rubys-marshal-format/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2013/01/16/a-final-dip-into-rubys-marshal-format/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/01/16/another-dip-into-rubys-marshal-format/" title="Previous Post: Another dip into Ruby's Marshal format">&laquo; Another dip into Ruby's Marshal format</a>
+      
+      
+    </p>
+  </footer>
 </article>
 
 </div>

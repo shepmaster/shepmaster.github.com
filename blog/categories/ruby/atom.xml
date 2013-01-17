@@ -4,7 +4,7 @@
   <title><![CDATA[Category: ruby | Jake Goulding]]></title>
   <link href="http://jakegoulding.com/blog/categories/ruby/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2013-01-15T20:06:55-05:00</updated>
+  <updated>2013-01-16T20:40:31-05:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -28,7 +28,7 @@ learned in the process.</p>
 
 <h2>Version number</h2>
 
-<p><div class='bogus-wrapper'><notextile><pre><span style='color: red'>0</span><span style='color: red'>4</span><span style='color: #AAF'>0</span><span style='color: #AAF'>8</span></pre></notextile></div></p>
+<p><div class='bogus-wrapper'><notextile><pre><span style='color: red'>0</span><span style='color: red'>4</span><span style='color: #8FF'>0</span><span style='color: #8FF'>8</span></pre></notextile></div></p>
 
 <p>I collected this data using Ruby 1.9.3p327, which has Marshal version
 4.8. The version number is encoded with two bytes, one each for the
@@ -52,13 +52,13 @@ The typecode <code>46</code> is ASCII <code>F</code>.</p>
 <h2>Integers (easy)</h2>
 
 <p><code>0</code>
-<div class='bogus-wrapper'><notextile><pre>0408 <span style='color: red'>6</span><span style='color: red'>9</span><span style='color: #AAF'>0</span><span style='color: #AAF'>0</span></pre></notextile></div></p>
+<div class='bogus-wrapper'><notextile><pre>0408 <span style='color: red'>6</span><span style='color: red'>9</span><span style='color: #8FF'>0</span><span style='color: #8FF'>0</span></pre></notextile></div></p>
 
 <p>The typecode <code>69</code> is ASCII <code>i</code>. The typecode is followed by the value
 of the integer. Zero is represented as <code>00</code>.</p>
 
 <p><code>1</code>
-<div class='bogus-wrapper'><notextile><pre>0408 69<span style='color: #AAF'>0</span><span style='color: #AAF'>6</span></pre></notextile></div></p>
+<div class='bogus-wrapper'><notextile><pre>0408 69<span style='color: #8FF'>0</span><span style='color: #8FF'>6</span></pre></notextile></div></p>
 
 <p>Here we see that the encoded value for one is <code>06</code>, not <code>01</code> as we
 might expect at first. This allows for more efficient storage of
@@ -67,13 +67,13 @@ smaller numbers. -123 &lt;= x &lt;= 122 can be encoded in just one byte.</p>
 <h2>Arrays</h2>
 
 <p><code>[]</code>
-<div class='bogus-wrapper'><notextile><pre>0408 <span style='color: red'>5</span><span style='color: red'>b</span><span style='color: #AAF'>0</span><span style='color: #AAF'>0</span></pre></notextile></div></p>
+<div class='bogus-wrapper'><notextile><pre>0408 <span style='color: red'>5</span><span style='color: red'>b</span><span style='color: #8FF'>0</span><span style='color: #8FF'>0</span></pre></notextile></div></p>
 
 <p>The typecode <code>5b</code> is ASCII <code>[</code>. The typecode is followed by the
 number of elements in the array.</p>
 
 <p><code>[1]</code>
-<div class='bogus-wrapper'><notextile><pre>0408 5b<span style='color: #AAF'>0</span><span style='color: #AAF'>6</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>9</span><span style='color: #CC0'>0</span><span style='color: #CC0'>6</span></pre></notextile></div></p>
+<div class='bogus-wrapper'><notextile><pre>0408 5b<span style='color: #8FF'>0</span><span style='color: #8FF'>6</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>9</span><span style='color: #CC0'>0</span><span style='color: #CC0'>6</span></pre></notextile></div></p>
 
 <p>The number of items in the array is encoded in the same form as
 integers. Each value in the array is encoded sequentially after the
@@ -82,12 +82,12 @@ size of the array.</p>
 <h2>Hashes</h2>
 
 <p><code>{}</code>
-<div class='bogus-wrapper'><notextile><pre>0408 <span style='color: red'>7</span><span style='color: red'>b</span><span style='color: #AAF'>0</span><span style='color: #AAF'>0</span></pre></notextile></div>
+<div class='bogus-wrapper'><notextile><pre>0408 <span style='color: red'>7</span><span style='color: red'>b</span><span style='color: #8FF'>0</span><span style='color: #8FF'>0</span></pre></notextile></div>
 The typecode <code>7b</code> is ASCII <code>{</code>. The typecode is followed by the number
 of (key, value) pairs in the hash.</p>
 
 <p><code>{1 =&gt; 2}</code>
-<div class='bogus-wrapper'><notextile><pre>0408 7b<span style='color: #AAF'>0</span><span style='color: #AAF'>6</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>9</span><span style='color: #CC0'>0</span><span style='color: #CC0'>6</span> <span style='color: #0C0'>6</span><span style='color: #0C0'>9</span><span style='color: #0C0'>0</span><span style='color: #0C0'>7</span></pre></notextile></div></p>
+<div class='bogus-wrapper'><notextile><pre>0408 7b<span style='color: #8FF'>0</span><span style='color: #8FF'>6</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>9</span><span style='color: #CC0'>0</span><span style='color: #CC0'>6</span> <span style='color: #0C0'>6</span><span style='color: #0C0'>9</span><span style='color: #0C0'>0</span><span style='color: #0C0'>7</span></pre></notextile></div></p>
 
 <p>Like arrays, the number of items in the hash is encoded in the same
 form as integers. Each pair of (key, value) is encoded sequentially
@@ -96,7 +96,7 @@ after the size of the hash.</p>
 <h2>Symbols</h2>
 
 <p><code>:hello</code>
-<div class='bogus-wrapper'><notextile><pre>0408 <span style='color: red'>3</span><span style='color: red'>a</span><span style='color: #AAF'>0</span><span style='color: #AAF'>a</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>8</span><span style='color: #CC0'>6</span><span style='color: #CC0'>5</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>c</span><span style='color: #CC0'>6</span><span style='color: #CC0'>c</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>f</span></pre></notextile></div></p>
+<div class='bogus-wrapper'><notextile><pre>0408 <span style='color: red'>3</span><span style='color: red'>a</span><span style='color: #8FF'>0</span><span style='color: #8FF'>a</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>8</span><span style='color: #CC0'>6</span><span style='color: #CC0'>5</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>c</span><span style='color: #CC0'>6</span><span style='color: #CC0'>c</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>f</span></pre></notextile></div></p>
 
 <p>The typecode <code>3a</code> is ASCII <code>:</code>. The typecode is followed by the length
 of the symbol name and then the symbol name itself, encoded as UTF-8.</p>
@@ -104,11 +104,11 @@ of the symbol name and then the symbol name itself, encoded as UTF-8.</p>
 <h2>Symlinks</h2>
 
 <p>When a symbol is repeated multiple times, the Marshal encoding allows
-subsequent instances to reference the first instance symbols to save
-space in the stream.</p>
+subsequent instances to reference the first instance to save space in
+the stream.</p>
 
 <p><code>[:hello, :hello]</code>
-<div class='bogus-wrapper'><notextile><pre>0408 5b07 <span style='color: red'>3</span><span style='color: red'>a</span><span style='color: red'>0</span><span style='color: red'>a</span> <span style='color: red'>6</span><span style='color: red'>8</span><span style='color: red'>6</span><span style='color: red'>5</span> <span style='color: red'>6</span><span style='color: red'>c</span><span style='color: red'>6</span><span style='color: red'>c</span> <span style='color: red'>6</span><span style='color: red'>f</span><span style='color: #AAF'>3</span><span style='color: #AAF'>b</span> <span style='color: #CC0'>0</span><span style='color: #CC0'>0</span></pre></notextile></div></p>
+<div class='bogus-wrapper'><notextile><pre>0408 5b07 <span style='color: #8FF'>3</span><span style='color: #8FF'>a</span><span style='color: #8FF'>0</span><span style='color: #8FF'>a</span> <span style='color: #8FF'>6</span><span style='color: #8FF'>8</span><span style='color: #8FF'>6</span><span style='color: #8FF'>5</span> <span style='color: #8FF'>6</span><span style='color: #8FF'>c</span><span style='color: #8FF'>6</span><span style='color: #8FF'>c</span> <span style='color: #8FF'>6</span><span style='color: #8FF'>f</span><span style='color: red'>3</span><span style='color: red'>b</span> <span style='color: #CC0'>0</span><span style='color: #CC0'>0</span></pre></notextile></div></p>
 
 <p>The typecode <code>3b</code> is ASCII <code>;</code>.  The typecode is followed by the
 position of the symbol in the cache table. This table is indexed by
