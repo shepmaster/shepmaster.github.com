@@ -4,7 +4,7 @@
   <title><![CDATA[Jake Goulding]]></title>
   <link href="http://jakegoulding.com/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2013-01-16T20:50:37-05:00</updated>
+  <updated>2013-01-16T21:05:24-05:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -299,7 +299,8 @@ the order in which the symbol first appeared.</p>
 <h2>The rest</h2>
 
 <p>There&#8217;s a lot more to the Marshal format; I haven&#8217;t even covered
-strings yet! I&#8217;ll need to create another post to address the rest.</p>
+strings yet! You can find more at the <a href="http://jakegoulding.com/blog/2013/01/16/another-dip-into-rubys-marshal-format/">next post</a> in this
+series.</p>
 
 <h2>How to explore on your own</h2>
 
