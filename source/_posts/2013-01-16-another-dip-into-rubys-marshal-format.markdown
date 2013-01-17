@@ -3,7 +3,7 @@ layout: post
 title: "Another dip into Ruby's Marshal format"
 date: 2013-01-16 20:00
 comments: true
-categories:
+categories: ruby marshal
 ---
 
 In a [previous post][part-1] I started to describe some details of

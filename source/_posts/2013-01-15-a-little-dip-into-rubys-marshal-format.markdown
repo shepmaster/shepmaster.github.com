@@ -3,7 +3,7 @@ layout: post
 title: "A little dip into Ruby's Marshal format"
 date: 2013-01-15 20:00
 comments: true
-categories: ruby
+categories: ruby marshal
 ---
 
 I recently tried to resolve a JRuby [issue involving Marshal][issue].
