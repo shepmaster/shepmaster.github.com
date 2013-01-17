@@ -91,11 +91,11 @@ of the symbol name and then the symbol name itself, encoded as UTF-8.
 ## Symlinks
 
 When a symbol is repeated multiple times, the Marshal encoding allows
-subsequent instances to reference the first instance symbols to save
-space in the stream.
+subsequent instances to reference the first instance to save space in
+the stream.
 
 `[:hello, :hello]`
-{% hex 0408 5b07 1:3a0a68656c6c6f 2:3b 3:00 %}
+{% hex 0408 5b07 2:3a0a68656c6c6f 1:3b 3:00 %}
 
 The typecode `3b` is ASCII `;`.  The typecode is followed by the
 position of the symbol in the cache table. This table is indexed by
