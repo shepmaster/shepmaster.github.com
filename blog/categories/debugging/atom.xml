@@ -4,7 +4,7 @@
   <title><![CDATA[Category: debugging | Jake Goulding]]></title>
   <link href="http://jakegoulding.com/blog/categories/debugging/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2013-01-16T20:40:31-05:00</updated>
+  <updated>2013-01-16T20:50:37-05:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -186,32 +186,7 @@ test passed locally a few times.</p>
 again while I wandered away from my computer. The script looked
 something like:</p>
 
-<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span> (test-script-runner.sh)</span> <a href='/downloads/code/test-script-runner.sh'>download</a></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="c">#!/bin/bash</span>
-</span><span class='line'><span class="nb">set</span> -eu
-</span><span class='line'>
-</span><span class='line'><span class="nv">failures</span><span class="o">=</span>0
-</span><span class='line'>
-</span><span class='line'><span class="k">for </span>run in <span class="sb">`</span>seq 20<span class="sb">`</span>; <span class="k">do</span>
-</span><span class='line'><span class="k">    if</span> ! rspec -e <span class="s1">&#39;the bad test&#39;</span>; <span class="k">then</span>
-</span><span class='line'><span class="k">        </span><span class="nv">failures</span><span class="o">=</span><span class="k">$((</span><span class="nv">$failures</span> <span class="o">+</span> <span class="m">1</span><span class="k">))</span>
-</span><span class='line'>    <span class="k">fi</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">    </span><span class="nb">echo</span> <span class="s2">&quot;Test run $run complete, $failures failures&quot;</span>
-</span><span class='line'><span class="k">done</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+<p>{% include_code test-script-runner.sh %}</p>
 
 <p>I'm sure there's a proper statistical manner to determine how many
 times the test would have to be run without failing to be reasonably
@@ -436,34 +411,7 @@ with 64-bit integer types and doubles the wrong way:</p>
 <pre><code>#!C
 </code></pre>
 
-<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span> (64bit-integer-float.c)</span> <a href='/downloads/code/64bit-integer-float.c'>download</a></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="cp">#include &lt;stdio.h&gt;</span>
-</span><span class='line'><span class="cp">#include &lt;stdlib.h&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kt">int</span>
-</span><span class='line'><span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">long</span> <span class="kt">long</span> <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">double</span> <span class="n">d</span> <span class="o">=</span> <span class="n">i</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">long</span> <span class="kt">long</span> <span class="kt">int</span> <span class="n">i2</span> <span class="o">=</span> <span class="n">d</span><span class="p">;</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;%llu</span><span class="se">\n</span><span class="s">%.20g</span><span class="se">\n</span><span class="s">%llu</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">i2</span><span class="p">);</span>
-</span><span class='line'>  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+<p>{% include_code 64bit-integer-float.c %}</p>
 
 <p>On Windows (Microsoft (R) C/C++ Optimizing Compiler Version
 14.00.50727.762 for x64), we see:</p>
