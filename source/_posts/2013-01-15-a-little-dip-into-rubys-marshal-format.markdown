@@ -104,7 +104,8 @@ the order in which the symbol first appeared.
 ## The rest
 
 There's a lot more to the Marshal format; I haven't even covered
-strings yet! I'll need to create another post to address the rest.
+strings yet! You can find more at the [next post][part-2] in this
+series.
 
 ## How to explore on your own
 
@@ -120,3 +121,4 @@ end
 
 [issue]: https://github.com/jruby/jruby/issues/456
 [marshal]: http://www.ruby-doc.org/core-1.9.3/Marshal.html
+[part-2]: http://jakegoulding.com/blog/2013/01/16/another-dip-into-rubys-marshal-format/
