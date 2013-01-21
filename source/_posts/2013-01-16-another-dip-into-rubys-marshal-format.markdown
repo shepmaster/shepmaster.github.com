@@ -124,7 +124,8 @@ distinct from the symbol cache.
 ## The rest
 
 There's a more types that Marshal can handle, but not all of them are
-interesting. The next post will cover regexes, classes, modules, and
-instances of objects.
+interesting. The [next post][part-3] covers regexes, classes, modules,
+and instances of objects.
 
 [part-1]: http://jakegoulding.com/blog/2013/01/15/a-little-dip-into-rubys-marshal-format/
+[part-3]: http://jakegoulding.com/blog/2013/01/20/a-final-dip-into-rubys-marshal-format/
