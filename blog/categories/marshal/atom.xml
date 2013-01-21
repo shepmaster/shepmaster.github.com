@@ -4,7 +4,7 @@
   <title><![CDATA[Category: marshal | Jake Goulding]]></title>
   <link href="http://jakegoulding.com/blog/categories/marshal/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2013-01-20T20:22:09-05:00</updated>
+  <updated>2013-01-20T20:23:21-05:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -216,8 +216,8 @@ distinct from the symbol cache.</p>
 <h2>The rest</h2>
 
 <p>There's a more types that Marshal can handle, but not all of them are
-interesting. The next post will cover regexes, classes, modules, and
-instances of objects.</p>
+interesting. The <a href="http://jakegoulding.com/blog/2013/01/20/a-final-dip-into-rubys-marshal-format/">next post</a> covers regexes, classes, modules,
+and instances of objects.</p>
 ]]></content>
   </entry>
   
@@ -326,7 +326,7 @@ the order in which the symbol first appeared.</p>
 
 <p>There's a lot more to the Marshal format; I haven't even covered
 strings yet! You can find more at the <a href="http://jakegoulding.com/blog/2013/01/16/another-dip-into-rubys-marshal-format/">next post</a> in this
-series.</p>
+series, or jump right to the <a href="http://jakegoulding.com/blog/2013/01/20/a-final-dip-into-rubys-marshal-format/">last post</a>.</p>
 
 <h2>How to explore on your own</h2>
 
