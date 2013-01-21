@@ -27,7 +27,7 @@ module Jekyll
     end
 
     class Part
-      COLORS = ['red', '#8FF', '#CC0', '#0C0']
+      COLORS = ['red', '#8FF', '#CC0', '#0C0', '#F80']
 
       def initialize(str, color = 0)
         @str = str
