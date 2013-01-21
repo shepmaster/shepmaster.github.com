@@ -4,7 +4,7 @@
   <title><![CDATA[Category: ruby | Jake Goulding]]></title>
   <link href="http://jakegoulding.com/blog/categories/ruby/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2013-01-16T21:08:13-05:00</updated>
+  <updated>2013-01-20T20:22:09-05:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -12,6 +12,85 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[A final dip into Ruby's Marshal format]]></title>
+    <link href="http://jakegoulding.com/blog/2013/01/20/a-final-dip-into-rubys-marshal-format/"/>
+    <updated>2013-01-20T20:30:00-05:00</updated>
+    <id>http://jakegoulding.com/blog/2013/01/20/a-final-dip-into-rubys-marshal-format</id>
+    <content type="html"><![CDATA[<p>This is the third and last of my posts about the Marshal format. The
+<a href="http://jakegoulding.com/blog/2013/01/15/a-little-dip-into-rubys-marshal-format/">first part</a> introduced the format and some straight-forward
+serializations. The <a href="http://jakegoulding.com/blog/2013/01/16/another-dip-into-rubys-marshal-format/">second part</a> touched on strings and
+object links. This post rounds us off with regexes, classes, modules,
+and instances of objects.</p>
+
+<!-- more -->
+
+
+<h2>Regexes</h2>
+
+<p><code>/hello/</code>
+<div class='bogus-wrapper'><notextile><pre>0408 49<span style='color: red'>2</span><span style='color: red'>f</span> <span style='color: #8FF'>0</span><span style='color: #8FF'>a</span><span style='color: #CC0'>6</span><span style='color: #CC0'>8</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>5</span><span style='color: #CC0'>6</span><span style='color: #CC0'>c</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>c</span><span style='color: #CC0'>6</span><span style='color: #CC0'>f</span> <span style='color: #0C0'>0</span><span style='color: #0C0'>0</span>06 3a06 4546</pre></notextile></div></p>
+
+<p>Like strings, regexes are surrounded by an IVAR. The typecode <code>2f</code> is
+ASCII <code>/</code> and denotes that this object is a regex. The length of the
+string follows, again encoded as an integer. The regex string is
+stored as a set of bytes, and must be interpreted with the string
+encoding from the IVAR. After the string, the regex options are saved.</p>
+
+<p><code>/hello/imx</code>
+<div class='bogus-wrapper'><notextile><pre>0408 492f 0a68 656c 6c6f <span style='color: #0C0'>0</span><span style='color: #0C0'>7</span>06 3a06 4546</pre></notextile></div></p>
+
+<p>The regex option byte is a bitset of the five possible options. In
+this example, ignore case, extend, and multiline are set (<code>0x1</code>,
+<code>0x2</code>, and <code>0x4</code> respectively)</p>
+
+<h2>Classes</h2>
+
+<p><code>String</code>
+<div class='bogus-wrapper'><notextile><pre>0408 <span style='color: red'>6</span><span style='color: red'>3</span><span style='color: #8FF'>0</span><span style='color: #8FF'>b</span> <span style='color: #CC0'>5</span><span style='color: #CC0'>3</span><span style='color: #CC0'>7</span><span style='color: #CC0'>4</span> <span style='color: #CC0'>7</span><span style='color: #CC0'>2</span><span style='color: #CC0'>6</span><span style='color: #CC0'>9</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>e</span><span style='color: #CC0'>6</span><span style='color: #CC0'>7</span></pre></notextile></div></p>
+
+<p>The typecode <code>63</code> is ASCII <code>c</code> and denotes that this object is a
+class. The length of the class name followed by the class name are
+next.</p>
+
+<p><code>Math::DomainError</code>
+<div class='bogus-wrapper'><notextile><pre>0408 63<span style='color: #8FF'>1</span><span style='color: #8FF'>6</span> <span style='color: #CC0'>4</span><span style='color: #CC0'>d</span><span style='color: #CC0'>6</span><span style='color: #CC0'>1</span> <span style='color: #CC0'>7</span><span style='color: #CC0'>4</span><span style='color: #CC0'>6</span><span style='color: #CC0'>8</span> <span style='color: #CC0'>3</span><span style='color: #CC0'>a</span><span style='color: #CC0'>3</span><span style='color: #CC0'>a</span> <span style='color: #CC0'>4</span><span style='color: #CC0'>4</span><span style='color: #CC0'>6</span><span style='color: #CC0'>f</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>d</span><span style='color: #CC0'>6</span><span style='color: #CC0'>1</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>9</span><span style='color: #CC0'>6</span><span style='color: #CC0'>e</span> <span style='color: #CC0'>4</span><span style='color: #CC0'>5</span><span style='color: #CC0'>7</span><span style='color: #CC0'>2</span> <span style='color: #CC0'>7</span><span style='color: #CC0'>2</span><span style='color: #CC0'>6</span><span style='color: #CC0'>f</span> <span style='color: #CC0'>7</span><span style='color: #CC0'>2</span></pre></notextile></div></p>
+
+<p>Namespaces are separated by <code>::</code>.</p>
+
+<h2>Modules</h2>
+
+<p><code>Enumerable</code>
+<div class='bogus-wrapper'><notextile><pre>0408 <span style='color: red'>6</span><span style='color: red'>d</span><span style='color: #8FF'>0</span><span style='color: #8FF'>f</span> <span style='color: #CC0'>4</span><span style='color: #CC0'>5</span><span style='color: #CC0'>6</span><span style='color: #CC0'>e</span> <span style='color: #CC0'>7</span><span style='color: #CC0'>5</span><span style='color: #CC0'>6</span><span style='color: #CC0'>d</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>5</span><span style='color: #CC0'>7</span><span style='color: #CC0'>2</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>1</span><span style='color: #CC0'>6</span><span style='color: #CC0'>2</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>c</span><span style='color: #CC0'>6</span><span style='color: #CC0'>5</span></pre></notextile></div></p>
+
+<p>Modules are identical to classes, except the typecode <code>6d</code> is ASCII <code>m</code>.</p>
+
+<h2>Instances of user objects</h2>
+
+<p>Let's define a small class to test with.</p>
+
+<p>```ruby
+class DumpTest
+  def initialize(a)</p>
+
+<pre><code>@a = a
+</code></pre>
+
+<p>  end
+end
+```</p>
+
+<p><code>DumpTest.new(nil)</code>
+<div class='bogus-wrapper'><notextile><pre>0408 <span style='color: red'>6</span><span style='color: red'>f</span><span style='color: #8FF'>3</span><span style='color: #8FF'>a</span> <span style='color: #8FF'>0</span><span style='color: #8FF'>d</span><span style='color: #8FF'>4</span><span style='color: #8FF'>4</span> <span style='color: #8FF'>7</span><span style='color: #8FF'>5</span><span style='color: #8FF'>6</span><span style='color: #8FF'>d</span> <span style='color: #8FF'>7</span><span style='color: #8FF'>0</span><span style='color: #8FF'>5</span><span style='color: #8FF'>4</span> <span style='color: #8FF'>6</span><span style='color: #8FF'>5</span><span style='color: #8FF'>7</span><span style='color: #8FF'>3</span> <span style='color: #8FF'>7</span><span style='color: #8FF'>4</span><span style='color: #CC0'>0</span><span style='color: #CC0'>6</span> <span style='color: #0C0'>3</span><span style='color: #0C0'>a</span><span style='color: #0C0'>0</span><span style='color: #0C0'>7</span> <span style='color: #0C0'>4</span><span style='color: #0C0'>0</span><span style='color: #0C0'>6</span><span style='color: #0C0'>1</span> <span style='color: #F80'>3</span><span style='color: #F80'>0</span></pre></notextile></div></p>
+
+<p>The typecode <code>6f</code> is ASCII <code>o</code>, and denotes that this is an
+object. The class name is next, written as a symbol - <code>:DumpTest</code>. The
+number of instance variables is encoded as an integer, followed by
+pairs of name, value. This example has 1 pair of instance variables,
+[<code>:@a</code>, <code>nil</code>].</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Another dip into Ruby's Marshal format]]></title>

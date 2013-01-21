@@ -9,9 +9,9 @@
   <meta name="author" content="Jake Goulding">
 
   
-  <meta name="description" content="In a previous post I started to describe some details of
-Ruby&#8217;s Marshal format. This post goes further: a larger set of
-integers, IVARs, &hellip;">
+  <meta name="description" content="This is the third and last of my posts about the Marshal format. The
+first part introduced the format and some straight-forward
+serializations. The &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -32,18 +32,6 @@ integers, IVARs, &hellip;">
 <link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
 
   
-  <script type="text/javascript">
-    var _gaq = _gaq || [];
-    _gaq.push(['_setAccount', 'UA-20521797-2']);
-    _gaq.push(['_trackPageview']);
-
-    (function() {
-      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-    })();
-  </script>
-
 
 </head>
 
@@ -76,6 +64,51 @@ integers, IVARs, &hellip;">
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/01/20/a-final-dip-into-rubys-marshal-format/">A final dip into Ruby&#8217;s Marshal format</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-01-20T20:30:00-05:00" pubdate data-updated="true">Jan 20<span>th</span>, 2013</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>This is the third and last of my posts about the Marshal format. The
+<a href="http://jakegoulding.com/blog/2013/01/15/a-little-dip-into-rubys-marshal-format/">first part</a> introduced the format and some straight-forward
+serializations. The <a href="http://jakegoulding.com/blog/2013/01/16/another-dip-into-rubys-marshal-format/">second part</a> touched on strings and
+object links. This post rounds us off with regexes, classes, modules,
+and instances of objects.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2013/01/20/a-final-dip-into-rubys-marshal-format/">Continue reading &rarr;</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -490,54 +523,6 @@ memory, but you still have to manage the other resources.</p>
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2012/09/26/be-careful-when-using-junit-expected-exceptions/">Be careful when using JUnit&#8217;s expected exceptions</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-09-26T18:52:00-04:00" pubdate data-updated="true">Sep 26<span>th</span>, 2012</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>For many people, JUnit is the grand-daddy of testing frameworks. Even
-though other testing frameworks came first, a lot of people got their
-start with JUnit.</p>
-
-<p>People often start out testing with simple Boolean assertions, then
-move on substring matching, then maybe on to mocks and stubs. At some
-point, however, most people want to assert that their code throws a
-particular exception, and that&#8217;s where our story starts.</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2012/09/26/be-careful-when-using-junit-expected-exceptions/">Continue reading &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/2/">&larr; Older</a>
@@ -553,6 +538,10 @@ particular exception, and that&#8217;s where our story starts.</p>
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2013/01/20/a-final-dip-into-rubys-marshal-format/">A final dip into Ruby&#8217;s Marshal format</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2013/01/16/another-dip-into-rubys-marshal-format/">Another dip into Ruby&#8217;s Marshal format</a>
       </li>
     
@@ -566,10 +555,6 @@ particular exception, and that&#8217;s where our story starts.</p>
     
       <li class="post">
         <a href="/blog/2012/11/04/refactor-and-make-changes-in-different-commits/">Refactor and make changes in different commits</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2012/10/18/run-your-tests-in-a-deterministic-random-order/">Run your tests in a deterministic random order</a>
       </li>
     
   </ul>
