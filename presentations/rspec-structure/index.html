@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=1024, user-scalable=no">
+
+  <title>How I structure RSpec tests</title>
+
+  <!-- Required stylesheet -->
+  <link rel="stylesheet" href="core/deck.core.css">
+
+  <!-- Extension CSS files go here. Remove or add as needed. -->
+  <link rel="stylesheet" href="extensions/goto/deck.goto.css">
+  <link rel="stylesheet" href="extensions/menu/deck.menu.css">
+  <link rel="stylesheet" href="extensions/navigation/deck.navigation.css">
+  <link rel="stylesheet" href="extensions/status/deck.status.css">
+  <link rel="stylesheet" href="extensions/hash/deck.hash.css">
+  <link rel="stylesheet" href="extensions/scale/deck.scale.css">
+
+  <!-- Style theme. More available in /themes/style/ or create your own. -->
+  <link rel="stylesheet" href="themes/style/web-2.0.css">
+
+  <!-- Transition theme. More available in /themes/transition/ or create your own. -->
+  <link rel="stylesheet" href="themes/transition/horizontal-slide.css">
+
+  <!-- Required Modernizr file -->
+  <script src="modernizr.custom.js"></script>
+
+  <!-- Syntax highlighting -->
+  <link rel="stylesheet" href="extensions/rainbow/themes/github.css">
+  <script src="extensions/rainbow/js/rainbow.min.js"></script>
+  <script src="extensions/rainbow/js/language/generic.js"></script>
+  <script src="extensions/rainbow/js/language/ruby.js"></script>
+
+  <script>
+Rainbow.extend('ruby', [
+    {
+        'name': 'rspec.structure',
+        'pattern': /\b(describe|context|it)\b/g
+    },
+    {
+        'name': 'rspec.method',
+        'pattern': /\b(let|subject|before|match)\b/g
+    }
+], true);
+  </script>
+
+  <style>
+pre .rspec {
+  color: green;
+}
+
+pre .rspec.structure {
+  font-weight: bold;
+}
+</style>
+
+</head>
+
+<body class="deck-container">
+
+<!-- Begin slides. Just make elements with a class of slide. -->
+
+  <section class="slide">
+    <h1>Structure of RSpec tests</h1>
+  </section>
+
+  <section class="slide">
+    <h2>Disclaimer</h2>
+    <ul>
+      <li>Assume that you know RSpec.</li>
+      <li>If not, you'll still get some value.</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <h2>Overview</h2>
+    <ul>
+      <li><code>describe</code> vs. <code>context</code></li>
+      <li><code>context</code> naming</li>
+      <li><code>before</code> vs. <code>let</code></li>
+      <li><code>before</code> &amp; <code>context</code></li>
+      <li><code>let</code> vs. <code>subject</code></li>
+      <li><code>before</code> vs. <code>let</code></li>
+      <li><code>subject</code> &amp; <code>describe</code></li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <h2>A typical test</h2>
+<pre><code data-language="ruby">describe Classroom do
+  context "#a_mess?" do
+    it "should return true after a party" do
+      classroom = Classroom.new
+      classroom.throw_pizza_party
+      classroom.a_mess?.should be_true
+    end
+  end
+end</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2><code>describe</code> vs. <code>context</code></h2>
+    <ul>
+      <li>
+        <code>describe</code> and <code>context</code> group related tests together.
+      </li>
+      <li>
+        They are the
+        <a href="https://github.com/rspec/rspec-core/blob/v2.12.2/lib/rspec/core/example_group.rb#L237">same method</a>.
+      </li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <h2><code>describe</code> vs. <code>context</code></h2>
+    <ul>
+      <li>Use <code>describe</code> for <em>things</em>.</li>
+      <li>Use <code>context</code> for <em>states</em>.</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <h2><code>describe</code> vs. <code>context</code></h2>
+    <h3>Things</h3>
+    <div>
+      Bad:
+      <pre><code data-language="ruby">context "#matriculate"</code></pre>
+    </div>
+    <div>
+      Better:
+      <pre><code data-language="ruby">describe "#matriculate"</code></pre>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2><code>describe</code> vs. <code>context</code></h2>
+    <h3>States</h3>
+    <div>
+      Bad:
+      <pre><code data-language="ruby">describe "when the student is sick"</code></pre>
+    </div>
+    <div>
+      Better:
+      <pre><code data-language="ruby">context "when the student is sick"</code></pre>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2><code>describe</code> vs. <code>context</code></h2>
+    <ul>
+      <li>I lied: <code>context</code> isn't available at the top-level.</li>
+      <li>RSpec encourages you to organize your tests by things.</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <h2>Prefer <code>context</code></h2>
+    <ul>
+      <li>Tests usually deal with permutations of state.</li>
+      <li>Nested <code>context</code> blocks better represent this.</li>
+      <li><code>describe</code> can be useful for complex return values.</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <h2><code>context</code> naming</h2>
+    <ul>
+      <li><code>context</code> names should not match your method names!</li>
+      <li>Explain <em>why</em> a user would call the method.</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <h2><code>context</code> naming</h2>
+    <div>
+      Bad:
+      <pre><code data-language="ruby">describe "#assign"</code></pre>
+    </div>
+    <div>
+      Better:
+      <pre><code data-language="ruby">context "assigning homework to a student"</code></pre>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2><code>before</code> vs. <code>let</code></h2>
+    <ul>
+      <li><code>before</code> eagerly runs code before each test.</li>
+      <li><code>let</code> lazily runs code when it is first used.</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <h2><code>before</code> vs. <code>let</code></h2>
+    <ul>
+      <li>Use <code>before</code> for <em>actions</em>.</li>
+      <li>Use <code>let</code> for <em>dependencies</em> (real or test double).</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <h2><code>before</code> vs. <code>let</code></h2>
+    <h3>Actions</h3>
+    <div>
+      Bad:
+      <pre><code data-language="ruby">let(:dummy) do
+  @classroom.initialize_roster
+end</code></pre>
+    </div>
+    <div>
+      Better:
+      <pre><code data-language="ruby">before do
+  @classroom.initialize_roster
+end</code></pre>
+    </div>
+    <div>
+      <strong>Note:</strong> <code>let</code> is lazy; watch out
+      for <code>let!</code>.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2><code>before</code> vs. <code>let</code></h2>
+    <h3>Dependencies</h3>
+    <div>
+      Bad:
+      <pre><code data-language="ruby">before { @grade_levels = [1, 2, 3] }</code></pre>
+    </div>
+    <div>
+      Better:
+      <pre><code data-language="ruby">let(:grade_levels) { [1, 2, 3] }</code></pre>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2><code>before</code> aligns with the <code>context</code></h2>
+    <ul>
+      <li><code>context</code> is used for state.</li>
+      <li><code>before</code> lists the actions to get to that state.</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <h2><code>before</code> &amp; <code>context</code></h2>
+    <h3>For real objects</h3>
+    <div>
+      <pre><code data-language="ruby">context "the bathroom queue is full" do
+  before do
+    100.times { bathroom_queue << nil }
+  end
+end</code></pre>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2><code>before</code> &amp; <code>context</code></h2>
+    <h3>For mock objects</h3>
+    <div>
+      <pre><code data-language="ruby">context "the bathroom queue is full" do
+  before do
+    bathroom_queue.stub(:full?).and_return(true)
+  end
+end</code></pre>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2><code>let</code> vs. <code>subject</code></h2>
+    <ul>
+      <li><code>let</code> defines a named variable.</li>
+      <li><code>subject</code>
+        <ul>
+          <li>is automatically based on the <code>describe</code>.</li>
+          <li>can be explicitly specified.</li>
+          <li>can have a name.</li>
+          <li>will be the target of "bare" <code>should</code>s.</li>
+        </ul>
+      </li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <h2><code>let</code> vs. <code>subject</code></h2>
+    <ul>
+      <li>Use <code>subject</code> for the thing you are testing</li>
+      <li>Use <code>let</code> for dependencies.</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <h2><code>before</code> vs. <code>let</code></h2>
+    <div>
+      Bad:
+      <pre><code data-language="ruby">let(:classroom) { Classroom.new(grade: 5) }</code></pre>
+    </div>
+    <div>
+      Better:
+      <pre><code data-language="ruby">subject(:classroom) { Classroom.new(grade: 5) }</code></pre>
+    </div>
+    <div>
+      <strong>Note:</strong> If your constructor takes no parameters,
+      there's no need to define <code>subject</code>, but giving it a
+      name is still a good idea.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2><code>subject</code> aligns with the <code>describe</code></h2>
+    <ul>
+      <li><code>describe</code> is used for things.</li>
+      <li><code>subject</code> specifies the thing to test.</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <h2><code>subject</code> &amp; <code>describe</code></h2>
+    <h3>At the top level</h3>
+    <div>
+      <code data-language="ruby">
+<pre>describe ParentNotifier do
+  subject(:notifier) do
+    ParentNotifier.new(phone: '1.555.555.5555')
+  end
+end</code></pre>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2><code>subject</code> &amp; <code>describe</code></h2>
+    <h3>At a nested level</h3>
+    <div>
+      <code data-language="ruby">
+<pre>describe ParentNotifier do
+  subject(:notifier) do
+    ParentNotifier.new(phone: '1.555.555.5555')
+  end
+
+  describe "the result of calling the parent" do
+    subject(:call_result) { notifier.call }
+  end
+end</code></pre>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Remove weak words</h2>
+    <ul>
+      <li>Don't use "should" in your test names.</li>
+      <li>Instead, say what will happen.</li>
+      <li>Running the test will tell you if it is true or not.</li>
+      <li><strong>Corollary:</strong> prefer active verbs.</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <h2>Remove weak words</h2>
+    <div>
+      Bad:
+      <pre><code data-language="ruby">it "should add the student to the class"</code></pre>
+    </div>
+    <div>
+      Better:
+      <pre><code data-language="ruby">it "adds the student to the class"</code></pre>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>One assertion per test</h2>
+    <ul>
+      <li>Shows exactly what functionality is broken.</li>
+      <li>One <em>logical</em> assertion.</li>
+      <li>Create custom matchers if you need multiple steps.</li>
+      <li>Don't be afraid of throwing exceptions.</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <h2>One assertion per test</h2>
+    <div>
+      Bad:
+      <pre><code data-language="ruby">it "..." do
+  homework.should be_available
+  homework.should_not be_expired
+end</code></pre>
+    </div>
+    <div>
+      Better:
+      <pre><code data-language="ruby">it "..." { homework.should be_available }
+it "..." { homework.should_not be_expired }</code></pre>
+    </div>
+    <div>
+      <strong>Note:</strong> You could use streamlined <code>it</code> blocks here.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>One assertion per test</h2>
+    <div>
+      Bad:
+      <pre><code data-language="ruby">before do
+  school_board.should_receive(:funding)
+              .and_return(100_000)
+end
+it { should be_funded }</code></pre>
+    </div>
+    <div>
+      Better:
+      <pre><code data-language="ruby">before do
+  school_board.stub(:funding)
+              .and_return(100_000)
+end
+it { should be_funded }</code></pre>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>One assertion per test</h2>
+    <div>
+      Bad:
+      <pre><code data-language="ruby">it "..." do
+  lunch.size.should eql(3)
+  lunch[1].should be_salted
+end</code></pre>
+    </div>
+    <div>
+      Better:
+      <pre><code data-language="ruby">it { should include_fries }
+RSpec::Matchers.define :include_fries
+  match do |actual|
+    actual.size == 3 && actual[1].salted?
+  end
+end</code></pre>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>A typical test</h2>
+<pre><code data-language="ruby">describe Classroom do
+  context "#a_mess?" do
+    it "should return true after a party" do
+      classroom = Classroom.new
+      classroom.throw_pizza_party
+      classroom.a_mess?.should be_true
+    end
+  end
+end</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>A better typical test</h2>
+<pre><code data-language="ruby">describe Classroom do
+  subject(:classroom) { Classroom.new }
+  context "when the children are rowdy" do
+    before { classroom.throw_pizza_party }
+    it { should be_a_mess }
+  end
+end</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>So what's it all good for?</h2>
+    <ul>
+      <li>Readability and understandability!</li>
+      <li>Makes tests easier to pick up.</li>
+      <li>The RSpec developers think about this a lot.</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <h2>Documentation format</h2>
+    <div>
+      Bad:
+<pre><code>Classroom
+  #a_mess?
+    should return true after a party</code></pre>
+    </div>
+    <div>
+      Better:
+<pre><code>Classroom
+  when the children are rowdy
+    should be a mess</code></pre>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Things I learned</h2>
+    <ul>
+      <li><code>context</code> can't be used at the top-level.</li>
+      <li><code>subject</code> isn't based on <code>let</code>.</li>
+      <li><code>subject</code> can take a name.</li>
+      <li><code>feature</code> and <code>scenario</code> for feature specs.</li>
+      <li><code>match_array</code></li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <h2>Obligatory self-promotion</h2>
+    <ul>
+      <li>I'm trying to get a tutoring business off the ground.</li>
+      <li>Love to talk about Ruby, Rails, C, Java and Clojure.</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <h2>Want more?</h2>
+    <ul>
+      <li>I <strong>love</strong> tests and talking about them!</li>
+      <li><em>Meatspace</em>: Let's talk at the bar!</li>
+      <li><em>IRC:</em> shep-home/shep-werk in #rspec/#pghrb on Freenode</li>
+      <li><em>Twitter:</em> <a href="https://twitter.com/jakegoulding">@jakegoulding</a></li>
+    </ul>
+  </section>
+
+<!-- End slides. -->
+
+<!-- Begin extension snippets. Add or remove as needed. -->
+
+<!-- deck.navigation snippet -->
+<a href="#" class="deck-prev-link" title="Previous">&#8592;</a>
+<a href="#" class="deck-next-link" title="Next">&#8594;</a>
+
+<!-- deck.status snippet -->
+<p class="deck-status">
+        <span class="deck-status-current"></span>
+        /
+        <span class="deck-status-total"></span>
+</p>
+
+<!-- deck.goto snippet -->
+<form action="." method="get" class="goto-form">
+        <label for="goto-slide">Go to slide:</label>
+        <input type="text" name="slidenum" id="goto-slide" list="goto-datalist">
+        <datalist id="goto-datalist"></datalist>
+        <input type="submit" value="Go">
+</form>
+
+<!-- deck.hash snippet -->
+<a href="." title="Permalink to this slide" class="deck-permalink">#</a>
+
+<!-- End extension snippets. -->
+
+
+<!-- Required JS files. -->
+<script src="jquery-1.7.2.min.js"></script>
+<script src="core/deck.core.js"></script>
+
+<!-- Extension JS files. Add or remove as needed. -->
+<script src="core/deck.core.js"></script>
+<script src="extensions/hash/deck.hash.js"></script>
+<script src="extensions/menu/deck.menu.js"></script>
+<script src="extensions/goto/deck.goto.js"></script>
+<script src="extensions/status/deck.status.js"></script>
+<script src="extensions/navigation/deck.navigation.js"></script>
+<script src="extensions/scale/deck.scale.js"></script>
+
+<!-- Initialize the deck. You can put this in an external file if desired. -->
+<script>
+        $(function() {
+                $.deck('.slide');
+        });
+</script>
+</body>
+</html>
