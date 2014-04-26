@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: networking | Jake Goulding]]></title>
+  <link href="http://jakegoulding.com/blog/categories/networking/atom.xml" rel="self"/>
+  <link href="http://jakegoulding.com/"/>
+  <updated>2014-04-26T18:24:35-04:00</updated>
+  <id>http://jakegoulding.com/</id>
+  <author>
+    <name><![CDATA[Jake Goulding]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Running dnsmasq on OS X and routing to virtual machines]]></title>
+    <link href="http://jakegoulding.com/blog/2014/04/26/running-dnsmasq-on-os-x-and-routing-to-virtual-machines/"/>
+    <updated>2014-04-26T17:28:27-04:00</updated>
+    <id>http://jakegoulding.com/blog/2014/04/26/running-dnsmasq-on-os-x-and-routing-to-virtual-machines</id>
+    <content type="html"><![CDATA[<p>At work, I needed to run a <a href="https://www.docker.io/">Docker</a> container with a Rails
+application that talked to another application running inside a
+<a href="http://www.vmware.com/">VMWare</a> virtual machine. Adding to the complexity, I use
+<a href="https://github.com/boot2docker/boot2docker">boot2docker</a>, which runs inside of <a href="https://www.virtualbox.org/">VirtualBox</a>.</p>
+
+<p>If I only needed to access <code>rails.localdomain.dev</code> or
+<code>api.localdomain.dev</code> from my Mac, I could have simply edited
+<code>/etc/hosts</code> and set both domains to resolve to <code>127.0.0.1</code> and been
+done with it. Unfortunately, Rails needed to be able to directly
+resolve the API server.</p>
+
+<!-- more -->
+
+
+<h2>Setting up dnsmasq</h2>
+
+<p><strong>NOTE</strong>: It&rsquo;s possible that editing <code>/etc/hosts</code> would have been
+enough and I didn&rsquo;t need to set up dnsmasq at all. Read the section
+about configuring the virtual machine&rsquo;s DNS first.</p>
+
+<p>I followed <a href="http://blog.molawson.com/replace-pow-on-mavericks-10-9-with-nginx-dnsmasq-and-foreman">this tutorial</a> to install and configure
+<a href="http://www.thekelleys.org.uk/dnsmasq/doc.html">dnsmasq</a>. You can ignore the parts about nginx and foreman.</p>
+
+<p>Our Rails application must run at a domain like
+<code>rails.localdomain.dev</code>, and the API server runs at
+<code>api.localdomain.dev</code>, so I configured dnsmasq to manage the
+<code>.localdomain.dev</code> domain.</p>
+
+<p>I moved the hard-coded DNS entry for <code>api.localdomain.dev</code> from
+<code>/etc/hosts</code> to <code>dnsmasq.conf</code>. I found this IP by logging into the
+API VM and looking at the output of <code>ifconfig</code>. I&rsquo;m not certain why
+this IP will not change, but that&rsquo;s what I was told.</p>
+
+<h2>Creating a routable &ldquo;loopback address&rdquo;</h2>
+
+<p>Originally, I had configured <code>api.localdomain.dev</code> to resolve to
+<code>127.0.0.1</code>. This works fine when accessed from the Mac, but when a
+virtual machine resolved that domain, <code>127.0.0.1</code> would refer to the
+virtual machine itself! I needed an IP address that:</p>
+
+<ol>
+<li>Would refer to my laptop.</li>
+<li>Wouldn&rsquo;t change when I changed network configuration.</li>
+<li>Wouldn&rsquo;t resolve to the VM inside the VM.</li>
+</ol>
+
+
+<p>We can accomplish this by using an ifconfig <code>alias</code>:</p>
+
+<p><code>
+sudo ifconfig lo0 alias 10.254.254.254
+</code></p>
+
+<p>I picked <code>10.254.254.254</code> because it is a <a href="http://en.wikipedia.org/wiki/Private_network">private network</a>
+address and it is unlikely to be used on any networks I connect to. If
+I ever do have a conflict, there are many other private addresses to
+choose from!</p>
+
+<p>I edited <code>dnsmasq.conf</code> and replaced <code>127.0.0.1</code> with
+<code>10.254.254.254</code>. Requests for <code>*.localdomain.dev</code> will now resolve to
+an IP address that will always refer to the Mac, but that the virtual
+machines will not think resolves to the virtual machine itself.</p>
+
+<p>Big thanks to <a href="https://twitter.com/bobthebotmaker">Andre</a> for helping me find and understand how
+aliasing works!</p>
+
+<h2>Configuring virtual machine DNS</h2>
+
+<p>Next I configured the virtual machine to route all DNS requests
+through the Mac&rsquo;s resolving system. For VirtualBox, configure it
+according to this <a href="http://serverfault.com/a/453260/119136">serverfault answer</a>. If you are using
+Vagrant, you can add a stanza like:</p>
+
+<p><code>
+config.vm.provider "virtualbox" do |vb|
+  # Always go through OS X resolver, allowing us to redirect local domains.
+  vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+  vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+end
+</code></p>
+
+<p>I&rsquo;m not sure, but it&rsquo;s possible that these settings would use entries
+configured in my Mac&rsquo;s <code>/etc/hosts</code>. This could make it so that the
+dnsmasq step isn&rsquo;t required.</p>
+
+<p>Instead of resolving through the host, I could have edited
+<code>/etc/resolv.conf</code> and used <code>10.254.254.254</code> as my DNS server
+instead. If you do this, you definitely need to run dnsmasq.</p>
+
+<p>Once the virtual machine could ping <code>api.localdomain.dev</code>, I restarted
+the Docker daemon to pick up the networking changes. Dropping into a
+Docker container, I was able to ping the API server as well. Success!</p>
+]]></content>
+  </entry>
+  
+</feed>
