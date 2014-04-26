@@ -9,8 +9,8 @@
   <meta name="author" content="Jake Goulding">
 
   
-  <meta name="description" content="I&#8217;ve been trying to learn Clojure recently, so I wrote
-Conway&#8217;s Game of Life. I&#8217;m sure that the code is highly
+  <meta name="description" content="I&rsquo;ve been trying to learn Clojure recently, so I wrote
+Conway&rsquo;s Game of Life. I&rsquo;m sure that the code is highly
 non-idiomatic, but I &hellip;">
   
 
@@ -20,13 +20,14 @@ non-idiomatic, but I &hellip;">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://jakegoulding.com/blog/2011/09/18/game-of-life-in-clojure/">
+  <link rel="canonical" href="http://jakegoulding.com/blog/2011/09/18/game-of-life-in-clojure">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="/javascripts/ender.js"></script>
-  <script src="/javascripts/octopress.js" type="text/javascript"></script>
   <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
   <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
 <link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
@@ -103,20 +104,20 @@ non-idiomatic, but I &hellip;">
   </header>
 
 
-<div class="entry-content"><p>I&#8217;ve been trying to learn <a href="http://clojure.org">Clojure</a> recently, so I wrote
-<a href="http://en.wikipedia.org/wiki/Conway's_Game_of_Life">Conway&#8217;s Game of Life</a>. I&#8217;m sure that the code is highly
-non-idiomatic, but I&#8217;d rather get it out into the wild, instead of
+<div class="entry-content"><p>I&rsquo;ve been trying to learn <a href="http://clojure.org">Clojure</a> recently, so I wrote
+<a href="http://en.wikipedia.org/wiki/Conway's_Game_of_Life">Conway&rsquo;s Game of Life</a>. I&rsquo;m sure that the code is highly
+non-idiomatic, but I&rsquo;d rather get it out into the wild, instead of
 sitting on my disk.</p>
 
 <!-- more -->
 
 
 <p>Note that I have inline tests (the simple <code>println</code> statements) mostly
-because I wasn&#8217;t trying to figure out how to properly test in Clojure
+because I wasn&rsquo;t trying to figure out how to properly test in Clojure
 (yet).</p>
 
 <figure class='code'><figcaption><span> (life.clj)</span> <a href='/downloads/code/life.clj'>download</a></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -432,7 +433,7 @@ because I wasn&#8217;t trying to figure out how to properly test in Clojure
     
       <div class="sharing">
   
-  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2011/09/18/game-of-life-in-clojure/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2011/09/18/game-of-life-in-clojure/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2011/09/18/game-of-life-in-clojure/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2011/09/18/game-of-life-in-clojure/" >Tweet</a>
   
   
   
@@ -482,23 +483,6 @@ because I wasn&#8217;t trying to figure out how to properly test in Clojure
 </section>
 
 
-<section>
-  <h1>Latest Tweets</h1>
-  <ul id="tweets">
-    <li class="loading">Status updating...</li>
-  </ul>
-  <script type="text/javascript">
-    $.domReady(function(){
-      getTwitterFeed("jakegoulding", 4, false);
-    });
-  </script>
-  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
-  
-    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-show-count="false">Follow @jakegoulding</a>
-  
-</section>
-
-
 
 
 
@@ -509,7 +493,7 @@ because I wasn&#8217;t trying to figure out how to properly test in Clojure
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2013 - Jake Goulding -
+  Copyright &copy; 2014 - Jake Goulding -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 
@@ -527,7 +511,7 @@ because I wasn&#8217;t trying to figure out how to properly test in Clojure
       var twitterWidgets = document.createElement('script');
       twitterWidgets.type = 'text/javascript';
       twitterWidgets.async = true;
-      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
       document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
     })();
   </script>

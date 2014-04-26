@@ -9,8 +9,8 @@
   <meta name="author" content="Jake Goulding">
 
   
-  <meta name="description" content="Do you know a &#8220;meh&#8221; programmer? As an example: Alice: This variable name isn&#8217;t very good&#8230;
-Bob: Meh, it&#8217;s just a &hellip;">
+  <meta name="description" content="Do you know a &ldquo;meh&rdquo; programmer? As an example: Alice: This variable name isn&rsquo;t very good&hellip;
+Bob: Meh, it&rsquo;s just a &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -19,13 +19,14 @@ Bob: Meh, it&#8217;s just a &hellip;">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://jakegoulding.com/blog/2011/01/09/the-meh-programmer/">
+  <link rel="canonical" href="http://jakegoulding.com/blog/2011/01/09/the-meh-programmer">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="/javascripts/ender.js"></script>
-  <script src="/javascripts/octopress.js" type="text/javascript"></script>
   <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
   <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
 <link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
@@ -102,15 +103,15 @@ Bob: Meh, it&#8217;s just a &hellip;">
   </header>
 
 
-<div class="entry-content"><p>Do you know a &#8220;meh&#8221; programmer? As an example:</p>
+<div class="entry-content"><p>Do you know a &ldquo;meh&rdquo; programmer? As an example:</p>
 
-<blockquote><p>Alice: This variable name isn&#8217;t very good&#8230;<br/>
-Bob: Meh, it&#8217;s just a variable name, it&#8217;s good enough.</p></blockquote>
+<blockquote><p>Alice: This variable name isn&rsquo;t very good&hellip;<br/>
+Bob: Meh, it&rsquo;s just a variable name, it&rsquo;s good enough.</p></blockquote>
 
 <p>Where does this lack of caring come from? If you replace <em>variable name</em> with something else, it sounds ridiculous:</p>
 
-<blockquote><p>Alice: This algorithm isn&#8217;t very good&#8230;<br/>
-Bob: Meh, it&#8217;s just an algorithm, it&#8217;s good enough.</p></blockquote>
+<blockquote><p>Alice: This algorithm isn&rsquo;t very good&hellip;<br/>
+Bob: Meh, it&rsquo;s just an algorithm, it&rsquo;s good enough.</p></blockquote>
 
 <!--more-->
 
@@ -119,23 +120,23 @@ Bob: Meh, it&#8217;s just an algorithm, it&#8217;s good enough.</p></blockquote>
 Craftsmanship</a>. An incorrect algorithm makes the program wrong, and
 most programmers detest that idea. An incorrect variable name only
 affects how well-crafted the program is, but we are usually
-all-too-willing to let that slide. There shouldn&#8217;t be such a huge gulf
+all-too-willing to let that slide. There shouldn&rsquo;t be such a huge gulf
 between these two ideas.</p>
 
 <p>I recently caught myself saying the following during a code review:</p>
 
 <blockquote><p>I would have named this variable <em>descriptive_name</em> instead of
-<em>foo</em>. Don&#8217;t worry though, it doesn&#8217;t really matter since the code
+<em>foo</em>. Don&rsquo;t worry though, it doesn&rsquo;t really matter since the code
 works.</p></blockquote>
 
-<p>Fortunately, I know exactly why I said this - I was too afraid to be
+<p>Fortunately, I know exactly why I said this &ndash; I was too afraid to be
 truly confrontational. Not everyone buys-in to Software Craftsmanship in
 to the extent that I strive to. Even if they did, craftsmanship is a
 softer science, providing many ways to be right.</p>
 
-<p>I don&#8217;t know which I think is worse, <strong>not caring</strong> about the
+<p>I don&rsquo;t know which I think is worse, <strong>not caring</strong> about the
 craftsmanship of the code you write, or being <strong>too scared</strong> to
-evangelize good practices to others. I bet master woodworkers don&#8217;t have
+evangelize good practices to others. I bet master woodworkers don&rsquo;t have
 to deal with these kinds of problems.</p>
 </div>
 
@@ -173,7 +174,7 @@ to deal with these kinds of problems.</p>
     
       <div class="sharing">
   
-  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2011/01/09/the-meh-programmer/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2011/01/09/the-meh-programmer/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2011/01/09/the-meh-programmer/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2011/01/09/the-meh-programmer/" >Tweet</a>
   
   
   
@@ -223,23 +224,6 @@ to deal with these kinds of problems.</p>
 </section>
 
 
-<section>
-  <h1>Latest Tweets</h1>
-  <ul id="tweets">
-    <li class="loading">Status updating...</li>
-  </ul>
-  <script type="text/javascript">
-    $.domReady(function(){
-      getTwitterFeed("jakegoulding", 4, false);
-    });
-  </script>
-  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
-  
-    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-show-count="false">Follow @jakegoulding</a>
-  
-</section>
-
-
 
 
 
@@ -250,7 +234,7 @@ to deal with these kinds of problems.</p>
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2013 - Jake Goulding -
+  Copyright &copy; 2014 - Jake Goulding -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 
@@ -268,7 +252,7 @@ to deal with these kinds of problems.</p>
       var twitterWidgets = document.createElement('script');
       twitterWidgets.type = 'text/javascript';
       twitterWidgets.async = true;
-      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
       document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
     })();
   </script>

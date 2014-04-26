@@ -20,13 +20,14 @@ and Jim Hurne. As usual, I had a great time, and got to &hellip;">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://jakegoulding.com/blog/2012/12/13/conways-game-of-life-without-return-values/">
+  <link rel="canonical" href="http://jakegoulding.com/blog/2012/12/13/conways-game-of-life-without-return-values">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="/javascripts/ender.js"></script>
-  <script src="/javascripts/octopress.js" type="text/javascript"></script>
   <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
   <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
 <link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
@@ -106,12 +107,12 @@ and Jim Hurne. As usual, I had a great time, and got to &hellip;">
 <div class="entry-content"><p>On 2012-12-08, I attended the Pittsburgh
 <a href="http://globalday.coderetreat.org/">Global Day of Code Retreat</a> facilitated by <a href="https://twitter.com/josephrkramer">Joe Kramer</a>
 and <a href="https://twitter.com/jthurne">Jim Hurne</a>. As usual, I had a great time, and got to meet
-new people from the Pittsburgh tech scene. It&#8217;s always good for me to
+new people from the Pittsburgh tech scene. It&rsquo;s always good for me to
 remember that there are non-Ruby developers out there! I even started
 the day off by doing the Game of Life in C#.</p>
 
-<p>One of the more contentious constraints of the day was &#8220;no return
-values&#8221;. I feel like I was the only one in the room that liked this
+<p>One of the more contentious constraints of the day was &ldquo;no return
+values&rdquo;. I feel like I was the only one in the room that liked this
 constraint at all!  As such, I wanted to finish it up to see what my
 <a href="https://github.com/shepmaster/gdcr-no-return-values">final code</a> and observations would look like.</p>
 
@@ -121,7 +122,7 @@ constraint at all!  As such, I wanted to finish it up to see what my
 <h3>Goal</h3>
 
 <p>As I understand it, the point of this constraint is to explore
-&#8221;<a href="http://pragprog.com/articles/tell-dont-ask">tell don&#8217;t ask</a>&#8221;, with a secondary exploration of
+&ldquo;<a href="http://pragprog.com/articles/tell-dont-ask">tell don&rsquo;t ask</a>&rdquo;, with a secondary exploration of
 <a href="http://martinfowler.com/articles/mocksArentStubs.html">mocks vs. stubs</a>.</p>
 
 <h3>Constraint modifications</h3>
@@ -138,30 +139,30 @@ works and to avoid work orthogonal to the goal.</p>
 
 <p>In Ruby, constructors are methods on a Class instance that return a
 new instance of the class. Since everything in Ruby is an object, it
-would be impossible to make progress if we didn&#8217;t allow creating new
+would be impossible to make progress if we didn&rsquo;t allow creating new
 objects.</p>
 
-<p>The goal of the constraint isn&#8217;t to rewrite all of Ruby&#8217;s standard
+<p>The goal of the constraint isn&rsquo;t to rewrite all of Ruby&rsquo;s standard
 library. If we cannot use return values from the standard library, we
-couldn&#8217;t do something as simple as <code>a = 1 + 1</code>! Our newly-created
+couldn&rsquo;t do something as simple as <code>a = 1 + 1</code>! Our newly-created
 code will not return values, so it is safe to use return values hidden
 away inside of our objects.</p>
 
-<p>Allowing private methods to return values isn&#8217;t strictly necessary,
+<p>Allowing private methods to return values isn&rsquo;t strictly necessary,
 but it allows us to reduce code duplication. Technically, we could
 inline the private methods where they are used, but that would be
-ugly. Since these methods are private, they won&#8217;t add to the surface
-area of our objects and shouldn&#8217;t conflict with the goal of the
+ugly. Since these methods are private, they won&rsquo;t add to the surface
+area of our objects and shouldn&rsquo;t conflict with the goal of the
 exercise.</p>
 
 <h3>Things I liked</h3>
 
-<p>I usually start out Conway&#8217;s with the ability to see if a cell is
+<p>I usually start out Conway&rsquo;s with the ability to see if a cell is
 alive, followed quickly by the ability to bring a cell to life. This
 means the first thing I do is rely on return values. This time, I
 began with the concept of a UI that would be told when a cell is
 alive. I found this interesting as I usually skip over the display
-completely, leaving it as a &#8220;trivial&#8221; thing to be added later.</p>
+completely, leaving it as a &ldquo;trivial&rdquo; thing to be added later.</p>
 
 <p>The <code>Board</code> class came into existence while implementing the
 <code>time_passes</code> method because I needed to have both the current and
@@ -174,22 +175,22 @@ would, such as <code>has_two_neighbors</code>, or <code>AliveCellRules</code>. I
 this is the extended version of creating a well-named temporary
 variable.</p>
 
-<h3>Things I didn&#8217;t like</h3>
+<h3>Things I didn&rsquo;t like</h3>
 
 <p>There are two rule-related classes, one for alive cells and one for
 dead cells. The alive cell rules class is almost 100%
-duplication. This could be reduced using Ruby&#8217;s <code>alias</code> at the cost of
-reduced readability, and still wouldn&#8217;t help the duplication in the
-dead cell rules. It&#8217;s hard to tell if this would be good or bad in the
-absence of future changes, but I don&#8217;t like it as it stands now.</p>
+duplication. This could be reduced using Ruby&rsquo;s <code>alias</code> at the cost of
+reduced readability, and still wouldn&rsquo;t help the duplication in the
+dead cell rules. It&rsquo;s hard to tell if this would be good or bad in the
+absence of future changes, but I don&rsquo;t like it as it stands now.</p>
 
 <p>I wanted to create a <code>Point</code> class to abstract the concept of x / y
 coordinates and also to have a place to hang the idea of
-&#8220;neighbors&#8221;. Unfortunately, it would have solely existed to return
+&ldquo;neighbors&rdquo;. Unfortunately, it would have solely existed to return
 values: a list of points, equality comparisons, etc. I think this
 would be an ideal example of a value type.</p>
 
-<p>I love Ruby&#8217;s <code>Struct</code>; I have written too many class initializers
+<p>I love Ruby&rsquo;s <code>Struct</code>; I have written too many class initializers
 longhand to ever want to go back. As far as I am concerned, <code>Struct</code>
 reduces the work to make an initializer from <em>O(n)</em> to <em>O(1)</em>.
 Unfortunately, it automatically creates a public <code>attr_accessor</code>,
@@ -202,35 +203,35 @@ uncomfortable.</p>
 
 <p>For each public method, I returned <code>self</code>. In Ruby, the last executed
 statement is implicitly returned. Returning <code>self</code> avoids accidentally
-relying on a return value. In production code I wouldn&#8217;t go this
+relying on a return value. In production code I wouldn&rsquo;t go this
 overboard, trusting the caller to not use incidental return values. In
 a language like Java, I would declare the method as void.</p>
 
-<p>I&#8217;ve never used <code>flat_map</code> before, but I&#8217;m going to keep my eyes open
-for more places to use it. I&#8217;m not at the point where it comes without
+<p>I&rsquo;ve never used <code>flat_map</code> before, but I&rsquo;m going to keep my eyes open
+for more places to use it. I&rsquo;m not at the point where it comes without
 thinking, but looking for <code>ary.map{ ... }.flatten(1)</code> should be easy
 enough. Also, I learned that <code>flatten</code> can take an argument that
 controls how deep it will go.</p>
 
 <p>I swear that there is an existing method that does the equivalent of
-<code>ary.reject { |x| x == CONSTANT }</code>, but I couldn&#8217;t find it. <code>delete</code>
-will mutate the array in place, which isn&#8217;t quite the same.</p>
+<code>ary.reject { |x| x == CONSTANT }</code>, but I couldn&rsquo;t find it. <code>delete</code>
+will mutate the array in place, which isn&rsquo;t quite the same.</p>
 
 <h3>Tests</h3>
 
-<p>As the code progressed, I had to start using RSpec&#8217;s <code>as_null_object</code>
+<p>As the code progressed, I had to start using RSpec&rsquo;s <code>as_null_object</code>
 more frequently. This is because closely situated cells began
-interacting and would be output to the user interface. I wasn&#8217;t
-interested in these outputs, but they weren&#8217;t incorrect. After enough
+interacting and would be output to the user interface. I wasn&rsquo;t
+interested in these outputs, but they weren&rsquo;t incorrect. After enough
 tests needed a null object, I changed the test-wide mock, which may
 have been too broad a change.</p>
 
 <p>All of the tests that involve time passing have two duplicated
 lines. These lines could have been pulled into the rarely-used <code>after</code>
-block. I&#8217;ve never seen code that does this, and I&#8217;m not sure how I
+block. I&rsquo;ve never seen code that does this, and I&rsquo;m not sure how I
 feel about it.</p>
 
-<p>I don&#8217;t know what order I prefer for the <code>should_receive</code> calls
+<p>I don&rsquo;t know what order I prefer for the <code>should_receive</code> calls
 relative to the rest of the setup. In this case, I chose to put the
 message expectations at the top of the test block.</p>
 
@@ -244,8 +245,8 @@ wanted a <code>Point</code>.</p>
 
 <p>Will I change how I code because of this? Maybe a little bit. It
 probably would be good practice to avoid return values at first blush,
-but I certainly won&#8217;t stop using them completely. One thing I might
-look further into is Ruby 1.9&#8217;s <a href="http://www.ruby-doc.org/core-1.9.3/Enumerator.html"><code>Enumerator</code></a>. This would
+but I certainly won&rsquo;t stop using them completely. One thing I might
+look further into is Ruby 1.9&rsquo;s <a href="http://www.ruby-doc.org/core-1.9.3/Enumerator.html"><code>Enumerator</code></a>. This would
 allow me to provide a nice function that takes a block or returns an
 enumerable for further chaining.</p>
 
@@ -281,7 +282,7 @@ interested!</p>
     
       <div class="sharing">
   
-  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2012/12/13/conways-game-of-life-without-return-values/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2012/12/13/conways-game-of-life-without-return-values/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2012/12/13/conways-game-of-life-without-return-values/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2012/12/13/conways-game-of-life-without-return-values/" >Tweet</a>
   
   
   
@@ -331,23 +332,6 @@ interested!</p>
 </section>
 
 
-<section>
-  <h1>Latest Tweets</h1>
-  <ul id="tweets">
-    <li class="loading">Status updating...</li>
-  </ul>
-  <script type="text/javascript">
-    $.domReady(function(){
-      getTwitterFeed("jakegoulding", 4, false);
-    });
-  </script>
-  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
-  
-    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-show-count="false">Follow @jakegoulding</a>
-  
-</section>
-
-
 
 
 
@@ -358,7 +342,7 @@ interested!</p>
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2013 - Jake Goulding -
+  Copyright &copy; 2014 - Jake Goulding -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 
@@ -376,7 +360,7 @@ interested!</p>
       var twitterWidgets = document.createElement('script');
       twitterWidgets.type = 'text/javascript';
       twitterWidgets.async = true;
-      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
       document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
     })();
   </script>

@@ -20,13 +20,14 @@ serializations. The &hellip;">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://jakegoulding.com/">
+  <link rel="canonical" href="http://jakegoulding.com">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="/javascripts/ender.js"></script>
-  <script src="/javascripts/octopress.js" type="text/javascript"></script>
   <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
   <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
 <link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
@@ -152,7 +153,7 @@ and instances of objects.</p>
 
 
   <div class="entry-content"><p>In a <a href="http://jakegoulding.com/blog/2013/01/15/a-little-dip-into-rubys-marshal-format/">previous post</a> I started to describe some details of
-Ruby&#8217;s Marshal format. This post goes further: a larger set of
+Ruby&rsquo;s Marshal format. This post goes further: a larger set of
 integers, IVARs, strings, and object links.</p>
 
 </div>
@@ -195,7 +196,7 @@ integers, IVARs, strings, and object links.</p>
 
 
   <div class="entry-content"><p>I recently tried to resolve a JRuby <a href="https://github.com/jruby/jruby/issues/456">issue involving Marshal</a>.
-I&#8217;ve used <a href="http://www.ruby-doc.org/core-1.9.3/Marshal.html">Marshal</a> before, but never needed to pay attention
+I&rsquo;ve used <a href="http://www.ruby-doc.org/core-1.9.3/Marshal.html">Marshal</a> before, but never needed to pay attention
 to the actual bytes written to disk. I decided to write up what I
 learned in the process.</p>
 
@@ -241,12 +242,12 @@ learned in the process.</p>
   <div class="entry-content"><p>On 2012-12-08, I attended the Pittsburgh
 <a href="http://globalday.coderetreat.org/">Global Day of Code Retreat</a> facilitated by <a href="https://twitter.com/josephrkramer">Joe Kramer</a>
 and <a href="https://twitter.com/jthurne">Jim Hurne</a>. As usual, I had a great time, and got to meet
-new people from the Pittsburgh tech scene. It&#8217;s always good for me to
+new people from the Pittsburgh tech scene. It&rsquo;s always good for me to
 remember that there are non-Ruby developers out there! I even started
 the day off by doing the Game of Life in C#.</p>
 
-<p>One of the more contentious constraints of the day was &#8220;no return
-values&#8221;. I feel like I was the only one in the room that liked this
+<p>One of the more contentious constraints of the day was &ldquo;no return
+values&rdquo;. I feel like I was the only one in the room that liked this
 constraint at all!  As such, I wanted to finish it up to see what my
 <a href="https://github.com/shepmaster/gdcr-no-return-values">final code</a> and observations would look like.</p>
 
@@ -375,9 +376,9 @@ deterministic random order is even better.</p>
 
 
   <div class="entry-content"><p>At work, I am still working on finding and squashing fun test
-failures. In this case, &#8220;fun&#8221; means tests that have an intermittent
+failures. In this case, &ldquo;fun&rdquo; means tests that have an intermittent
 failure rate of 5% (or less!). The test issue I worked on today had to
-do with the &#8220;lost update&#8221; problem.</p>
+do with the &ldquo;lost update&rdquo; problem.</p>
 
 </div>
   
@@ -418,9 +419,9 @@ do with the &#8220;lost update&#8221; problem.</p>
   </header>
 
 
-  <div class="entry-content"><p>At work, we&#8217;ve been using <a href="https://github.com/jnicklas/capybara">Capybara</a> and
+  <div class="entry-content"><p>At work, we&rsquo;ve been using <a href="https://github.com/jnicklas/capybara">Capybara</a> and
 <a href="https://code.google.com/p/selenium/">Selenium</a> to test our newest web application. Many of us
-have used this combination before for our own projects, but it&#8217;s new
+have used this combination before for our own projects, but it&rsquo;s new
 territory for a work project.</p>
 
 <p>Every so often, we would get this error from a specific test:</p>
@@ -476,7 +477,7 @@ fix it once and for all.</p>
 
 
   <div class="entry-content"><p>Have you ever seen a variable with a terrible name? This is of course
-a trick question; everyone has. I&#8217;d like to look at a particular
+a trick question; everyone has. I&rsquo;d like to look at a particular
 variable-naming annoyance: naming the variable based on the class
 name.</p>
 
@@ -574,23 +575,6 @@ memory, but you still have to manage the other resources.</p>
 </section>
 
 
-<section>
-  <h1>Latest Tweets</h1>
-  <ul id="tweets">
-    <li class="loading">Status updating&#8230;</li>
-  </ul>
-  <script type="text/javascript">
-    $.domReady(function(){
-      getTwitterFeed("jakegoulding", 4, false);
-    });
-  </script>
-  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
-  
-    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-show-count="false">Follow @jakegoulding</a>
-  
-</section>
-
-
 
 
 
@@ -600,7 +584,7 @@ memory, but you still have to manage the other resources.</p>
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2013 - Jake Goulding -
+  Copyright &copy; 2014 - Jake Goulding -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 
@@ -618,7 +602,7 @@ memory, but you still have to manage the other resources.</p>
       var twitterWidgets = document.createElement('script');
       twitterWidgets.type = 'text/javascript';
       twitterWidgets.async = true;
-      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
       document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
     })();
   </script>

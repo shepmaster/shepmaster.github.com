@@ -4,7 +4,7 @@
   <title><![CDATA[Category: java | Jake Goulding]]></title>
   <link href="http://jakegoulding.com/blog/categories/java/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2013-03-11T21:03:45-04:00</updated>
+  <updated>2014-04-26T17:22:41-04:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -154,19 +154,19 @@ verify(f).someMethod();
 <p>An implementation like this allows you to lean on the compiler when
 the interface changes.</p>
 
-<p>If you don't have a interface to implement, you could subclass
+<p>If you don&rsquo;t have a interface to implement, you could subclass
 the concrete builder class and insert your test-specific logic
 there. The downside to this is that newly-added methods will inherit
 their implementation from the parent class, which can cause very
 strange test failures.</p>
 
-<p>We did not have an interface to adhere to, so we used Mockito's
+<p>We did not have an interface to adhere to, so we used Mockito&rsquo;s
 <code>Answer</code> class to provide a middle ground solution. When you create a
 new mock, an <code>Answer</code> can be used to provide default behavior for
-methods. Here's the custom <code>Answer</code> we came up with:</p>
+methods. Here&rsquo;s the custom <code>Answer</code> we came up with:</p>
 
 <p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span> (AnswerWithSelf.java)</span> <a href='/downloads/code/AnswerWithSelf.java'>download</a></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>

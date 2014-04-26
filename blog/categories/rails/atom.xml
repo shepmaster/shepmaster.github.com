@@ -4,7 +4,7 @@
   <title><![CDATA[Category: rails | Jake Goulding]]></title>
   <link href="http://jakegoulding.com/blog/categories/rails/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2013-03-11T21:03:45-04:00</updated>
+  <updated>2014-04-26T17:22:41-04:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -20,12 +20,12 @@
     <id>http://jakegoulding.com/blog/2011/02/26/using-named-routes-in-actionmailer-tests-with-rails-3</id>
     <content type="html"><![CDATA[<p>The version of ActionMailer included with Rails 3.0.4 allows you to
 use named routes in the mailer view by default, but writing a
-functional test that tests those named routes isn't as out-of-the-box.</p>
+functional test that tests those named routes isn&rsquo;t as out-of-the-box.</p>
 
 <!--more-->
 
 
-<p>Say you had created a "Notifications" object with a subscribe method,
+<p>Say you had created a &ldquo;Notifications&rdquo; object with a subscribe method,
 like such:</p>
 
 <p>``` ruby
@@ -51,10 +51,10 @@ a link back to your application:</p>
 exists might look like:</p>
 
 <p>``` ruby
-require 'test_helper'</p>
+require &lsquo;test_helper&rsquo;</p>
 
 <p>class NotificationsTest &lt; ActionMailer::TestCase
-  test "subscribe" do</p>
+  test &ldquo;subscribe&rdquo; do</p>
 
 <pre><code>mail = Notifications.subscribe
 assert_match unsubscribe_url(:email =&gt; 'test@example.com'), mail.body.encoded
@@ -75,7 +75,7 @@ those methods) and point to your default URL options (to define
 options such as the default host). Modify the test to look like:</p>
 
 <p>``` ruby
-require 'test_helper'</p>
+require &lsquo;test_helper&rsquo;</p>
 
 <p>class NotificationsTest &lt; ActionMailer::TestCase
   include Rails.application.routes.url_helpers</p>
@@ -87,7 +87,7 @@ require 'test_helper'</p>
 
 <p>  end</p>
 
-<p>  test "subscribe" do</p>
+<p>  test &ldquo;subscribe&rdquo; do</p>
 
 <pre><code>mail = Notifications.subscribe
 assert_match unsubscribe_url(:email =&gt; 'test@example.com'), mail.body.encoded

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: testing | Jake Goulding]]></title>
   <link href="http://jakegoulding.com/blog/categories/testing/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2013-03-11T21:03:45-04:00</updated>
+  <updated>2014-04-26T17:22:41-04:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -25,17 +25,17 @@ deterministic random order is even better.</p>
 <!-- more -->
 
 
-<h4>What's an implicit dependency?</h4>
+<h4>What&rsquo;s an implicit dependency?</h4>
 
-<p>It's easy to accidentally create order-dependent tests:</p>
+<p>It&rsquo;s easy to accidentally create order-dependent tests:</p>
 
 <p>```ruby
-it "creates a widget" do
-  Widget.create(name: 'Awesome Widget')
+it &ldquo;creates a widget&rdquo; do
+  Widget.create(name: &lsquo;Awesome Widget&rsquo;)
   Widget.count.should eql(1)
 end</p>
 
-<p>it "deletes a widget" do
+<p>it &ldquo;deletes a widget&rdquo; do
   Widget.first.delete # Implicitly requires the first test to have been run
   Widget.count.should eql(0)
 end
@@ -56,7 +56,7 @@ code is often an excellent indicator of complex production code.</li>
 </ol>
 
 
-<p>Running tests in a random order isn't enough; you need to be able to
+<p>Running tests in a random order isn&rsquo;t enough; you need to be able to
 reproduce the same random order before you can fix it! <a href="https://www.relishapp.com/rspec/rspec-core/v/2-11/docs/command-line/order-new-in-rspec-core-2-8">RSpec</a>
 and <a href="http://www.bootspring.com/2010/09/22/minitest-rubys-test-framework/">MiniTest</a> both offer a way to specify the random seed
 on the command line or with environment variables. Unfortunately, the
@@ -103,7 +103,7 @@ to me with a strange problem. His commit was unable to pass the tests
 in Gerrit, but the failing test had nothing to do with his changes. We
 ran the tests locally using the seed from the Jenkins server and were
 able to reproduce the problem. Ultimately, we traced the problem to a
-request spec that modified some core configuration settings and didn't
+request spec that modified some core configuration settings and didn&rsquo;t
 reset them successfully. Success!</p>
 ]]></content>
   </entry>
@@ -114,9 +114,9 @@ reset them successfully. Success!</p>
     <updated>2012-10-10T19:41:00-04:00</updated>
     <id>http://jakegoulding.com/blog/2012/10/10/watch-out-for-lost-updates-when-using-capybara-with-selenium</id>
     <content type="html"><![CDATA[<p>At work, I am still working on finding and squashing fun test
-failures. In this case, "fun" means tests that have an intermittent
+failures. In this case, &ldquo;fun&rdquo; means tests that have an intermittent
 failure rate of 5% (or less!). The test issue I worked on today had to
-do with the "lost update" problem.</p>
+do with the &ldquo;lost update&rdquo; problem.</p>
 
 <!-- more -->
 
@@ -128,7 +128,7 @@ description and diagram of the problem:</p>
 
 <p><img src="http://jakegoulding.com/images/blog/lost-update.png" alt="The lost update problem" /></p>
 
-<p>The short version is that when you poll a system for its state, it's
+<p>The short version is that when you poll a system for its state, it&rsquo;s
 entirely possible to miss the state you are looking for. In the
 diagram, the color changes to red and then to blue before the test
 ever has a chance to see that it was red. Since this system will never
@@ -142,21 +142,21 @@ worked looked something like this:</p>
 
 <p>```ruby
 def wait_for_table_loading
-  dialog = page.find('.loading_dialog')
+  dialog = page.find(&lsquo;.loading_dialog&rsquo;)
   wait_until { dialog.visible? }
 end</p>
 
 <p>def wait_for_table_ready
-  dialog = page.find('.loading_dialog')
+  dialog = page.find(&lsquo;.loading_dialog&rsquo;)
   wait_until { ! dialog.visible? }
 end</p>
 
-<p>it 'filters the list' do
+<p>it &lsquo;filters the list&rsquo; do
   visit list_path
-  click_on 'Filter by active'
+  click_on &lsquo;Filter by active&rsquo;
   wait_for_table_loading
   wait_for_table_ready
-  page.all('.data-item').should have(3).items
+  page.all(&lsquo;.data-item&rsquo;).should have(3).items
 end
 ```</p>
 
@@ -188,15 +188,15 @@ Capybara to find a particular number of elements. Asking Capybara to
 find things in this manner will let the test leverage the built-in
 waiting facilities of Capybara.</p>
 
-<p>In this test, the number of data items won't change once the table is
+<p>In this test, the number of data items won&rsquo;t change once the table is
 loaded, so it is a safe state to poll. As an additional benefit, the
 test now has fewer lines of code and is clearer.</p>
 
-<p>As a downside, when the test fails, the Capybara error message doesn't
-include how many items were found, which isn't as informative as the
+<p>As a downside, when the test fails, the Capybara error message doesn&rsquo;t
+include how many items were found, which isn&rsquo;t as informative as the
 equivalent message from the RSpec matcher.</p>
 
-<p>Also, this test still ultimately relies on polling the DOM, so it's
+<p>Also, this test still ultimately relies on polling the DOM, so it&rsquo;s
 possible for similar bugs to pop up in the future.</p>
 
 <h3>The GOOS solution to the lost update problem</h3>
@@ -217,27 +217,27 @@ offers a nice API suited for the tests.</p>
 <p>I can imagine a Capybara test that looks something like this:</p>
 
 <p>```ruby
-it 'filters the list' do
+it &lsquo;filters the list&rsquo; do
   visit list_path
-  wait_for_js_event('table.loaded') do</p>
+  wait_for_js_event(&lsquo;table.loaded&rsquo;) do</p>
 
 <pre><code>click_on 'Filter by active'
 </code></pre>
 
 <p>  end
-  page.all('.data-item').should have(3).items
+  page.all(&lsquo;.data-item&rsquo;).should have(3).items
 end
 ```</p>
 
-<p>Under the hood, there's some extra JavaScript going on. The
+<p>Under the hood, there&rsquo;s some extra JavaScript going on. The
 <code>wait_for_js_event</code> method would inject some JavaScript into the
 running Selenium session that creates an event listener and binds it
 to the given event. This listener just collects all the events it
 receives. After yielding the block, the test code then polls the event
 listener, waiting for the event to be captured.</p>
 
-<p>It's entirely possible that code that does this already exists, but I
-don't know of it. It wouldn't be a large amount of code to write, but
+<p>It&rsquo;s entirely possible that code that does this already exists, but I
+don&rsquo;t know of it. It wouldn&rsquo;t be a large amount of code to write, but
 it would straddle the borders of Capybara, Selenium and JavaScript.</p>
 
 <p>This might be a useful thing for <a href="http://pivotal.github.com/jasmine/">Jasmine</a> tests, so it might
@@ -257,14 +257,14 @@ start with JUnit.</p>
 <p>People often start out testing with simple Boolean assertions, then
 move on substring matching, then maybe on to mocks and stubs. At some
 point, however, most people want to assert that their code throws a
-particular exception, and that's where our story starts.</p>
+particular exception, and that&rsquo;s where our story starts.</p>
 
 <!-- more -->
 
 
 <p>When JUnit 3 was the latest and greatest, you were supposed to catch
 the exception yourself and assert if no such exception was
-thrown. Here's an example I tweaked from <a href="http://radio.javaranch.com/lasse/2007/05/17/1179405760728.html">Lasse's blog</a> and the
+thrown. Here&rsquo;s an example I tweaked from <a href="http://radio.javaranch.com/lasse/2007/05/17/1179405760728.html">Lasse&rsquo;s blog</a> and the
 JUnit documentation for <a href="http://kentbeck.github.com/junit/javadoc/latest/org/junit/Test.html"><code>@Test</code></a>.</p>
 
 <p>```java
@@ -312,7 +312,7 @@ throw new NullPointerException();
 
 <p>Both of these forms offer a lot in the way of conciseness and
 readability, and I prefer to use them when I need to test this kind of
-thing. However, both forms can cause a test to pass when it shouldn't
+thing. However, both forms can cause a test to pass when it shouldn&rsquo;t
 when the code can throw the exception in multiple ways:</p>
 
 <p>```java
@@ -368,12 +368,12 @@ new GonnaThrowException(NullPointerException.class) {
 fact that <code>ExpectedException</code> can assert on the exception message to
 restrict your test. If you know that <strong>only</strong> your error can include a
 certain string, then checking for that string could prevent tests from
-passing when they shouldn't.</p>
+passing when they shouldn&rsquo;t.</p>
 
 <p>Another solution would be to modify your code or tests so that you
-don't have to deal with the problem in the first place. If you can
+don&rsquo;t have to deal with the problem in the first place. If you can
 move the setup code into a <code>@Before</code> block, then the exception
-wouldn't be caught by the test. If you can change your code so it
+wouldn&rsquo;t be caught by the test. If you can change your code so it
 cannot throw the exception multiple ways, or if it throws different
 exceptions, then that would also allow you to sidestep the problem.</p>
 
@@ -412,7 +412,7 @@ obj.calculateTheAnswer();
     <link href="http://jakegoulding.com/blog/2011/10/10/learned-about-testing-last-year/"/>
     <updated>2011-10-10T19:15:00-04:00</updated>
     <id>http://jakegoulding.com/blog/2011/10/10/learned-about-testing-last-year</id>
-    <content type="html"><![CDATA[<p>Over the last year or so, I've been trying to learn about various
+    <content type="html"><![CDATA[<p>Over the last year or so, I&rsquo;ve been trying to learn about various
 types and methodologies of testing. The Ruby community is pretty vocal
 about testing, so I felt out of place not knowing even the most basic
 of things. This post is intended to organize my current thoughts and
@@ -426,17 +426,17 @@ hopefully provide some guidance for people on the same journey.</p>
 <p>I had to realize two things before I could start learning:</p>
 
 <ol>
-<li>I don't know enough about testing.</li>
+<li>I don&rsquo;t know enough about testing.</li>
 <li>I need to know more about testing.</li>
 </ol>
 
 
-<p>If you don't fit into both of these categories, you probably aren't
+<p>If you don&rsquo;t fit into both of these categories, you probably aren&rsquo;t
 reading this post.</p>
 
-<p>If you know what "mockist" and "classicist" mean and you know which
+<p>If you know what &ldquo;mockist&rdquo; and &ldquo;classicist&rdquo; mean and you know which
 you are, you probably already know everything here. If you care, I
-generally take the "mockist" approach, and this post reflects that.</p>
+generally take the &ldquo;mockist&rdquo; approach, and this post reflects that.</p>
 
 <p>Otherwise, feel free to continue!</p>
 
@@ -449,7 +449,7 @@ confidence that the code as written is right.</p>
 code. Eventually, some part of the software will need to change
 while everything else should stay constant. For me, this point really
 hit home when I read <a href="http://www.amazon.com/gp/product/0131177052/ref=as_li_ss_tl?ie=UTF8&amp;tag=jakgousblo-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399369&amp;creativeASIN=0131177052">Working Effectively with Legacy Code</a> by Michael Feathers. I deal with lots of code that
-needs to be changed and I'm usually worried that my change might
+needs to be changed and I&rsquo;m usually worried that my change might
 affect some conceptually remote piece of the software.</p>
 
 <p>Maybe the hardest thing for people to believe is that tests can
@@ -465,7 +465,7 @@ light into the <em>future</em> of your code.</p>
 <h2>What flavors of test exist?</h2>
 
 <p>Here is a list of the types of tests that I can think of purely off the top
-of my head, I'm sure there are lots more.</p>
+of my head, I&rsquo;m sure there are lots more.</p>
 
 <ul>
 <li><a href="http://en.wikipedia.org/wiki/Unit_testing">Unit testing</a></li>
@@ -478,12 +478,12 @@ of my head, I'm sure there are lots more.</p>
 </ul>
 
 
-<p>Those are all links to corresponding Wikipedia page; I don't agree
+<p>Those are all links to corresponding Wikipedia page; I don&rsquo;t agree
 with every nuance listed on those pages, and some pages are
 unfortunately short, but the links provide the barest minimum of
 a start if you would like to learn more about each type of test.</p>
 
-<p>I don't tend to draw a hard line between integration, functional, and
+<p>I don&rsquo;t tend to draw a hard line between integration, functional, and
 acceptance tests. If you need to know the difference, this
 <a href="http://stackoverflow.com/questions/4904096/whats-the-difference-between-unit-functional-acceptance-and-integration-tests">Stack Overflow question</a> has a pretty good breakdown. I
 think of acceptance tests as a superset of functional tests, which
@@ -503,7 +503,7 @@ made.</p>
 
 <p>A great way to understand how acceptance and unit tests work in
 concert is to read <a href="http://www.amazon.com/gp/product/1934356379/ref=as_li_ss_tl?ie=UTF8&amp;tag=jakgousblo-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399369&amp;creativeASIN=1934356379">The RSpec Book</a>. If you are too lazy
-and/or cheap to read it, here's one extremely salient picture:</p>
+and/or cheap to read it, here&rsquo;s one extremely salient picture:</p>
 
 <p><img src="http://jakegoulding.com/images/blog/bdd-cycle.png" alt="The BDD test/develop cycle" /></p>
 
@@ -519,7 +519,7 @@ objects. The test for each component is a <strong>unit test</strong>.</p>
 <h2>Acceptance tests</h2>
 
 <p>Acceptance tests tell you that the software as a whole does what it is
-supposed to do. It's important to write acceptance tests as if you
+supposed to do. It&rsquo;s important to write acceptance tests as if you
 were the user. This makes it so that the test exposes the actual
 <em>value</em> of the code, explaining <em>why</em> the code even exists.</p>
 
@@ -529,27 +529,27 @@ with a database, you must be able to change data in the database. If
 you need to be able to parse an empty RSS feed, then you must be able
 to create an empty RSS feed to test that functionality.</p>
 
-<p>Because acceptance tests exercise the entire system, it's very easy
+<p>Because acceptance tests exercise the entire system, it&rsquo;s very easy
 for them to be slow, but there are a few techniques that you can use
 to help keep your total time down.</p>
 
-<p>Acceptance tests should cover the "happy path" of your software. If
+<p>Acceptance tests should cover the &ldquo;happy path&rdquo; of your software. If
 there are any extremely important failure cases, then cover those with
-acceptance tests as well. However, you don't need to cover every
+acceptance tests as well. However, you don&rsquo;t need to cover every
 possible case. For example, use unit tests to ensure that things that
 generate errors do so consistently, and then use one acceptance test
 to make sure errors are shown correctly.</p>
 
 <p>Make sure that you minimize what data you need for an acceptance
-test. You probably don't need to load 10,000 rows into your database
+test. You probably don&rsquo;t need to load 10,000 rows into your database
 just to make sure that a user can view their profile. Use the smallest
 amount of data you can get away with.</p>
 
-<p>Don't get lazy and reuse one giant piece of setup code for every
+<p>Don&rsquo;t get lazy and reuse one giant piece of setup code for every
 test. This is an example of the tests telling you that your design is
 painful to use. In this case, a user would have to duplicate all of
 the steps in the setup in order to use the function you are
-testing. Maybe that's the way it has to be, but try to make it
+testing. Maybe that&rsquo;s the way it has to be, but try to make it
 easier on the user.</p>
 
 <h2>Unit tests</h2>
@@ -569,7 +569,7 @@ issue.</p>
 <p>One way to achieve isolation and speed in your unit tests is to
 introduce <em>mock objects</em>. Mock objects are <em>test doubles</em> that
 surround the real code under test and assert on the messages sent
-between objects. Since they aren't real objects, they can't affect
+between objects. Since they aren&rsquo;t real objects, they can&rsquo;t affect
 your test correctness, and they are extremely lightweight so they will
 be fast.</p>
 
@@ -578,7 +578,7 @@ responds to the necessary methods and returns values as needed. Then
 point the object under test at the mock objects, run the code, and
 assert that tested object has used any returned values correctly.</p>
 
-<p>Here's an example of doing that in Ruby. I'm eschewing using any
+<p>Here&rsquo;s an example of doing that in Ruby. I&rsquo;m eschewing using any
 libraries in an attempt to make the code as obvious as possible.</p>
 
 <p>```ruby
@@ -607,7 +607,7 @@ f.calculate_foo(BarDouble.new)
 puts f.foo == 200
 ```</p>
 
-<p>Sorry, I lied to you; that last example was <em>not</em> a mock - although I
+<p>Sorry, I lied to you; that last example was <em>not</em> a mock &ndash; although I
 thought it was for the longest time. The double shown is actually a
 <em>stub</em>. The key point is that a mock <strong>asserts messages are
 sent</strong>. The example above asserts a state.</p>
@@ -649,11 +649,11 @@ puts b.quux_called?
 
 <p>This last example uses a mock to assert that the right messages were
 sent. Note that we removed the <code>foo</code> accessor from the first class; we
-don't need it anymore! The state of the object is now kept where it
-should be - inside the object.</p>
+don&rsquo;t need it anymore! The state of the object is now kept where it
+should be &ndash; inside the object.</p>
 
 <p>The difference between stubs and mocks can seem subtle, but it is
-important. For a much richer discussion, read <a href="http://martinfowler.com/articles/mocksArentStubs.html">Mocks Aren't Stubs</a> by Martin Fowler.</p>
+important. For a much richer discussion, read <a href="http://martinfowler.com/articles/mocksArentStubs.html">Mocks Aren&rsquo;t Stubs</a> by Martin Fowler.</p>
 
 <p>I make no claim that this example is a <em>good</em> use of mocks, just that
 it is how mocks are to be used.</p>
@@ -661,12 +661,12 @@ it is how mocks are to be used.</p>
 <h3>Object-oriented programming and mocks</h3>
 
 <p>This is all recent information that started to worm its way into my
-brain after watching <a href="http://confreaks.net/videos/659-rubyconf2011-why-you-don-t-get-mock-objects">Why You Don't Get Mock Objects</a>
-- you should watch it too.</p>
+brain after watching <a href="http://confreaks.net/videos/659-rubyconf2011-why-you-don-t-get-mock-objects">Why You Don&rsquo;t Get Mock Objects</a>
+&ndash; you should watch it too.</p>
 
 <p>The code example above may still have a problem. The <code>Foo</code> object asks
 the <code>Bar</code> object for the value of <code>quux</code> and then manipulates the
-result. This goes against the <a href="http://pragprog.com/articles/tell-dont-ask">Tell, Don't Ask</a> principle, and
+result. This goes against the <a href="http://pragprog.com/articles/tell-dont-ask">Tell, Don&rsquo;t Ask</a> principle, and
 could be a warning sign of <a href="http://c2.com/cgi/wiki?FeatureEnvySmell">Feature Envy</a>.</p>
 
 <p>You should only mock collaborators. Collaborators are objects that are
@@ -694,14 +694,14 @@ call is made more than once.</p>
 
 <p>One obvious downside is that if <em>any</em> of the intermediate objects
 decide they need to make an HTTP call themselves, our test will
-fail. What's worse is that the failure will seem to indicate that the
+fail. What&rsquo;s worse is that the failure will seem to indicate that the
 caching is not working, so we will start debugging there. When we
-finally figure out that the test is "lying" to us, we will have wasted
+finally figure out that the test is &ldquo;lying&rdquo; to us, we will have wasted
 time and started to distrust our tests.</p>
 
 <p>We can make the test better if we move the test double closer to the
 code under test. This lets us ignore all the other objects in the call
-chain - if one of these other objects does not behave properly, this
+chain &ndash; if one of these other objects does not behave properly, this
 test will not fail. This is no free lunch; there <strong>must</strong> be unit
 tests that focus on the other objects so you can tell when they break!</p>
 
@@ -722,7 +722,7 @@ caching behavior in isolation.</p>
 
 <h2>A handful of things to learn next</h2>
 
-<p>My learning isn't over, and hopefully never will be. Here is a sample
+<p>My learning isn&rsquo;t over, and hopefully never will be. Here is a sample
 of some questions currently percolating in my brain.</p>
 
 <p>Acceptance tests are often slow because they hit an external
@@ -762,18 +762,18 @@ covers the concepts of testing thoroughly. Introduced me to the
 {acceptance,unit}-test cycle. Also contains practical information if
 you will be testing in Ruby.</p>
 
-<h5><a href="http://martinfowler.com/articles/mocksArentStubs.html">Mocks Aren't Stubs</a> (article)</h5>
+<h5><a href="http://martinfowler.com/articles/mocksArentStubs.html">Mocks Aren&rsquo;t Stubs</a> (article)</h5>
 
 <p>Provides an overview of terms used as well as examples to help
-separate the different concepts (in Java, but don't be
-scared). Defines "classicist" and "mockist"; you don't need to pick
+separate the different concepts (in Java, but don&rsquo;t be
+scared). Defines &ldquo;classicist&rdquo; and &ldquo;mockist&rdquo;; you don&rsquo;t need to pick
 one or the other, but understanding them is vital.</p>
 
-<h5><a href="http://confreaks.net/videos/659-rubyconf2011-why-you-don-t-get-mock-objects">Why You Don't Get Mock Objects</a> (video)</h5>
+<h5><a href="http://confreaks.net/videos/659-rubyconf2011-why-you-don-t-get-mock-objects">Why You Don&rsquo;t Get Mock Objects</a> (video)</h5>
 
 <p>Session from RubyConf 2011 that started to clarify certain aspects of
 mocking and testing. Gregory Moeck also introduced me to the term
-"secondary teacher".</p>
+&ldquo;secondary teacher&rdquo;.</p>
 
 <h5><a href="http://www.amazon.com/gp/product/0321503627/ref=as_li_ss_tl?ie=UTF8&amp;tag=jakgousblo-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399369&amp;creativeASIN=0321503627">Growing Object-Oriented Software</a> (book)</h5>
 
@@ -788,10 +788,10 @@ better understanding.</p>
 without tests) and make it non-legacy. Clarified how tests let you be
 confident about changes. Provides heaps of practical advice.</p>
 
-<h2>Tell me what I've said wrong</h2>
+<h2>Tell me what I&rsquo;ve said wrong</h2>
 
-<p>I'm certain that I've said something that someone will disagree
-with. If you'd care to correct my false ideas, feel free to contact me
+<p>I&rsquo;m certain that I&rsquo;ve said something that someone will disagree
+with. If you&rsquo;d care to correct my false ideas, feel free to contact me
 via Twitter. If you think it will take longer than a tweet, create a
 blog post and let me know about it!</p>
 

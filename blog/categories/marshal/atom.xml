@@ -4,7 +4,7 @@
   <title><![CDATA[Category: marshal | Jake Goulding]]></title>
   <link href="http://jakegoulding.com/blog/categories/marshal/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2013-03-11T21:03:45-04:00</updated>
+  <updated>2014-04-26T17:22:41-04:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -68,7 +68,7 @@ next.</p>
 
 <h2>Instances of user objects</h2>
 
-<p>Let's define a small class to test with.</p>
+<p>Let&rsquo;s define a small class to test with.</p>
 
 <p>```ruby
 class DumpTest
@@ -85,7 +85,7 @@ end
 <div class='bogus-wrapper'><notextile><pre>0408 <span style='color: red'>6</span><span style='color: red'>f</span><span style='color: #8FF'>3</span><span style='color: #8FF'>a</span> <span style='color: #8FF'>0</span><span style='color: #8FF'>d</span><span style='color: #8FF'>4</span><span style='color: #8FF'>4</span> <span style='color: #8FF'>7</span><span style='color: #8FF'>5</span><span style='color: #8FF'>6</span><span style='color: #8FF'>d</span> <span style='color: #8FF'>7</span><span style='color: #8FF'>0</span><span style='color: #8FF'>5</span><span style='color: #8FF'>4</span> <span style='color: #8FF'>6</span><span style='color: #8FF'>5</span><span style='color: #8FF'>7</span><span style='color: #8FF'>3</span> <span style='color: #8FF'>7</span><span style='color: #8FF'>4</span><span style='color: #CC0'>0</span><span style='color: #CC0'>6</span> <span style='color: #0C0'>3</span><span style='color: #0C0'>a</span><span style='color: #0C0'>0</span><span style='color: #0C0'>7</span> <span style='color: #0C0'>4</span><span style='color: #0C0'>0</span><span style='color: #0C0'>6</span><span style='color: #0C0'>1</span> <span style='color: #F80'>3</span><span style='color: #F80'>0</span></pre></notextile></div></p>
 
 <p>The typecode <code>6f</code> is ASCII <code>o</code>, and denotes that this is an
-object. The class name is next, written as a symbol - <code>:DumpTest</code>. The
+object. The class name is next, written as a symbol &ndash; <code>:DumpTest</code>. The
 number of instance variables is encoded as an integer, followed by
 pairs of name, value. This example has 1 pair of instance variables,
 [<code>:@a</code>, <code>nil</code>].</p>
@@ -98,7 +98,7 @@ pairs of name, value. This example has 1 pair of instance variables,
     <updated>2013-01-16T20:00:00-05:00</updated>
     <id>http://jakegoulding.com/blog/2013/01/16/another-dip-into-rubys-marshal-format</id>
     <content type="html"><![CDATA[<p>In a <a href="http://jakegoulding.com/blog/2013/01/15/a-little-dip-into-rubys-marshal-format/">previous post</a> I started to describe some details of
-Ruby's Marshal format. This post goes further: a larger set of
+Ruby&rsquo;s Marshal format. This post goes further: a larger set of
 integers, IVARs, strings, and object links.</p>
 
 <!-- more -->
@@ -126,19 +126,19 @@ itself.</p>
 <div class='bogus-wrapper'><notextile><pre>0408 69<span style='color: #8FF'>0</span><span style='color: #8FF'>4</span> <span style='color: #CC0'>f</span><span style='color: #CC0'>f</span><span style='color: #CC0'>f</span><span style='color: #CC0'>f</span> <span style='color: #CC0'>f</span><span style='color: #CC0'>f</span><span style='color: #CC0'>3</span><span style='color: #CC0'>f</span></pre></notextile></div></p>
 
 <p>This is the largest value you can serialize as an integer. Above this,
-Marshal starts serializing integers as a "bignum".</p>
+Marshal starts serializing integers as a &ldquo;bignum&rdquo;.</p>
 
 <h2>Negative integers</h2>
 
 <p><code>-1</code>
 <div class='bogus-wrapper'><notextile><pre>0408 69<span style='color: #8FF'>f</span><span style='color: #8FF'>a</span></pre></notextile></div></p>
 
-<p><code>fa</code> is -6 in two's complement, which mirrors how <code>1</code> is encoded as 6.</p>
+<p><code>fa</code> is -6 in two&rsquo;s complement, which mirrors how <code>1</code> is encoded as 6.</p>
 
 <p><code>-124</code>
 <div class='bogus-wrapper'><notextile><pre>0408 69<span style='color: #8FF'>f</span><span style='color: #8FF'>f</span> <span style='color: #CC0'>8</span><span style='color: #CC0'>4</span></pre></notextile></div></p>
 
-<p>Here the first byte is -1 in two's complement. This indicates that one
+<p>Here the first byte is -1 in two&rsquo;s complement. This indicates that one
 byte of value follows. The value has had leading <code>FF</code> bytes removed,
 similar to large positive integers.</p>
 
@@ -155,7 +155,7 @@ before becoming a bignum.</p>
 
 <h2>IVARs</h2>
 
-<p>Hang on to your seats, we're going to jump into strings. First,
+<p>Hang on to your seats, we&rsquo;re going to jump into strings. First,
 however, we need to talk about IVARs. The crucial thing that IVARs
 bring to the table is the handling of string encodings.</p>
 
@@ -164,8 +164,8 @@ bring to the table is the handling of string encodings.</p>
 
 <p>The typecode <code>49</code> is ASCII <code>I</code> and denotes that this object contains
 instance variables. After all the object data, the number of instance
-variables is provided. The first instance variable is a special one -
-it's the string encoding of the object. In this example the string
+variables is provided. The first instance variable is a special one &ndash;
+it&rsquo;s the string encoding of the object. In this example the string
 encoding is UTF-8, denoted by the symbol <code>:E</code> followed by a <code>true</code>.</p>
 
 <p><code>'hello'.force_encoding('US-ASCII')</code>
@@ -179,7 +179,7 @@ created for them.</p>
 <div class='bogus-wrapper'><notextile><pre>0408 4922 0a68 656c 6c6f 06<span style='color: #CC0'>3</span><span style='color: #CC0'>a</span> <span style='color: #CC0'>0</span><span style='color: #CC0'>d</span><span style='color: #CC0'>6</span><span style='color: #CC0'>5</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>e</span><span style='color: #CC0'>6</span><span style='color: #CC0'>3</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>f</span><span style='color: #CC0'>6</span><span style='color: #CC0'>4</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>9</span><span style='color: #CC0'>6</span><span style='color: #CC0'>e</span> <span style='color: #CC0'>6</span><span style='color: #CC0'>7</span><span style='color: #0C0'>2</span><span style='color: #0C0'>2</span> <span style='color: #0C0'>0</span><span style='color: #0C0'>e</span><span style='color: #0C0'>5</span><span style='color: #0C0'>3</span> <span style='color: #0C0'>6</span><span style='color: #0C0'>8</span><span style='color: #0C0'>6</span><span style='color: #0C0'>9</span> <span style='color: #0C0'>6</span><span style='color: #0C0'>6</span><span style='color: #0C0'>7</span><span style='color: #0C0'>4</span> <span style='color: #0C0'>5</span><span style='color: #0C0'>f</span><span style='color: #0C0'>4</span><span style='color: #0C0'>a</span> <span style='color: #0C0'>4</span><span style='color: #0C0'>9</span><span style='color: #0C0'>5</span><span style='color: #0C0'>3</span></pre></notextile></div></p>
 
 <p>For any other string encoding, the symbol <code>:encoding</code> is used and the
-full string encoding is written out as a raw string - <code>"SHIFT_JIS"</code>.</p>
+full string encoding is written out as a raw string &ndash; <code>"SHIFT_JIS"</code>.</p>
 
 <p><code>'hello'.tap {|s| s.instance_variable_set(:@test, nil)}</code>
 <div class='bogus-wrapper'><notextile><pre>0408 4922 0a68 656c 6c6f <span style='color: #8FF'>0</span><span style='color: #8FF'>7</span>3a 0645 54<span style='color: #CC0'>3</span><span style='color: #CC0'>a</span> <span style='color: #CC0'>0</span><span style='color: #CC0'>a</span><span style='color: #CC0'>4</span><span style='color: #CC0'>0</span> <span style='color: #CC0'>7</span><span style='color: #CC0'>4</span><span style='color: #CC0'>6</span><span style='color: #CC0'>5</span> <span style='color: #CC0'>7</span><span style='color: #CC0'>3</span><span style='color: #CC0'>7</span><span style='color: #CC0'>4</span> <span style='color: #0C0'>3</span><span style='color: #0C0'>0</span></pre></notextile></div></p>
@@ -215,7 +215,7 @@ distinct from the symbol cache.</p>
 
 <h2>The rest</h2>
 
-<p>There's a more types that Marshal can handle, but not all of them are
+<p>There&rsquo;s a more types that Marshal can handle, but not all of them are
 interesting. The <a href="http://jakegoulding.com/blog/2013/01/20/a-final-dip-into-rubys-marshal-format/">next post</a> covers regexes, classes, modules,
 and instances of objects.</p>
 ]]></content>
@@ -227,7 +227,7 @@ and instances of objects.</p>
     <updated>2013-01-15T20:00:00-05:00</updated>
     <id>http://jakegoulding.com/blog/2013/01/15/a-little-dip-into-rubys-marshal-format</id>
     <content type="html"><![CDATA[<p>I recently tried to resolve a JRuby <a href="https://github.com/jruby/jruby/issues/456">issue involving Marshal</a>.
-I've used <a href="http://www.ruby-doc.org/core-1.9.3/Marshal.html">Marshal</a> before, but never needed to pay attention
+I&rsquo;ve used <a href="http://www.ruby-doc.org/core-1.9.3/Marshal.html">Marshal</a> before, but never needed to pay attention
 to the actual bytes written to disk. I decided to write up what I
 learned in the process.</p>
 
@@ -241,7 +241,7 @@ learned in the process.</p>
 <p>I collected this data using Ruby 1.9.3p327, which has Marshal version
 4.8. The version number is encoded with two bytes, one each for the
 major and minor version. This version number precedes all dumps and
-I'll ignore it for the rest of this post.</p>
+I&rsquo;ll ignore it for the rest of this post.</p>
 
 <h2>Nil, true, false</h2>
 
@@ -324,7 +324,7 @@ the order in which the symbol first appeared.</p>
 
 <h2>The rest</h2>
 
-<p>There's a lot more to the Marshal format; I haven't even covered
+<p>There&rsquo;s a lot more to the Marshal format; I haven&rsquo;t even covered
 strings yet! You can find more at the <a href="http://jakegoulding.com/blog/2013/01/16/another-dip-into-rubys-marshal-format/">next post</a> in this
 series, or jump right to the <a href="http://jakegoulding.com/blog/2013/01/20/a-final-dip-into-rubys-marshal-format/">last post</a>.</p>
 

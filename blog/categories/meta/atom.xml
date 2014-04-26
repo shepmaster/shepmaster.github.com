@@ -4,7 +4,7 @@
   <title><![CDATA[Category: meta | Jake Goulding]]></title>
   <link href="http://jakegoulding.com/blog/categories/meta/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2013-03-11T21:03:45-04:00</updated>
+  <updated>2014-04-26T17:22:41-04:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -21,8 +21,8 @@
     <content type="html"><![CDATA[<p>Since I need something to start a blog with, why not start with why I
 chose Posterous?</p>
 
-<p>Over the Christmas holidays, I've been reading through back entries in
-<a href="http://michaelfeathers.typepad.com/">Michael Feather's blog</a>. Reading through his posts (among many
+<p>Over the Christmas holidays, I&rsquo;ve been reading through back entries in
+<a href="http://michaelfeathers.typepad.com/">Michael Feather&rsquo;s blog</a>. Reading through his posts (among many
 other blogs) was one of the reasons I thought to start a blog, so I
 figured I could start there.</p>
 
@@ -30,16 +30,16 @@ figured I could start there.</p>
 
 
 <p>Michael uses <a href="http://www.typepad.com/">Typepad</a>, but the basic blog there costs money (there
-is a <a href="http://www.typepad.com/micro/">Micro service</a>, but why restrict myself?). I'm not sure that
-blogging is my thing, so I didn't want to put my money where my mouth
+is a <a href="http://www.typepad.com/micro/">Micro service</a>, but why restrict myself?). I&rsquo;m not sure that
+blogging is my thing, so I didn&rsquo;t want to put my money where my mouth
 is, so to speak.</p>
 
 <p>Next, I checked out <a href="http://www.tumblr.com/">Tumblr</a>. Tumblr is an interesting case, as I
 know the lead developer there, <a href="http://www.marco.org/">Marco Arment</a>. Not that knowing him
-would really affect the quality of my blogging experience, but it's one
+would really affect the quality of my blogging experience, but it&rsquo;s one
 of those little things one can use to namedrop. The landing page for
 Tumblr is amazingly clean and inviting, but what really threw me was the
-<strong>URL</strong> field. I wasn't sure exactly what was supposed to
+<strong>URL</strong> field. I wasn&rsquo;t sure exactly what was supposed to
 go there, so I clicked though to the <strong>Help</strong> page.</p>
 
 <div class="image_with_caption">
@@ -48,7 +48,7 @@ go there, so I clicked though to the <strong>Help</strong> page.</p>
 </div>
 
 
-<p>At least that's what I would have done, but I didn't see one. <strong>About
+<p>At least that&rsquo;s what I would have done, but I didn&rsquo;t see one. <strong>About
 Tumblr</strong> was the closest, so I tried that. While I was looking around, I
 got distracted and wanted to know how I could export my data from
 Tumblr, should the need arise. I was a little worried about the safety
@@ -59,8 +59,8 @@ today about another Tumblr outage, so that seemed like a sign.</p>
 
 <p>Conveniently, I did find a <a href="http://techcrunch.com/2010/09/18/stuff-white-person-doesnt-like/">post on TechCrunch</a> about switching to
 Tumblr. Reading that article pointed me towards towards Posterous, which
-had the ring of "all the cool kids are doing it", which is music to my
-ears. The signup was almost as clean as Tumblr's, but most importantly,
+had the ring of &ldquo;all the cool kids are doing it&rdquo;, which is music to my
+ears. The signup was almost as clean as Tumblr&rsquo;s, but most importantly,
 it had immediate feedback for each field. In the <strong>URL</strong> field, for
 example, it clearly showed that it was asking for the <em>subdomain</em> of my
 future blog. Clicking on the field even shows if that domain is
@@ -81,7 +81,7 @@ available, as you type. Good UX for the win!</p>
 
 
 <p>Reading through the help also indicated that the site operators have
-their shit together, so I went for it. I didn't even think about
+their shit together, so I went for it. I didn&rsquo;t even think about
 checking to see if I would be able to get my data back out (I did just
 now, and they say you can <a href="http://help.posterous.com/can-i-export-my-site">use the API to export your data</a>).</p>
 ]]></content>

@@ -10,7 +10,7 @@
 
   
   <meta name="description" content="Sometimes when you are doing rapid development, you need to create a
-new method right now, but you don&#8217;t put the method in the right
+new method right now, but you don&rsquo;t put the method in the right
 spot. &hellip;">
   
 
@@ -20,13 +20,14 @@ spot. &hellip;">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://jakegoulding.com/blog/2012/03/03/attaching-top-level-methods-to-an-object-in-ruby/">
+  <link rel="canonical" href="http://jakegoulding.com/blog/2012/03/03/attaching-top-level-methods-to-an-object-in-ruby">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="/javascripts/ender.js"></script>
-  <script src="/javascripts/octopress.js" type="text/javascript"></script>
   <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
   <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
 <link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
@@ -104,8 +105,8 @@ spot. &hellip;">
 
 
 <div class="entry-content"><p>Sometimes when you are doing rapid development, you need to create a
-new method <em>right now</em>, but you don&#8217;t put the method in the right
-spot. Maybe you aren&#8217;t sure what object should ultimately have the
+new method <em>right now</em>, but you don&rsquo;t put the method in the right
+spot. Maybe you aren&rsquo;t sure what object should ultimately have the
 functionality. Maybe you are simply too lazy to open the correct
 file. Whatever the reason, you decide to define the method right there
 at the top-level, pretending you are a procedural programmer.</p>
@@ -114,14 +115,14 @@ at the top-level, pretending you are a procedural programmer.</p>
 
 
 <p>Time passes, and you finally decide it is time to move that method to
-where it belongs. The problem is that someone (certainly not you&#8230;)
+where it belongs. The problem is that someone (certainly not you&hellip;)
 has been calling that method from <em>everywhere</em>. Fixing all the calls
 to the method at once will be a huge change; you prefer to make
-smaller, easier to review changes. Or maybe you don&#8217;t have control
-over all code that calls the method, and so you <em>can&#8217;t</em> change all the
+smaller, easier to review changes. Or maybe you don&rsquo;t have control
+over all code that calls the method, and so you <em>can&rsquo;t</em> change all the
 the calls.</p>
 
-<p>Here&#8217;s an example of the problem</p>
+<p>Here&rsquo;s an example of the problem</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -150,9 +151,9 @@ the calls.</p>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>You&#8217;d really like <code>MyObject</code> to have an <code>add_value</code> method, instead of
-it just floating around at the top-level. However, you don&#8217;t want to
-just copy code around - what if one of the implementations changes?
+<p>You&rsquo;d really like <code>MyObject</code> to have an <code>add_value</code> method, instead of
+it just floating around at the top-level. However, you don&rsquo;t want to
+just copy code around &ndash; what if one of the implementations changes?
 Your first instinct might be to do something like this:</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
@@ -215,7 +216,7 @@ method.</p>
 
 <ol>
 <li>We start by stashing a reference to the object that defines the
-top-level method. This object is named &#8220;main&#8221;.</li>
+top-level method. This object is named &ldquo;main&rdquo;.</li>
 <li>If we reopened our class the traditional way, using <code>class MyObject</code>,
 the reference to main would fall out of scope. Instead, we use
 <code>class_eval</code>.</li>
@@ -224,7 +225,7 @@ the top-level method is private.</li>
 </ol>
 
 
-<p>If you don&#8217;t want to modify the object directly, you can apply the
+<p>If you don&rsquo;t want to modify the object directly, you can apply the
 same techniques to a module:</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
@@ -299,7 +300,7 @@ use the object.</p>
 <p>The easiest and clearest solution to this problem is not to use clever
 metaprogramming, but just flip the way you think about the
 problem. Move the entire method into the object and leave a stub
-method that redirects to the object&#8217;s implementation:</p>
+method that redirects to the object&rsquo;s implementation:</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -357,7 +358,7 @@ method that redirects to the object&#8217;s implementation:</p>
     
       <div class="sharing">
   
-  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2012/03/03/attaching-top-level-methods-to-an-object-in-ruby/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2012/03/03/attaching-top-level-methods-to-an-object-in-ruby/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2012/03/03/attaching-top-level-methods-to-an-object-in-ruby/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2012/03/03/attaching-top-level-methods-to-an-object-in-ruby/" >Tweet</a>
   
   
   
@@ -407,23 +408,6 @@ method that redirects to the object&#8217;s implementation:</p>
 </section>
 
 
-<section>
-  <h1>Latest Tweets</h1>
-  <ul id="tweets">
-    <li class="loading">Status updating...</li>
-  </ul>
-  <script type="text/javascript">
-    $.domReady(function(){
-      getTwitterFeed("jakegoulding", 4, false);
-    });
-  </script>
-  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
-  
-    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-show-count="false">Follow @jakegoulding</a>
-  
-</section>
-
-
 
 
 
@@ -434,7 +418,7 @@ method that redirects to the object&#8217;s implementation:</p>
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2013 - Jake Goulding -
+  Copyright &copy; 2014 - Jake Goulding -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 
@@ -452,7 +436,7 @@ method that redirects to the object&#8217;s implementation:</p>
       var twitterWidgets = document.createElement('script');
       twitterWidgets.type = 'text/javascript';
       twitterWidgets.async = true;
-      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
       document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
     })();
   </script>

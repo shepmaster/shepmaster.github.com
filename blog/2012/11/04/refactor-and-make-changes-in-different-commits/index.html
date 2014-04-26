@@ -10,7 +10,7 @@
 
   
   <meta name="description" content="If you combine refactoring and making a change to your code into the
-same commit, you are going to have a bad time. Just in case you&#8217;ve &hellip;">
+same commit, you are going to have a bad time. Just in case you&rsquo;ve &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -19,13 +19,14 @@ same commit, you are going to have a bad time. Just in case you&#8217;ve &hellip
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://jakegoulding.com/blog/2012/11/04/refactor-and-make-changes-in-different-commits/">
+  <link rel="canonical" href="http://jakegoulding.com/blog/2012/11/04/refactor-and-make-changes-in-different-commits">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="/javascripts/ender.js"></script>
-  <script src="/javascripts/octopress.js" type="text/javascript"></script>
   <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
   <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
 <link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
@@ -108,14 +109,14 @@ same commit, you are going to have a bad time.</p>
 <!-- more -->
 
 
-<p>Just in case you&#8217;ve forgotten, <a href="http://en.wikipedia.org/wiki/Refactoring">refactoring</a> is</p>
+<p>Just in case you&rsquo;ve forgotten, <a href="http://en.wikipedia.org/wiki/Refactoring">refactoring</a> is</p>
 
-<blockquote><p>the process of changing a computer program&#8217;s source code without
+<blockquote><p>the process of changing a computer program&rsquo;s source code without
 modifying its external functional behavior</p></blockquote>
 
 <p>When I review a commit that claims to be refactoring, I shift into to
 a very specific mindset. I visualize myself as a world-class goalie,
-ready to stop any rogue features that come my way; I&#8217;m going to stand
+ready to stop any rogue features that come my way; I&rsquo;m going to stand
 my ground, no matter what.</p>
 
 <p>Contrast refactoring to adding new functionality. In that case, the
@@ -127,34 +128,34 @@ new code is sufficient.</p>
 
 <p>These are very different things to review for.</p>
 
-<h3>Why&#8217;s it bad?</h3>
+<h3>Why&rsquo;s it bad?</h3>
 
 <p>When you combine refactoring and feature addition into the same
 commit, you double the work required to review it. In addition to
 figuring out if each changed line is correct, you also have to figure
-out what &#8220;correct&#8221; even means!</p>
+out what &ldquo;correct&rdquo; even means!</p>
 
 <p>Beyond the doubled work, you have to change your mindset for <strong>every
-line of code</strong>. That&#8217;s an amazing amount of context switching. It&#8217;s
-very hard to thoroughly review each line when it&#8217;s hard to even
+line of code</strong>. That&rsquo;s an amazing amount of context switching. It&rsquo;s
+very hard to thoroughly review each line when it&rsquo;s hard to even
 remember what you are reviewing for.</p>
 
-<p>Combining these disparate actions into one commit isn&#8217;t something that
-we do maliciously. In fact, it&#8217;s likely the opposite: good programmers
+<p>Combining these disparate actions into one commit isn&rsquo;t something that
+we do maliciously. In fact, it&rsquo;s likely the opposite: good programmers
 have an innate drive to make the code better all the time. Sometimes
 we see a little problem that we just <em>have</em> to fix up.</p>
 
-<p>The problem is that when we have our programmer hats on, we don&#8217;t
+<p>The problem is that when we have our programmer hats on, we don&rsquo;t
 always think about what this commit will mean to others
 downstream. This could mean reviewers, approvers, testers,
 documenters, whatever needs to happen after the commit.</p>
 
 <h3>What do I do when my commit is too big?</h3>
 
-<p>There are a few main techniques I use when I discover I&#8217;ve done work
+<p>There are a few main techniques I use when I discover I&rsquo;ve done work
 that should be in different commits.</p>
 
-<p>If I haven&#8217;t committed yet, and the changes are separate enough, I use
+<p>If I haven&rsquo;t committed yet, and the changes are separate enough, I use
 <code>git add -pu</code> to add certain lines of code and not others.</p>
 
 <p>If the changes overlap with each other, I will edit a specific section
@@ -167,11 +168,11 @@ changes. I then repeat with the next section.</p>
 throw-away branch so I can easily compare the original and modified
 branches to make sure they end up the same.</p>
 
-<p>All of these techniques create &#8220;false history&#8221; - I didn&#8217;t <em>really</em>
-make that small step. After I&#8217;m finished, I run a little script that
+<p>All of these techniques create &ldquo;false history&rdquo; &ndash; I didn&rsquo;t <em>really</em>
+make that small step. After I&rsquo;m finished, I run a little script that
 checks out each commit and runs my tests.</p>
 
-<p>Sometimes, trying to preserve my changes isn&#8217;t worth the time, or I
+<p>Sometimes, trying to preserve my changes isn&rsquo;t worth the time, or I
 can see into the future a bit and know ahead of time that I am about
 to make a big set of changes. In these cases, I try a spike: I make
 the changes willy-nilly, writing down each step as I do it. Then I
@@ -179,14 +180,14 @@ throw it away and <em>invert the order of steps</em>. This allows each step
 to happen in the order I would prefer, and I often improve on each
 step.</p>
 
-<h3>Isn&#8217;t too many small commits just as bad?</h3>
+<h3>Isn&rsquo;t too many small commits just as bad?</h3>
 
-<p>I&#8217;ve heard something like this before:</p>
+<p>I&rsquo;ve heard something like this before:</p>
 
-<blockquote><p>It&#8217;s so small, it doesn&#8217;t deserve it&#8217;s own commit</p></blockquote>
+<blockquote><p>It&rsquo;s so small, it doesn&rsquo;t deserve it&rsquo;s own commit</p></blockquote>
 
-<p>I&#8217;ve <strong>never</strong> had to review a commit that was too small. I have had
-to review a commit that was too large. I&#8217;m willing to take the risk of
+<p>I&rsquo;ve <strong>never</strong> had to review a commit that was too small. I have had
+to review a commit that was too large. I&rsquo;m willing to take the risk of
 creating many small commits, especially if all the changes are going
 to be made one way or another.</p>
 
@@ -208,13 +209,13 @@ or <strong>but</strong>s. If it does, I kick it back to the author and request t
 the commit be split up into those pieces. Otherwise, I sear the commit
 message into my brain.</li>
 <li>Read the diff of the commit and evaluate each change against the
-commit message. If a line doesn&#8217;t fit with the message, mark the
+commit message. If a line doesn&rsquo;t fit with the message, mark the
 change as unrelated. If it does, review the line as usual.</li>
 <li>Sometimes I keep reading the diff once you I find an unrelated
 line, other times I stop at the first one; the original author may be
 faster at separating the concerns.</li>
 <li>Make sure to thank the author when they provide a commit with a
-single focus - positive reinforcement lets us know that we are on the
+single focus &ndash; positive reinforcement lets us know that we are on the
 right track!</li>
 </ol>
 
@@ -254,7 +255,7 @@ right track!</li>
     
       <div class="sharing">
   
-  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2012/11/04/refactor-and-make-changes-in-different-commits/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2012/11/04/refactor-and-make-changes-in-different-commits/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2012/11/04/refactor-and-make-changes-in-different-commits/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2012/11/04/refactor-and-make-changes-in-different-commits/" >Tweet</a>
   
   
   
@@ -304,23 +305,6 @@ right track!</li>
 </section>
 
 
-<section>
-  <h1>Latest Tweets</h1>
-  <ul id="tweets">
-    <li class="loading">Status updating...</li>
-  </ul>
-  <script type="text/javascript">
-    $.domReady(function(){
-      getTwitterFeed("jakegoulding", 4, false);
-    });
-  </script>
-  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
-  
-    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-show-count="false">Follow @jakegoulding</a>
-  
-</section>
-
-
 
 
 
@@ -331,7 +315,7 @@ right track!</li>
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2013 - Jake Goulding -
+  Copyright &copy; 2014 - Jake Goulding -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 
@@ -349,7 +333,7 @@ right track!</li>
       var twitterWidgets = document.createElement('script');
       twitterWidgets.type = 'text/javascript';
       twitterWidgets.async = true;
-      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
       document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
     })();
   </script>

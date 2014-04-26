@@ -4,7 +4,7 @@
   <title><![CDATA[Jake Goulding]]></title>
   <link href="http://jakegoulding.com/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2013-03-11T21:03:45-04:00</updated>
+  <updated>2014-04-26T17:22:41-04:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -78,7 +78,7 @@ next.</p>
 
 <h2>Instances of user objects</h2>
 
-<p>Let&#8217;s define a small class to test with.</p>
+<p>Let&rsquo;s define a small class to test with.</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -99,7 +99,7 @@ next.</p>
 
 
 <p>The typecode <code>6f</code> is ASCII <code>o</code>, and denotes that this is an
-object. The class name is next, written as a symbol - <code>:DumpTest</code>. The
+object. The class name is next, written as a symbol &ndash; <code>:DumpTest</code>. The
 number of instance variables is encoded as an integer, followed by
 pairs of name, value. This example has 1 pair of instance variables,
 [<code>:@a</code>, <code>nil</code>].</p>
@@ -112,7 +112,7 @@ pairs of name, value. This example has 1 pair of instance variables,
     <updated>2013-01-16T20:00:00-05:00</updated>
     <id>http://jakegoulding.com/blog/2013/01/16/another-dip-into-rubys-marshal-format</id>
     <content type="html"><![CDATA[<p>In a <a href="http://jakegoulding.com/blog/2013/01/15/a-little-dip-into-rubys-marshal-format/">previous post</a> I started to describe some details of
-Ruby&#8217;s Marshal format. This post goes further: a larger set of
+Ruby&rsquo;s Marshal format. This post goes further: a larger set of
 integers, IVARs, strings, and object links.</p>
 
 <!-- more -->
@@ -146,7 +146,7 @@ itself.</p>
 
 
 <p>This is the largest value you can serialize as an integer. Above this,
-Marshal starts serializing integers as a &#8220;bignum&#8221;.</p>
+Marshal starts serializing integers as a &ldquo;bignum&rdquo;.</p>
 
 <h2>Negative integers</h2>
 
@@ -155,14 +155,14 @@ Marshal starts serializing integers as a &#8220;bignum&#8221;.</p>
 <pre>0408 69<span style='color: #8FF'>f</span><span style='color: #8FF'>a</span></pre>
 
 
-<p><code>fa</code> is -6 in two&#8217;s complement, which mirrors how <code>1</code> is encoded as 6.</p>
+<p><code>fa</code> is -6 in two&rsquo;s complement, which mirrors how <code>1</code> is encoded as 6.</p>
 
 <p><code>-124</code></p>
 
 <pre>0408 69<span style='color: #8FF'>f</span><span style='color: #8FF'>f</span> <span style='color: #CC0'>8</span><span style='color: #CC0'>4</span></pre>
 
 
-<p>Here the first byte is -1 in two&#8217;s complement. This indicates that one
+<p>Here the first byte is -1 in two&rsquo;s complement. This indicates that one
 byte of value follows. The value has had leading <code>FF</code> bytes removed,
 similar to large positive integers.</p>
 
@@ -183,7 +183,7 @@ before becoming a bignum.</p>
 
 <h2>IVARs</h2>
 
-<p>Hang on to your seats, we&#8217;re going to jump into strings. First,
+<p>Hang on to your seats, we&rsquo;re going to jump into strings. First,
 however, we need to talk about IVARs. The crucial thing that IVARs
 bring to the table is the handling of string encodings.</p>
 
@@ -194,8 +194,8 @@ bring to the table is the handling of string encodings.</p>
 
 <p>The typecode <code>49</code> is ASCII <code>I</code> and denotes that this object contains
 instance variables. After all the object data, the number of instance
-variables is provided. The first instance variable is a special one -
-it&#8217;s the string encoding of the object. In this example the string
+variables is provided. The first instance variable is a special one &ndash;
+it&rsquo;s the string encoding of the object. In this example the string
 encoding is UTF-8, denoted by the symbol <code>:E</code> followed by a <code>true</code>.</p>
 
 <p><code>'hello'.force_encoding('US-ASCII')</code></p>
@@ -213,7 +213,7 @@ created for them.</p>
 
 
 <p>For any other string encoding, the symbol <code>:encoding</code> is used and the
-full string encoding is written out as a raw string - <code>"SHIFT_JIS"</code>.</p>
+full string encoding is written out as a raw string &ndash; <code>"SHIFT_JIS"</code>.</p>
 
 <p><code>'hello'.tap {|s| s.instance_variable_set(:@test, nil)}</code></p>
 
@@ -255,7 +255,7 @@ distinct from the symbol cache.</p>
 
 <h2>The rest</h2>
 
-<p>There&#8217;s a more types that Marshal can handle, but not all of them are
+<p>There&rsquo;s a more types that Marshal can handle, but not all of them are
 interesting. The <a href="http://jakegoulding.com/blog/2013/01/20/a-final-dip-into-rubys-marshal-format/">next post</a> covers regexes, classes, modules,
 and instances of objects.</p>
 ]]></content>
@@ -267,7 +267,7 @@ and instances of objects.</p>
     <updated>2013-01-15T20:00:00-05:00</updated>
     <id>http://jakegoulding.com/blog/2013/01/15/a-little-dip-into-rubys-marshal-format</id>
     <content type="html"><![CDATA[<p>I recently tried to resolve a JRuby <a href="https://github.com/jruby/jruby/issues/456">issue involving Marshal</a>.
-I&#8217;ve used <a href="http://www.ruby-doc.org/core-1.9.3/Marshal.html">Marshal</a> before, but never needed to pay attention
+I&rsquo;ve used <a href="http://www.ruby-doc.org/core-1.9.3/Marshal.html">Marshal</a> before, but never needed to pay attention
 to the actual bytes written to disk. I decided to write up what I
 learned in the process.</p>
 
@@ -282,7 +282,7 @@ learned in the process.</p>
 <p>I collected this data using Ruby 1.9.3p327, which has Marshal version
 4.8. The version number is encoded with two bytes, one each for the
 major and minor version. This version number precedes all dumps and
-I&#8217;ll ignore it for the rest of this post.</p>
+I&rsquo;ll ignore it for the rest of this post.</p>
 
 <h2>Nil, true, false</h2>
 
@@ -391,7 +391,7 @@ the order in which the symbol first appeared.</p>
 
 <h2>The rest</h2>
 
-<p>There&#8217;s a lot more to the Marshal format; I haven&#8217;t even covered
+<p>There&rsquo;s a lot more to the Marshal format; I haven&rsquo;t even covered
 strings yet! You can find more at the <a href="http://jakegoulding.com/blog/2013/01/16/another-dip-into-rubys-marshal-format/">next post</a> in this
 series, or jump right to the <a href="http://jakegoulding.com/blog/2013/01/20/a-final-dip-into-rubys-marshal-format/">last post</a>.</p>
 
@@ -423,12 +423,12 @@ irb:</p>
     <content type="html"><![CDATA[<p>On 2012-12-08, I attended the Pittsburgh
 <a href="http://globalday.coderetreat.org/">Global Day of Code Retreat</a> facilitated by <a href="https://twitter.com/josephrkramer">Joe Kramer</a>
 and <a href="https://twitter.com/jthurne">Jim Hurne</a>. As usual, I had a great time, and got to meet
-new people from the Pittsburgh tech scene. It&#8217;s always good for me to
+new people from the Pittsburgh tech scene. It&rsquo;s always good for me to
 remember that there are non-Ruby developers out there! I even started
 the day off by doing the Game of Life in C#.</p>
 
-<p>One of the more contentious constraints of the day was &#8220;no return
-values&#8221;. I feel like I was the only one in the room that liked this
+<p>One of the more contentious constraints of the day was &ldquo;no return
+values&rdquo;. I feel like I was the only one in the room that liked this
 constraint at all!  As such, I wanted to finish it up to see what my
 <a href="https://github.com/shepmaster/gdcr-no-return-values">final code</a> and observations would look like.</p>
 
@@ -438,7 +438,7 @@ constraint at all!  As such, I wanted to finish it up to see what my
 <h3>Goal</h3>
 
 <p>As I understand it, the point of this constraint is to explore
-&#8221;<a href="http://pragprog.com/articles/tell-dont-ask">tell don&#8217;t ask</a>&#8221;, with a secondary exploration of
+&ldquo;<a href="http://pragprog.com/articles/tell-dont-ask">tell don&rsquo;t ask</a>&rdquo;, with a secondary exploration of
 <a href="http://martinfowler.com/articles/mocksArentStubs.html">mocks vs. stubs</a>.</p>
 
 <h3>Constraint modifications</h3>
@@ -455,30 +455,30 @@ works and to avoid work orthogonal to the goal.</p>
 
 <p>In Ruby, constructors are methods on a Class instance that return a
 new instance of the class. Since everything in Ruby is an object, it
-would be impossible to make progress if we didn&#8217;t allow creating new
+would be impossible to make progress if we didn&rsquo;t allow creating new
 objects.</p>
 
-<p>The goal of the constraint isn&#8217;t to rewrite all of Ruby&#8217;s standard
+<p>The goal of the constraint isn&rsquo;t to rewrite all of Ruby&rsquo;s standard
 library. If we cannot use return values from the standard library, we
-couldn&#8217;t do something as simple as <code>a = 1 + 1</code>! Our newly-created
+couldn&rsquo;t do something as simple as <code>a = 1 + 1</code>! Our newly-created
 code will not return values, so it is safe to use return values hidden
 away inside of our objects.</p>
 
-<p>Allowing private methods to return values isn&#8217;t strictly necessary,
+<p>Allowing private methods to return values isn&rsquo;t strictly necessary,
 but it allows us to reduce code duplication. Technically, we could
 inline the private methods where they are used, but that would be
-ugly. Since these methods are private, they won&#8217;t add to the surface
-area of our objects and shouldn&#8217;t conflict with the goal of the
+ugly. Since these methods are private, they won&rsquo;t add to the surface
+area of our objects and shouldn&rsquo;t conflict with the goal of the
 exercise.</p>
 
 <h3>Things I liked</h3>
 
-<p>I usually start out Conway&#8217;s with the ability to see if a cell is
+<p>I usually start out Conway&rsquo;s with the ability to see if a cell is
 alive, followed quickly by the ability to bring a cell to life. This
 means the first thing I do is rely on return values. This time, I
 began with the concept of a UI that would be told when a cell is
 alive. I found this interesting as I usually skip over the display
-completely, leaving it as a &#8220;trivial&#8221; thing to be added later.</p>
+completely, leaving it as a &ldquo;trivial&rdquo; thing to be added later.</p>
 
 <p>The <code>Board</code> class came into existence while implementing the
 <code>time_passes</code> method because I needed to have both the current and
@@ -491,22 +491,22 @@ would, such as <code>has_two_neighbors</code>, or <code>AliveCellRules</code>. I
 this is the extended version of creating a well-named temporary
 variable.</p>
 
-<h3>Things I didn&#8217;t like</h3>
+<h3>Things I didn&rsquo;t like</h3>
 
 <p>There are two rule-related classes, one for alive cells and one for
 dead cells. The alive cell rules class is almost 100%
-duplication. This could be reduced using Ruby&#8217;s <code>alias</code> at the cost of
-reduced readability, and still wouldn&#8217;t help the duplication in the
-dead cell rules. It&#8217;s hard to tell if this would be good or bad in the
-absence of future changes, but I don&#8217;t like it as it stands now.</p>
+duplication. This could be reduced using Ruby&rsquo;s <code>alias</code> at the cost of
+reduced readability, and still wouldn&rsquo;t help the duplication in the
+dead cell rules. It&rsquo;s hard to tell if this would be good or bad in the
+absence of future changes, but I don&rsquo;t like it as it stands now.</p>
 
 <p>I wanted to create a <code>Point</code> class to abstract the concept of x / y
 coordinates and also to have a place to hang the idea of
-&#8220;neighbors&#8221;. Unfortunately, it would have solely existed to return
+&ldquo;neighbors&rdquo;. Unfortunately, it would have solely existed to return
 values: a list of points, equality comparisons, etc. I think this
 would be an ideal example of a value type.</p>
 
-<p>I love Ruby&#8217;s <code>Struct</code>; I have written too many class initializers
+<p>I love Ruby&rsquo;s <code>Struct</code>; I have written too many class initializers
 longhand to ever want to go back. As far as I am concerned, <code>Struct</code>
 reduces the work to make an initializer from <em>O(n)</em> to <em>O(1)</em>.
 Unfortunately, it automatically creates a public <code>attr_accessor</code>,
@@ -519,35 +519,35 @@ uncomfortable.</p>
 
 <p>For each public method, I returned <code>self</code>. In Ruby, the last executed
 statement is implicitly returned. Returning <code>self</code> avoids accidentally
-relying on a return value. In production code I wouldn&#8217;t go this
+relying on a return value. In production code I wouldn&rsquo;t go this
 overboard, trusting the caller to not use incidental return values. In
 a language like Java, I would declare the method as void.</p>
 
-<p>I&#8217;ve never used <code>flat_map</code> before, but I&#8217;m going to keep my eyes open
-for more places to use it. I&#8217;m not at the point where it comes without
+<p>I&rsquo;ve never used <code>flat_map</code> before, but I&rsquo;m going to keep my eyes open
+for more places to use it. I&rsquo;m not at the point where it comes without
 thinking, but looking for <code>ary.map{ ... }.flatten(1)</code> should be easy
 enough. Also, I learned that <code>flatten</code> can take an argument that
 controls how deep it will go.</p>
 
 <p>I swear that there is an existing method that does the equivalent of
-<code>ary.reject { |x| x == CONSTANT }</code>, but I couldn&#8217;t find it. <code>delete</code>
-will mutate the array in place, which isn&#8217;t quite the same.</p>
+<code>ary.reject { |x| x == CONSTANT }</code>, but I couldn&rsquo;t find it. <code>delete</code>
+will mutate the array in place, which isn&rsquo;t quite the same.</p>
 
 <h3>Tests</h3>
 
-<p>As the code progressed, I had to start using RSpec&#8217;s <code>as_null_object</code>
+<p>As the code progressed, I had to start using RSpec&rsquo;s <code>as_null_object</code>
 more frequently. This is because closely situated cells began
-interacting and would be output to the user interface. I wasn&#8217;t
-interested in these outputs, but they weren&#8217;t incorrect. After enough
+interacting and would be output to the user interface. I wasn&rsquo;t
+interested in these outputs, but they weren&rsquo;t incorrect. After enough
 tests needed a null object, I changed the test-wide mock, which may
 have been too broad a change.</p>
 
 <p>All of the tests that involve time passing have two duplicated
 lines. These lines could have been pulled into the rarely-used <code>after</code>
-block. I&#8217;ve never seen code that does this, and I&#8217;m not sure how I
+block. I&rsquo;ve never seen code that does this, and I&rsquo;m not sure how I
 feel about it.</p>
 
-<p>I don&#8217;t know what order I prefer for the <code>should_receive</code> calls
+<p>I don&rsquo;t know what order I prefer for the <code>should_receive</code> calls
 relative to the rest of the setup. In this case, I chose to put the
 message expectations at the top of the test block.</p>
 
@@ -561,8 +561,8 @@ wanted a <code>Point</code>.</p>
 
 <p>Will I change how I code because of this? Maybe a little bit. It
 probably would be good practice to avoid return values at first blush,
-but I certainly won&#8217;t stop using them completely. One thing I might
-look further into is Ruby 1.9&#8217;s <a href="http://www.ruby-doc.org/core-1.9.3/Enumerator.html"><code>Enumerator</code></a>. This would
+but I certainly won&rsquo;t stop using them completely. One thing I might
+look further into is Ruby 1.9&rsquo;s <a href="http://www.ruby-doc.org/core-1.9.3/Enumerator.html"><code>Enumerator</code></a>. This would
 allow me to provide a nice function that takes a block or returns an
 enumerable for further chaining.</p>
 
@@ -582,14 +582,14 @@ same commit, you are going to have a bad time.</p>
 <!-- more -->
 
 
-<p>Just in case you&#8217;ve forgotten, <a href="http://en.wikipedia.org/wiki/Refactoring">refactoring</a> is</p>
+<p>Just in case you&rsquo;ve forgotten, <a href="http://en.wikipedia.org/wiki/Refactoring">refactoring</a> is</p>
 
-<blockquote><p>the process of changing a computer program&#8217;s source code without
+<blockquote><p>the process of changing a computer program&rsquo;s source code without
 modifying its external functional behavior</p></blockquote>
 
 <p>When I review a commit that claims to be refactoring, I shift into to
 a very specific mindset. I visualize myself as a world-class goalie,
-ready to stop any rogue features that come my way; I&#8217;m going to stand
+ready to stop any rogue features that come my way; I&rsquo;m going to stand
 my ground, no matter what.</p>
 
 <p>Contrast refactoring to adding new functionality. In that case, the
@@ -601,34 +601,34 @@ new code is sufficient.</p>
 
 <p>These are very different things to review for.</p>
 
-<h3>Why&#8217;s it bad?</h3>
+<h3>Why&rsquo;s it bad?</h3>
 
 <p>When you combine refactoring and feature addition into the same
 commit, you double the work required to review it. In addition to
 figuring out if each changed line is correct, you also have to figure
-out what &#8220;correct&#8221; even means!</p>
+out what &ldquo;correct&rdquo; even means!</p>
 
 <p>Beyond the doubled work, you have to change your mindset for <strong>every
-line of code</strong>. That&#8217;s an amazing amount of context switching. It&#8217;s
-very hard to thoroughly review each line when it&#8217;s hard to even
+line of code</strong>. That&rsquo;s an amazing amount of context switching. It&rsquo;s
+very hard to thoroughly review each line when it&rsquo;s hard to even
 remember what you are reviewing for.</p>
 
-<p>Combining these disparate actions into one commit isn&#8217;t something that
-we do maliciously. In fact, it&#8217;s likely the opposite: good programmers
+<p>Combining these disparate actions into one commit isn&rsquo;t something that
+we do maliciously. In fact, it&rsquo;s likely the opposite: good programmers
 have an innate drive to make the code better all the time. Sometimes
 we see a little problem that we just <em>have</em> to fix up.</p>
 
-<p>The problem is that when we have our programmer hats on, we don&#8217;t
+<p>The problem is that when we have our programmer hats on, we don&rsquo;t
 always think about what this commit will mean to others
 downstream. This could mean reviewers, approvers, testers,
 documenters, whatever needs to happen after the commit.</p>
 
 <h3>What do I do when my commit is too big?</h3>
 
-<p>There are a few main techniques I use when I discover I&#8217;ve done work
+<p>There are a few main techniques I use when I discover I&rsquo;ve done work
 that should be in different commits.</p>
 
-<p>If I haven&#8217;t committed yet, and the changes are separate enough, I use
+<p>If I haven&rsquo;t committed yet, and the changes are separate enough, I use
 <code>git add -pu</code> to add certain lines of code and not others.</p>
 
 <p>If the changes overlap with each other, I will edit a specific section
@@ -641,11 +641,11 @@ changes. I then repeat with the next section.</p>
 throw-away branch so I can easily compare the original and modified
 branches to make sure they end up the same.</p>
 
-<p>All of these techniques create &#8220;false history&#8221; - I didn&#8217;t <em>really</em>
-make that small step. After I&#8217;m finished, I run a little script that
+<p>All of these techniques create &ldquo;false history&rdquo; &ndash; I didn&rsquo;t <em>really</em>
+make that small step. After I&rsquo;m finished, I run a little script that
 checks out each commit and runs my tests.</p>
 
-<p>Sometimes, trying to preserve my changes isn&#8217;t worth the time, or I
+<p>Sometimes, trying to preserve my changes isn&rsquo;t worth the time, or I
 can see into the future a bit and know ahead of time that I am about
 to make a big set of changes. In these cases, I try a spike: I make
 the changes willy-nilly, writing down each step as I do it. Then I
@@ -653,14 +653,14 @@ throw it away and <em>invert the order of steps</em>. This allows each step
 to happen in the order I would prefer, and I often improve on each
 step.</p>
 
-<h3>Isn&#8217;t too many small commits just as bad?</h3>
+<h3>Isn&rsquo;t too many small commits just as bad?</h3>
 
-<p>I&#8217;ve heard something like this before:</p>
+<p>I&rsquo;ve heard something like this before:</p>
 
-<blockquote><p>It&#8217;s so small, it doesn&#8217;t deserve it&#8217;s own commit</p></blockquote>
+<blockquote><p>It&rsquo;s so small, it doesn&rsquo;t deserve it&rsquo;s own commit</p></blockquote>
 
-<p>I&#8217;ve <strong>never</strong> had to review a commit that was too small. I have had
-to review a commit that was too large. I&#8217;m willing to take the risk of
+<p>I&rsquo;ve <strong>never</strong> had to review a commit that was too small. I have had
+to review a commit that was too large. I&rsquo;m willing to take the risk of
 creating many small commits, especially if all the changes are going
 to be made one way or another.</p>
 
@@ -682,13 +682,13 @@ or <strong>but</strong>s. If it does, I kick it back to the author and request t
 the commit be split up into those pieces. Otherwise, I sear the commit
 message into my brain.</li>
 <li>Read the diff of the commit and evaluate each change against the
-commit message. If a line doesn&#8217;t fit with the message, mark the
+commit message. If a line doesn&rsquo;t fit with the message, mark the
 change as unrelated. If it does, review the line as usual.</li>
 <li>Sometimes I keep reading the diff once you I find an unrelated
 line, other times I stop at the first one; the original author may be
 faster at separating the concerns.</li>
 <li>Make sure to thank the author when they provide a commit with a
-single focus - positive reinforcement lets us know that we are on the
+single focus &ndash; positive reinforcement lets us know that we are on the
 right track!</li>
 </ol>
 
@@ -707,9 +707,9 @@ deterministic random order is even better.</p>
 <!-- more -->
 
 
-<h4>What&#8217;s an implicit dependency?</h4>
+<h4>What&rsquo;s an implicit dependency?</h4>
 
-<p>It&#8217;s easy to accidentally create order-dependent tests:</p>
+<p>It&rsquo;s easy to accidentally create order-dependent tests:</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -747,7 +747,7 @@ code is often an excellent indicator of complex production code.</li>
 </ol>
 
 
-<p>Running tests in a random order isn&#8217;t enough; you need to be able to
+<p>Running tests in a random order isn&rsquo;t enough; you need to be able to
 reproduce the same random order before you can fix it! <a href="https://www.relishapp.com/rspec/rspec-core/v/2-11/docs/command-line/order-new-in-rspec-core-2-8">RSpec</a>
 and <a href="http://www.bootspring.com/2010/09/22/minitest-rubys-test-framework/">MiniTest</a> both offer a way to specify the random seed
 on the command line or with environment variables. Unfortunately, the
@@ -797,7 +797,7 @@ to me with a strange problem. His commit was unable to pass the tests
 in Gerrit, but the failing test had nothing to do with his changes. We
 ran the tests locally using the seed from the Jenkins server and were
 able to reproduce the problem. Ultimately, we traced the problem to a
-request spec that modified some core configuration settings and didn&#8217;t
+request spec that modified some core configuration settings and didn&rsquo;t
 reset them successfully. Success!</p>
 ]]></content>
   </entry>
@@ -808,9 +808,9 @@ reset them successfully. Success!</p>
     <updated>2012-10-10T19:41:00-04:00</updated>
     <id>http://jakegoulding.com/blog/2012/10/10/watch-out-for-lost-updates-when-using-capybara-with-selenium</id>
     <content type="html"><![CDATA[<p>At work, I am still working on finding and squashing fun test
-failures. In this case, &#8220;fun&#8221; means tests that have an intermittent
+failures. In this case, &ldquo;fun&rdquo; means tests that have an intermittent
 failure rate of 5% (or less!). The test issue I worked on today had to
-do with the &#8220;lost update&#8221; problem.</p>
+do with the &ldquo;lost update&rdquo; problem.</p>
 
 <!-- more -->
 
@@ -822,7 +822,7 @@ description and diagram of the problem:</p>
 
 <p><img src="http://jakegoulding.com/images/blog/lost-update.png" alt="The lost update problem" /></p>
 
-<p>The short version is that when you poll a system for its state, it&#8217;s
+<p>The short version is that when you poll a system for its state, it&rsquo;s
 entirely possible to miss the state you are looking for. In the
 diagram, the color changes to red and then to blue before the test
 ever has a chance to see that it was red. Since this system will never
@@ -904,15 +904,15 @@ Capybara to find a particular number of elements. Asking Capybara to
 find things in this manner will let the test leverage the built-in
 waiting facilities of Capybara.</p>
 
-<p>In this test, the number of data items won&#8217;t change once the table is
+<p>In this test, the number of data items won&rsquo;t change once the table is
 loaded, so it is a safe state to poll. As an additional benefit, the
 test now has fewer lines of code and is clearer.</p>
 
-<p>As a downside, when the test fails, the Capybara error message doesn&#8217;t
-include how many items were found, which isn&#8217;t as informative as the
+<p>As a downside, when the test fails, the Capybara error message doesn&rsquo;t
+include how many items were found, which isn&rsquo;t as informative as the
 equivalent message from the RSpec matcher.</p>
 
-<p>Also, this test still ultimately relies on polling the DOM, so it&#8217;s
+<p>Also, this test still ultimately relies on polling the DOM, so it&rsquo;s
 possible for similar bugs to pop up in the future.</p>
 
 <h3>The GOOS solution to the lost update problem</h3>
@@ -949,15 +949,15 @@ offers a nice API suited for the tests.</p>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>Under the hood, there&#8217;s some extra JavaScript going on. The
+<p>Under the hood, there&rsquo;s some extra JavaScript going on. The
 <code>wait_for_js_event</code> method would inject some JavaScript into the
 running Selenium session that creates an event listener and binds it
 to the given event. This listener just collects all the events it
 receives. After yielding the block, the test code then polls the event
 listener, waiting for the event to be captured.</p>
 
-<p>It&#8217;s entirely possible that code that does this already exists, but I
-don&#8217;t know of it. It wouldn&#8217;t be a large amount of code to write, but
+<p>It&rsquo;s entirely possible that code that does this already exists, but I
+don&rsquo;t know of it. It wouldn&rsquo;t be a large amount of code to write, but
 it would straddle the borders of Capybara, Selenium and JavaScript.</p>
 
 <p>This might be a useful thing for <a href="http://pivotal.github.com/jasmine/">Jasmine</a> tests, so it might
@@ -970,9 +970,9 @@ already exist in that ecosystem.</p>
     <link href="http://jakegoulding.com/blog/2012/10/08/finding-a-race-condition-in-capybara-with-selenium/"/>
     <updated>2012-10-08T20:40:00-04:00</updated>
     <id>http://jakegoulding.com/blog/2012/10/08/finding-a-race-condition-in-capybara-with-selenium</id>
-    <content type="html"><![CDATA[<p>At work, we&#8217;ve been using <a href="https://github.com/jnicklas/capybara">Capybara</a> and
+    <content type="html"><![CDATA[<p>At work, we&rsquo;ve been using <a href="https://github.com/jnicklas/capybara">Capybara</a> and
 <a href="https://code.google.com/p/selenium/">Selenium</a> to test our newest web application. Many of us
-have used this combination before for our own projects, but it&#8217;s new
+have used this combination before for our own projects, but it&rsquo;s new
 territory for a work project.</p>
 
 <p>Every so often, we would get this error from a specific test:</p>
@@ -995,7 +995,7 @@ fix it once and for all.</p>
 often saw the error when running the tests on our <a href="http://jenkins-ci.org/">Jenkins</a>
 continuous integration server, so there was the possibility that the
 problem was environmental. However, we also knew that the failure was
-intermittent, so we couldn&#8217;t be sure it was environmental even if the
+intermittent, so we couldn&rsquo;t be sure it was environmental even if the
 test passed locally a few times.</p>
 
 <p>I rigged up a small shell script to simply run the test over and over
@@ -1003,7 +1003,7 @@ again while I wandered away from my computer. The script looked
 something like:</p>
 
 <figure class='code'><figcaption><span> (test-script-runner.sh)</span> <a href='http://jakegoulding.com/downloads/code/test-script-runner.sh'>download</a></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -1030,10 +1030,10 @@ something like:</p>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>I&#8217;m sure there&#8217;s a proper statistical manner to determine how many
+<p>I&rsquo;m sure there&rsquo;s a proper statistical manner to determine how many
 times the test would have to be run without failing to be reasonably
-certain that the test won&#8217;t fail, but I didn&#8217;t have to worry about
-that - the test failed somewhere within the first ten or so runs.</p>
+certain that the test won&rsquo;t fail, but I didn&rsquo;t have to worry about
+that &ndash; the test failed somewhere within the first ten or so runs.</p>
 
 <p>Now that I knew the test could fail on my local setup, it was time to
 dig into what the test was doing. The test was fairly concise and
@@ -1052,11 +1052,11 @@ readable (which I highly appreciated) and looked something like:</p>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>The exception was coming from line #4 - when the test made the first
-assertion about the elements. Unfortunately, the stacktrace isn&#8217;t very
+<p>The exception was coming from line #4 &ndash; when the test made the first
+assertion about the elements. Unfortunately, the stacktrace isn&rsquo;t very
 useful, as it mostly contains references to the JavaScript running
 inside of Firefox. The exception text indicates that the test has a
-reference to an element, but it isn&#8217;t available in the cache
+reference to an element, but it isn&rsquo;t available in the cache
 anymore. Considering that the test just deleted the element, this is
 certainly suspicious.</p>
 
@@ -1064,13 +1064,13 @@ certainly suspicious.</p>
 around. A <code>git grep</code> quickly found where <code>has_no_css?</code> was
 <a href="https://github.com/jnicklas/capybara/blob/1.1_stable/lib/capybara/node/matchers.rb#L171">defined</a>. Following the thread of code led to
 <code>has_no_selector?</code>, which calls the <code>all</code> <a href="https://github.com/jnicklas/capybara/blob/1.1_stable/lib/capybara/node/finders.rb#L109">method</a>. This method
-had a pretty clear split between the &#8220;finding&#8221; part of the code and
-the &#8220;filtering&#8221; part. There was no magic I used here to see this, just
+had a pretty clear split between the &ldquo;finding&rdquo; part of the code and
+the &ldquo;filtering&rdquo; part. There was no magic I used here to see this, just
 previous experience debugging race conditions.</p>
 
 <p>I opened up the installed gem and inserted a sleep directly into the
-code between the &#8220;finding&#8221; and &#8220;filtering&#8221; sections. It&#8217;s ugly doing
-this, but it&#8217;s good to try to not change too many things at once when
+code between the &ldquo;finding&rdquo; and &ldquo;filtering&rdquo; sections. It&rsquo;s ugly doing
+this, but it&rsquo;s good to try to not change too many things at once when
 debugging. I played with the sleep value a bit and eventually found a
 value that reliably reproduced the failure. Success!</p>
 
@@ -1088,17 +1088,17 @@ to.</p>
 <p>Since I knew that I would want to make changes to Capybara, I used the
 <code>:path</code> parameter in the Gemfile to point to my local checkout of
 Capybara. This is an awesome feature of <a href="http://gembundler.com/">Bundler</a> that you might not
-know about. It also means I&#8217;m not messing with my generally-available
+know about. It also means I&rsquo;m not messing with my generally-available
 copy of Capybara, which is good for my sanity.</p>
 
 <p>I then created a stripped-down version of the test, the same as the
 example above. After getting everything hooked up, I ran the test but
-it didn&#8217;t fail. This was bad news - I had done a few big steps between
-the production app and the smaller test case - which one of them could
+it didn&rsquo;t fail. This was bad news &ndash; I had done a few big steps between
+the production app and the smaller test case &ndash; which one of them could
 have changed the behavior?</p>
 
 <p>This is where my knowledge of our production system came in useful. In
-that application, we aren&#8217;t just removing something from the page, we
+that application, we aren&rsquo;t just removing something from the page, we
 are persisting that deletion to disk. Doing that can add some time
 before the JavaScript fires to remove the item. I changed the test
 JavaScript to have a delay less than the delay in Capybara and ran the
@@ -1123,9 +1123,9 @@ anyone stumbling on the test app would have a clue as to what it was.</p>
 the Capybara list. I still find emailing new lists scary. Who knows
 how the list will respond? This time I got a <a href="https://groups.google.com/forum/?fromgroups=#!topic/ruby-capybara/O3Ib6INOP58">nice surprise</a>:</p>
 
-<blockquote><p>That&#8217;s a very nice bug report, Jake.</p>
+<blockquote><p>That&rsquo;s a very nice bug report, Jake.</p>
 
-<p>It appears to be a bug indeed. I&#8217;ve been able to reproduce it on master as well.</p></blockquote>
+<p>It appears to be a bug indeed. I&rsquo;ve been able to reproduce it on master as well.</p></blockquote>
 
 <p>A GitHub issue <a href="https://github.com/jnicklas/capybara/issues/843">has been opened</a>, and the bug is well on the
 way to being fixed. Yay for Open Source!</p>
@@ -1138,7 +1138,7 @@ way to being fixed. Yay for Open Source!</p>
     <updated>2012-10-03T19:49:00-04:00</updated>
     <id>http://jakegoulding.com/blog/2012/10/03/name-your-variables-by-the-roles-they-play</id>
     <content type="html"><![CDATA[<p>Have you ever seen a variable with a terrible name? This is of course
-a trick question; everyone has. I&#8217;d like to look at a particular
+a trick question; everyone has. I&rsquo;d like to look at a particular
 variable-naming annoyance: naming the variable based on the class
 name.</p>
 
@@ -1162,12 +1162,12 @@ have likely seen something like this:</p>
 
 <p>This style of code may make sense to you. Maybe your class names are
 self-describing, and so duplicating the class name as the variable
-name is just &#8220;reusing a good thing&#8221;.</p>
+name is just &ldquo;reusing a good thing&rdquo;.</p>
 
 <p>The problem with naming variables in this style is that the class
 name, at <em>best</em>, describes what is special about an object or how the
 object works. When you are using the object, you want to know why you
-are using it - you want to know the <em>role</em> of the object:</p>
+are using it &ndash; you want to know the <em>role</em> of the object:</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -1181,11 +1181,11 @@ are using it - you want to know the <em>role</em> of the object:</p>
 
 
 <p>As a pragmatic argument, think how often you rename a class to better
-describe it. Now think how often you&#8217;ve changed a class name AND all
+describe it. Now think how often you&rsquo;ve changed a class name AND all
 the variables to match the new class.</p>
 
 <p>The role that an object plays changes at vastly different rate than
-the name of the class. It&#8217;s unlikely that the role will change
+the name of the class. It&rsquo;s unlikely that the role will change
 dramatically, as that new role would probably be better represented by
 a brand new object. Similarly, code that uses that object is unlikely
 to want an object that fills a different role without a rewrite of how
@@ -1207,7 +1207,7 @@ memory, but you still have to manage the other resources.</p>
 <!-- more -->
 
 
-<p>In Ruby, we can use blocks to help ensure resources are closed. You&#8217;ve
+<p>In Ruby, we can use blocks to help ensure resources are closed. You&rsquo;ve
 probably seen this idiom when dealing with files. The File class
 ensures that the file is closed after the block is finished:</p>
 
@@ -1273,7 +1273,7 @@ just like <code>File</code> does:</p>
 the constructor of <code>File</code> can throw an exception. The exception will
 occur before the variable <code>foo</code> can be set to anything, so the <code>close</code>
 message will be sent to <code>nil</code> instead, causing another exception!
-<em>This <strong>certainly</strong> didn&#8217;t happen in any code I was writing&#8230;</em></p>
+<em>This <strong>certainly</strong> didn&rsquo;t happen in any code I was writing&hellip;</em></p>
 
 <p>To handle this case, we have to give up on using the implicit `begin&#8220;
 block from the function and create our own scope:</p>
@@ -1303,7 +1303,7 @@ block from the function and create our own scope:</p>
 
 <p>Now we can safely create a <code>Foo</code> and close it all in one place, but
 what if another object wants to keep an instance of <code>Foo</code> around for
-longer? It&#8217;s nice to transparently handle both cases:</p>
+longer? It&rsquo;s nice to transparently handle both cases:</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -1348,14 +1348,14 @@ start with JUnit.</p>
 <p>People often start out testing with simple Boolean assertions, then
 move on substring matching, then maybe on to mocks and stubs. At some
 point, however, most people want to assert that their code throws a
-particular exception, and that&#8217;s where our story starts.</p>
+particular exception, and that&rsquo;s where our story starts.</p>
 
 <!-- more -->
 
 
 <p>When JUnit 3 was the latest and greatest, you were supposed to catch
 the exception yourself and assert if no such exception was
-thrown. Here&#8217;s an example I tweaked from <a href="http://radio.javaranch.com/lasse/2007/05/17/1179405760728.html">Lasse&#8217;s blog</a> and the
+thrown. Here&rsquo;s an example I tweaked from <a href="http://radio.javaranch.com/lasse/2007/05/17/1179405760728.html">Lasse&rsquo;s blog</a> and the
 JUnit documentation for <a href="http://kentbeck.github.com/junit/javadoc/latest/org/junit/Test.html"><code>@Test</code></a>.</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
@@ -1417,7 +1417,7 @@ annotation and the <a href="http://kentbeck.github.com/junit/javadoc/latest/org/
 
 <p>Both of these forms offer a lot in the way of conciseness and
 readability, and I prefer to use them when I need to test this kind of
-thing. However, both forms can cause a test to pass when it shouldn&#8217;t
+thing. However, both forms can cause a test to pass when it shouldn&rsquo;t
 when the code can throw the exception in multiple ways:</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
@@ -1489,12 +1489,12 @@ and then you have to explictly run the code!</p>
 fact that <code>ExpectedException</code> can assert on the exception message to
 restrict your test. If you know that <strong>only</strong> your error can include a
 certain string, then checking for that string could prevent tests from
-passing when they shouldn&#8217;t.</p>
+passing when they shouldn&rsquo;t.</p>
 
 <p>Another solution would be to modify your code or tests so that you
-don&#8217;t have to deal with the problem in the first place. If you can
+don&rsquo;t have to deal with the problem in the first place. If you can
 move the setup code into a <code>@Before</code> block, then the exception
-wouldn&#8217;t be caught by the test. If you can change your code so it
+wouldn&rsquo;t be caught by the test. If you can change your code so it
 cannot throw the exception multiple ways, or if it throws different
 exceptions, then that would also allow you to sidestep the problem.</p>
 
@@ -1547,7 +1547,7 @@ should be thrown, and most Java tests do not have a teardown phase.</p>
     <id>http://jakegoulding.com/blog/2012/09/24/a-refactoring-example-if-else-on-strings</id>
     <content type="html"><![CDATA[<p>I recently did a bit of work that turned out to be a great exercise
 for refactoring a huge sequence of if-else statements based on
-strings. There are a few ugly bits left, so I&#8217;m still poking at it,
+strings. There are a few ugly bits left, so I&rsquo;m still poking at it,
 but I am pleased with my progress so far.</p>
 
 <!-- more -->
@@ -1555,7 +1555,7 @@ but I am pleased with my progress so far.</p>
 
 <p>While the original code was Java, the meat of the problem can be
 easily shown in Ruby. Translating it to Ruby also makes it easier to
-make sure I don&#8217;t accidentally share any proprietary information!</p>
+make sure I don&rsquo;t accidentally share any proprietary information!</p>
 
 <p>The problem involves processing a hunk of XML to create nested
 configuration objects. The original implementation used a sequence of
@@ -1611,7 +1611,7 @@ statement.</p>
 
 <p>This function has some issues: it is pretty long, and each case has
 some similarity to the next but are different enough to be
-annoying. The code certainly doesn&#8217;t try to adhere to the Single
+annoying. The code certainly doesn&rsquo;t try to adhere to the Single
 Responsibility Principle!</p>
 
 <p>My first step was to split the blocks into classes with a common interface.</p>
@@ -1852,7 +1852,7 @@ class that is highly focused on that one responsibility.</p>
 <code>ObjectsFromXML</code> class became another <code>Handler</code> class, which made it
 the same level of abstraction as the other handlers and removed a
 redundant <code>process</code> method. The return code was removed because it
-wasn&#8217;t used except in a few tests. Iterating over children was moved
+wasn&rsquo;t used except in a few tests. Iterating over children was moved
 to each class that could contain children.</p>
 ]]></content>
   </entry>
@@ -1871,17 +1871,17 @@ reviews and testing infrastructure from day one.</p>
 
 
 <p>Starting to use gerrit on our C code has led me to think about how we
-approach code reviews, and I&#8217;ve identified some stages that we have
-gone through. It&#8217;s loosely sorted by the order in which we adopted
+approach code reviews, and I&rsquo;ve identified some stages that we have
+gone through. It&rsquo;s loosely sorted by the order in which we adopted
 each check. While not every commit needs each point, this is a general
 idea of what might be required.</p>
 
 <ol>
 <li><p>Functionality</p>
 
-<p>This was what started us on the code review path - sometimes we
-would commit something that just didn&#8217;t work right. Occasionally,
-the code wouldn&#8217;t even compile! To try and address these problems,
+<p>This was what started us on the code review path &ndash; sometimes we
+would commit something that just didn&rsquo;t work right. Occasionally,
+the code wouldn&rsquo;t even compile! To try and address these problems,
 we would have a coworker give the code a once-over before pushing
 it. We actually started doing this long before gerrit by walking
 over to another desk.</p></li>
@@ -1897,10 +1897,14 @@ started doing almost immediately.</p></li>
 
 <p>After a few annoying memory leaks got committed, we started looking
 at the code with a critical eye for all kinds of leaks. Resource
-leaks are easy enough to add and subsequently miss, especially in
-C. Leaks are really just a special type of non-functioning code,
+leaks are easy enough to add and subsequently miss, especially in</p>
+
+<ol type="a">
+<li>Leaks are really just a special type of non-functioning code,
 but one that bites you days/weeks/years later instead of
-immediately.</p>
+immediately.</li>
+</ol>
+
 
 <p>Sometimes we use a tool such as <a href="http://valgrind.org/">valgrind</a> to test for
 leaks, but in many cases we just inspect the code visually. We
@@ -1910,11 +1914,11 @@ attention to various error conditions.</p></li>
 
 <p>For better or worse, we almost always worry about how optimized our
 code is. Sometimes this is can be a valuable exercise, but in most
-situations it was probably overkill. There&#8217;s just a warm fuzzy
+situations it was probably overkill. There&rsquo;s just a warm fuzzy
 feeling when you catch an O(n<sup>2</sup>) algorithm that could be
 O(n log n), even if you spend more time coming up with the faster
 algorithm than will ever be saved in runtime. Since this focus on
-optimization is part of our culture, it has found it&#8217;s way into our
+optimization is part of our culture, it has found it&rsquo;s way into our
 reviews.</p></li>
 <li><p>Tests</p>
 
@@ -1922,12 +1926,12 @@ reviews.</p></li>
 code is, at best, hard and/or annoying. Add the fact that trying to
 test code that was never designed to be tested is painful, and you
 can easily see why we tend to turn a blind eye when a commit
-doesn&#8217;t add any new tests.</p></li>
+doesn&rsquo;t add any new tests.</p></li>
 <li><p>Documentation</p>
 
 <p>Code written in C should probably have more documentation than most
 other languages, simply due to all the ways you can shoot yourself
-in the foot. For example, you can&#8217;t tell if any given function will
+in the foot. For example, you can&rsquo;t tell if any given function will
 take ownership of the pointer you pass it, that information has to
 be documented somewhere. When we prefix our function names with the
 module name, the descriptive part of the name is often shortened to
@@ -1935,11 +1939,11 @@ prevent extremely long function names. This means the function
 documentation is vital to understand what the function does.</p>
 
 <p>Reviewing documentation often comes down to checking that it makes
-sense and is proper English. It&#8217;s impressive how mangled a sentence
+sense and is proper English. It&rsquo;s impressive how mangled a sentence
 can get when you refactor the code it is trying to describe.</p></li>
 <li><p>Coding style</p>
 
-<p>Many different aspects of code fall into &#8220;style&#8221;: the contents,
+<p>Many different aspects of code fall into &ldquo;style&rdquo;: the contents,
 formatting and spelling of comments; the names of variables, static
 functions, and structures; the size and complexity of functions;
 the contents of structures.</p>
@@ -1974,11 +1978,11 @@ being made, not just what or how.</p></li>
 
 <h4>Where we are now</h4>
 
-<p>The C project is currently somewhere around the &#8220;Tests&#8221; or
-&#8220;Documentation&#8221; stages. The Java and Ruby projects expect tests and
-documentation, so they hover around the &#8220;Code style&#8221; and &#8220;Test style&#8221;
-stages; I&#8217;ve only had one or two opportunities to correct someones
-verb tense :-).</p>
+<p>The C project is currently somewhere around the &ldquo;Tests&rdquo; or
+&ldquo;Documentation&rdquo; stages. The Java and Ruby projects expect tests and
+documentation, so they hover around the &ldquo;Code style&rdquo; and &ldquo;Test style&rdquo;
+stages; I&rsquo;ve only had one or two opportunities to correct someones
+verb tense :&ndash;).</p>
 ]]></content>
   </entry>
   
@@ -1988,8 +1992,8 @@ verb tense :-).</p>
     <updated>2012-03-03T10:48:00-05:00</updated>
     <id>http://jakegoulding.com/blog/2012/03/03/attaching-top-level-methods-to-an-object-in-ruby</id>
     <content type="html"><![CDATA[<p>Sometimes when you are doing rapid development, you need to create a
-new method <em>right now</em>, but you don&#8217;t put the method in the right
-spot. Maybe you aren&#8217;t sure what object should ultimately have the
+new method <em>right now</em>, but you don&rsquo;t put the method in the right
+spot. Maybe you aren&rsquo;t sure what object should ultimately have the
 functionality. Maybe you are simply too lazy to open the correct
 file. Whatever the reason, you decide to define the method right there
 at the top-level, pretending you are a procedural programmer.</p>
@@ -1998,14 +2002,14 @@ at the top-level, pretending you are a procedural programmer.</p>
 
 
 <p>Time passes, and you finally decide it is time to move that method to
-where it belongs. The problem is that someone (certainly not you&#8230;)
+where it belongs. The problem is that someone (certainly not you&hellip;)
 has been calling that method from <em>everywhere</em>. Fixing all the calls
 to the method at once will be a huge change; you prefer to make
-smaller, easier to review changes. Or maybe you don&#8217;t have control
-over all code that calls the method, and so you <em>can&#8217;t</em> change all the
+smaller, easier to review changes. Or maybe you don&rsquo;t have control
+over all code that calls the method, and so you <em>can&rsquo;t</em> change all the
 the calls.</p>
 
-<p>Here&#8217;s an example of the problem</p>
+<p>Here&rsquo;s an example of the problem</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -2034,9 +2038,9 @@ the calls.</p>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>You&#8217;d really like <code>MyObject</code> to have an <code>add_value</code> method, instead of
-it just floating around at the top-level. However, you don&#8217;t want to
-just copy code around - what if one of the implementations changes?
+<p>You&rsquo;d really like <code>MyObject</code> to have an <code>add_value</code> method, instead of
+it just floating around at the top-level. However, you don&rsquo;t want to
+just copy code around &ndash; what if one of the implementations changes?
 Your first instinct might be to do something like this:</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
@@ -2099,7 +2103,7 @@ method.</p>
 
 <ol>
 <li>We start by stashing a reference to the object that defines the
-top-level method. This object is named &#8220;main&#8221;.</li>
+top-level method. This object is named &ldquo;main&rdquo;.</li>
 <li>If we reopened our class the traditional way, using <code>class MyObject</code>,
 the reference to main would fall out of scope. Instead, we use
 <code>class_eval</code>.</li>
@@ -2108,7 +2112,7 @@ the top-level method is private.</li>
 </ol>
 
 
-<p>If you don&#8217;t want to modify the object directly, you can apply the
+<p>If you don&rsquo;t want to modify the object directly, you can apply the
 same techniques to a module:</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
@@ -2183,7 +2187,7 @@ use the object.</p>
 <p>The easiest and clearest solution to this problem is not to use clever
 metaprogramming, but just flip the way you think about the
 problem. Move the entire method into the object and leave a stub
-method that redirects to the object&#8217;s implementation:</p>
+method that redirects to the object&rsquo;s implementation:</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -2214,14 +2218,14 @@ method that redirects to the object&#8217;s implementation:</p>
     <updated>2012-01-12T07:37:00-05:00</updated>
     <id>http://jakegoulding.com/blog/2012/01/12/test-double-terminology</id>
     <content type="html"><![CDATA[<p>While listening to the Code Quality panel discussion at
-<a href="http://codemash.org/">CodeMash</a>, I <a href="https://twitter.com/#!/JakeGoulding/status/157261614448521216">tweeted</a> about &#8220;the state
-of mocking&#8221;:</p>
+<a href="http://codemash.org/">CodeMash</a>, I <a href="https://twitter.com/#!/JakeGoulding/status/157261614448521216">tweeted</a> about &ldquo;the state
+of mocking&rdquo;:</p>
 
-<blockquote><p>The state of &#8220;mocking&#8221; is that the term &#8220;mocking&#8221; is misused by
-everyone. You often mean &#8220;test double&#8221; or &#8220;stub&#8221;.</p></blockquote>
+<blockquote><p>The state of &ldquo;mocking&rdquo; is that the term &ldquo;mocking&rdquo; is misused by
+everyone. You often mean &ldquo;test double&rdquo; or &ldquo;stub&rdquo;.</p></blockquote>
 
 <p>This garnered some retweets and some great replies, so I wanted to
-have the opportunity to respond in a little longer form. I&#8217;ve written
+have the opportunity to respond in a little longer form. I&rsquo;ve written
 this post between sessions and in the halls, so give me a little
 leeway and feel free to send me a tweet with corrections, arguments,
 whatever.</p>
@@ -2231,7 +2235,7 @@ whatever.</p>
 
 <h2>Test frameworks encourage misuse</h2>
 
-<blockquote><p>[I]t doesn&#8217;t help that most mocking frameworks are used for stubs</p></blockquote>
+<blockquote><p>[I]t doesn&rsquo;t help that most mocking frameworks are used for stubs</p></blockquote>
 
 <p><a href="https://twitter.com/#!/F1nglas/status/157421334220120065">@F1nglas</a> mentions that <a href="http://code.google.com/p/moq/">moq</a> does this, and I
 know that <a href="http://code.google.com/p/mockito/">Mockito</a> does as well. <a href="https://www.relishapp.com/rspec">RSpec</a> does better
@@ -2245,21 +2249,21 @@ methods are there for backward compatibility only</p></blockquote>
 submit patches to improve them. In the meantime, we can add local
 alias methods that better express our intent.</p>
 
-<h2>Saying &#8220;mock&#8221; is just more fluid</h2>
+<h2>Saying &ldquo;mock&rdquo; is just more fluid</h2>
 
-<blockquote><p>[P]eople find it easier to say &#8220;I&#8217;ll mock that out&#8221; than &#8220;I&#8217;ll
-test-double that out&#8221;.</p></blockquote>
+<blockquote><p>[P]eople find it easier to say &ldquo;I&rsquo;ll mock that out&rdquo; than &ldquo;I&rsquo;ll
+test-double that out&rdquo;.</p></blockquote>
 
-<p><a href="https://twitter.com/#!/jitterted/status/157265770403987456">@jitterted</a>&#8217;s point is spot on; it <em>is</em> easier to say
-&#8220;mock&#8221;. However, I don&#8217;t usually want to use just a test double. I
+<p><a href="https://twitter.com/#!/jitterted/status/157265770403987456">@jitterted</a>&rsquo;s point is spot on; it <em>is</em> easier to say
+&ldquo;mock&rdquo;. However, I don&rsquo;t usually want to use just a test double. I
 always want to do/use something particular: stub, mock, dummy, etc.</p>
 
-<p>I&#8217;d love it if we as a community could come up with a better verb to
-use to mean the generic &#8220;use a test double&#8221;.</p>
+<p>I&rsquo;d love it if we as a community could come up with a better verb to
+use to mean the generic &ldquo;use a test double&rdquo;.</p>
 
-<h2>Doesn&#8217;t language evolve?</h2>
+<h2>Doesn&rsquo;t language evolve?</h2>
 
-<blockquote><p>[A] term takes on the meaning that &#8220;everyone&#8221; gives it</p></blockquote>
+<blockquote><p>[A] term takes on the meaning that &ldquo;everyone&rdquo; gives it</p></blockquote>
 
 <p><a href="https://twitter.com/#!/JuliansThoughts/status/157372211840299009">@JuliansThoughts</a></p>
 
@@ -2277,44 +2281,44 @@ expanding the meaning of existing words are all good things.</p>
 
 <p>The root issue here is not that language is evolving. The root issue
 is that our understanding of the tools and techniques we are referring
-to by that language hasn&#8217;t gotten to the point where we can substitute
+to by that language hasn&rsquo;t gotten to the point where we can substitute
 one for the other and know <strong>conclusively</strong> what we really mean.</p>
 
-<p>If I said to you, the programmer: &#8220;Use a list to store the names&#8221;. You
+<p>If I said to you, the programmer: &ldquo;Use a list to store the names&rdquo;. You
 go off and write whatever you need, then come back for code review and
-I now say: &#8220;Why can&#8217;t I look up a specific name efficiently?&#8221;. You
+I now say: &ldquo;Why can&rsquo;t I look up a specific name efficiently?&rdquo;. You
 would be outraged; why did I tell you to use a list when I really
-meant a hashtable instead? My response? &#8220;Oh, you know that language
-evolves&#8221;.</p>
+meant a hashtable instead? My response? &ldquo;Oh, you know that language
+evolves&rdquo;.</p>
 
-<p>If I&#8217;d originally said to use a &#8220;collection&#8221;, a more abstract concept
+<p>If I&rsquo;d originally said to use a &ldquo;collection&rdquo;, a more abstract concept
 than either list or hashtable, that would force you to think about
-what you need to do and how you were going to do it. I&#8217;m not
+what you need to do and how you were going to do it. I&rsquo;m not
 conflating a specific idea with a general concept.</p>
 
 <p>As community, we have heaps of experience with various types of
-collections; we don&#8217;t have that same strong background with test
-doubles yet. When we use &#8220;mock&#8221; when we should use &#8220;dummy&#8221; or &#8220;stub&#8221;
-or &#8220;test double&#8221;, we avoid thinking about what we really need to do
+collections; we don&rsquo;t have that same strong background with test
+doubles yet. When we use &ldquo;mock&rdquo; when we should use &ldquo;dummy&rdquo; or &ldquo;stub&rdquo;
+or &ldquo;test double&rdquo;, we avoid thinking about what we really need to do
 and why we need to do it.</p>
 
-<p>By using &#8220;mock&#8221; inappropriately, we confuse two distinct concepts. We
-then complain that &#8220;mocks&#8221; suck and don&#8217;t do what we need them to
+<p>By using &ldquo;mock&rdquo; inappropriately, we confuse two distinct concepts. We
+then complain that &ldquo;mocks&rdquo; suck and don&rsquo;t do what we need them to
 do. Mocks, stubs, fakes and dummies all have a place and a
 purpose. Just as using a list when you should use a hashtable reflects
 poorly on the programmer, so does using a mock when you should use a
 stub.</p>
 
-<p>Mocks are <strong>not</strong> stubs. Don&#8217;t believe me. Believe
+<p>Mocks are <strong>not</strong> stubs. Don&rsquo;t believe me. Believe
 <a href="http://martinfowler.com/articles/mocksArentStubs.html#TheDifferenceBetweenMocksAndStubs">Martin Fowler</a>. Believe
 <a href="http://xunitpatterns.com/">Gerard Meszaros</a>. Watch
-<a href="http://confreaks.net/videos/659-rubyconf2011-why-you-don-t-get-mock-objects">Why You Don&#8217;t Get Mock Objects</a> by Gregory
+<a href="http://confreaks.net/videos/659-rubyconf2011-why-you-don-t-get-mock-objects">Why You Don&rsquo;t Get Mock Objects</a> by Gregory
 Moeck. Whatever you do, make sure you understand what a mock object
 truly is before you start conflating terms.</p>
 
-<p><em>Note:</em> Don&#8217;t take from this post that I always do or say the right
+<p><em>Note:</em> Don&rsquo;t take from this post that I always do or say the right
 thing. I have other posts on this same blog that incorrectly refer to
-test doubles as &#8220;mocks&#8221;. Most of those posts were written before I
+test doubles as &ldquo;mocks&rdquo;. Most of those posts were written before I
 learned the difference myself. I should edit those posts to clarify my
 real intent. The important thing is that as we go forward we should be
 careful and precise about what we mean.</p>
@@ -2524,19 +2528,19 @@ testing. Something like:</p>
 <p>An implementation like this allows you to lean on the compiler when
 the interface changes.</p>
 
-<p>If you don&#8217;t have a interface to implement, you could subclass
+<p>If you don&rsquo;t have a interface to implement, you could subclass
 the concrete builder class and insert your test-specific logic
 there. The downside to this is that newly-added methods will inherit
 their implementation from the parent class, which can cause very
 strange test failures.</p>
 
-<p>We did not have an interface to adhere to, so we used Mockito&#8217;s
+<p>We did not have an interface to adhere to, so we used Mockito&rsquo;s
 <code>Answer</code> class to provide a middle ground solution. When you create a
 new mock, an <code>Answer</code> can be used to provide default behavior for
-methods. Here&#8217;s the custom <code>Answer</code> we came up with:</p>
+methods. Here&rsquo;s the custom <code>Answer</code> we came up with:</p>
 
 <figure class='code'><figcaption><span> (AnswerWithSelf.java)</span> <a href='http://jakegoulding.com/downloads/code/AnswerWithSelf.java'>download</a></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -2621,7 +2625,7 @@ definition:</p>
 existing body of code, altering its internal structure without
 changing its external behavior.</p></blockquote>
 
-<p>That description seems fairly reasonable; let&#8217;s look at some potential
+<p>That description seems fairly reasonable; let&rsquo;s look at some potential
 refactoring techniques.</p>
 
 <!-- more -->
@@ -2667,9 +2671,9 @@ refactoring techniques.</p>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>This one is pretty clear-cut - it&#8217;s a refactoring technique that any
+<p>This one is pretty clear-cut &ndash; it&rsquo;s a refactoring technique that any
 programmer would recognize, even if she had never heard of the term
-&#8220;refactoring&#8221;. It goes by the name <a href="http://martinfowler.com/refactoring/catalog/extractMethod.html">Extract Method</a>.</p>
+&ldquo;refactoring&rdquo;. It goes by the name <a href="http://martinfowler.com/refactoring/catalog/extractMethod.html">Extract Method</a>.</p>
 
 <h2>Example 2</h2>
 
@@ -2777,7 +2781,7 @@ one, as only one of the subclasses has the method definition to start
 with. This difference makes us less ready to call our changes
 refactoring.</p>
 
-<p>Here&#8217;s the trick: from just the code above, <strong>you can&#8217;t tell if these
+<p>Here&rsquo;s the trick: from just the code above, <strong>you can&rsquo;t tell if these
 changes constitute refactoring or not</strong>.</p>
 
 <h2>In which details are examined</h2>
@@ -2787,12 +2791,12 @@ refactoring: <em>internal</em> and <em>external</em>. These three examples only 
 the code being changed (the internal structure), not how other objects
 interact with this code (the external behavior).</p>
 
-<p>Take a look at the second example - if any object in the entire system
+<p>Take a look at the second example &ndash; if any object in the entire system
 ever calls the <code>bet</code> method, then removing the method will cause the
 behavior of the system as a whole to change.</p>
 
 <p>The first and third examples are actually the same from this point of
-view - they both add a new method. You might think that adding a
+view &ndash; they both add a new method. You might think that adding a
 method is safe, but in truth it depends on the circumstances.</p>
 
 <p>In a statically-typed language, adding a method is safe because no
@@ -2804,11 +2808,11 @@ new behavior elsewhere.</p>
 
 <h2>In which time is considered</h2>
 
-<p>Let&#8217;s focus on the third example and assume that the above caveat
-about adding methods in dynamically-typed languages doesn&#8217;t apply.</p>
+<p>Let&rsquo;s focus on the third example and assume that the above caveat
+about adding methods in dynamically-typed languages doesn&rsquo;t apply.</p>
 
 <p>First, we decide that the code would be better if we moved the <code>greet</code>
-method from <code>A</code> to <code>Parent</code>. This change would be refactoring - no
+method from <code>A</code> to <code>Parent</code>. This change would be refactoring &ndash; no
 external behavior has changed.</p>
 
 <p>Second, instead of just making the code better, assume that user
@@ -2822,7 +2826,7 @@ means that we:</p>
 
 
 <p>Even though the code is modified in the same way for both examples,
-the second time is <em>not refactoring</em> - we are changing the behavior of
+the second time is <em>not refactoring</em> &ndash; we are changing the behavior of
 the system from failing to passing. The only difference is that time
 has passed and the requirements of the system are different.</p>
 
@@ -2835,7 +2839,7 @@ external code that relies on certain behavior.</p>
 
 <p>Some refactoring techniques change code only within a single method,
 such as <a href="http://martinfowler.com/refactoring/catalog/splitLoop.html">Split Loop</a>. In most cases, these techniques
-don&#8217;t have to worry about changing the external behavior. Intra-method
+don&rsquo;t have to worry about changing the external behavior. Intra-method
 refactoring can only cause a problem when the method has side-effects
 that are visible outside of the method.</p>
 
@@ -2852,15 +2856,15 @@ before refactoring it; if the environment is ignored, then you cannot
 possibly understand the desired behavior of the code.</p>
 
 <p>A main point from the blog post
-<a href="http://hamletdarcy.blogspot.com/2009/06/forgotten-refactorings.html">Forgotten Refactorings</a> by Hamlet D&#8217;Arcy is that it&#8217;s
-not really refactoring if the code being changed isn&#8217;t covered by
+<a href="http://hamletdarcy.blogspot.com/2009/06/forgotten-refactorings.html">Forgotten Refactorings</a> by Hamlet D&#8217;Arcy is that it&rsquo;s
+not really refactoring if the code being changed isn&rsquo;t covered by
 tests. This is because tests are the single-best way to nail down the
 expectations of the behavior of a system, with the benefit that they
 are continually verified.</p>
 
 <p>It is also interesting to note that the order in which code is
 modified can alter if you are performing a refactoring or not. While
-there probably isn&#8217;t a practical difference between the two paths, I
+there probably isn&rsquo;t a practical difference between the two paths, I
 cannot help but wonder if choosing one or the other will have some
 practical benefit.</p>
 
@@ -2873,7 +2877,7 @@ practical benefit.</p>
     <link href="http://jakegoulding.com/blog/2011/10/10/learned-about-testing-last-year/"/>
     <updated>2011-10-10T19:15:00-04:00</updated>
     <id>http://jakegoulding.com/blog/2011/10/10/learned-about-testing-last-year</id>
-    <content type="html"><![CDATA[<p>Over the last year or so, I&#8217;ve been trying to learn about various
+    <content type="html"><![CDATA[<p>Over the last year or so, I&rsquo;ve been trying to learn about various
 types and methodologies of testing. The Ruby community is pretty vocal
 about testing, so I felt out of place not knowing even the most basic
 of things. This post is intended to organize my current thoughts and
@@ -2887,17 +2891,17 @@ hopefully provide some guidance for people on the same journey.</p>
 <p>I had to realize two things before I could start learning:</p>
 
 <ol>
-<li>I don&#8217;t know enough about testing.</li>
+<li>I don&rsquo;t know enough about testing.</li>
 <li>I need to know more about testing.</li>
 </ol>
 
 
-<p>If you don&#8217;t fit into both of these categories, you probably aren&#8217;t
+<p>If you don&rsquo;t fit into both of these categories, you probably aren&rsquo;t
 reading this post.</p>
 
-<p>If you know what &#8220;mockist&#8221; and &#8220;classicist&#8221; mean and you know which
+<p>If you know what &ldquo;mockist&rdquo; and &ldquo;classicist&rdquo; mean and you know which
 you are, you probably already know everything here. If you care, I
-generally take the &#8220;mockist&#8221; approach, and this post reflects that.</p>
+generally take the &ldquo;mockist&rdquo; approach, and this post reflects that.</p>
 
 <p>Otherwise, feel free to continue!</p>
 
@@ -2910,7 +2914,7 @@ confidence that the code as written is right.</p>
 code. Eventually, some part of the software will need to change
 while everything else should stay constant. For me, this point really
 hit home when I read <a href="http://www.amazon.com/gp/product/0131177052/ref=as_li_ss_tl?ie=UTF8&amp;tag=jakgousblo-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399369&amp;creativeASIN=0131177052">Working Effectively with Legacy Code</a> by Michael Feathers. I deal with lots of code that
-needs to be changed and I&#8217;m usually worried that my change might
+needs to be changed and I&rsquo;m usually worried that my change might
 affect some conceptually remote piece of the software.</p>
 
 <p>Maybe the hardest thing for people to believe is that tests can
@@ -2926,7 +2930,7 @@ light into the <em>future</em> of your code.</p>
 <h2>What flavors of test exist?</h2>
 
 <p>Here is a list of the types of tests that I can think of purely off the top
-of my head, I&#8217;m sure there are lots more.</p>
+of my head, I&rsquo;m sure there are lots more.</p>
 
 <ul>
 <li><a href="http://en.wikipedia.org/wiki/Unit_testing">Unit testing</a></li>
@@ -2939,12 +2943,12 @@ of my head, I&#8217;m sure there are lots more.</p>
 </ul>
 
 
-<p>Those are all links to corresponding Wikipedia page; I don&#8217;t agree
+<p>Those are all links to corresponding Wikipedia page; I don&rsquo;t agree
 with every nuance listed on those pages, and some pages are
 unfortunately short, but the links provide the barest minimum of
 a start if you would like to learn more about each type of test.</p>
 
-<p>I don&#8217;t tend to draw a hard line between integration, functional, and
+<p>I don&rsquo;t tend to draw a hard line between integration, functional, and
 acceptance tests. If you need to know the difference, this
 <a href="http://stackoverflow.com/questions/4904096/whats-the-difference-between-unit-functional-acceptance-and-integration-tests">Stack Overflow question</a> has a pretty good breakdown. I
 think of acceptance tests as a superset of functional tests, which
@@ -2964,7 +2968,7 @@ made.</p>
 
 <p>A great way to understand how acceptance and unit tests work in
 concert is to read <a href="http://www.amazon.com/gp/product/1934356379/ref=as_li_ss_tl?ie=UTF8&amp;tag=jakgousblo-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399369&amp;creativeASIN=1934356379">The RSpec Book</a>. If you are too lazy
-and/or cheap to read it, here&#8217;s one extremely salient picture:</p>
+and/or cheap to read it, here&rsquo;s one extremely salient picture:</p>
 
 <p><img src="http://jakegoulding.com/images/blog/bdd-cycle.png" alt="The BDD test/develop cycle" /></p>
 
@@ -2980,7 +2984,7 @@ objects. The test for each component is a <strong>unit test</strong>.</p>
 <h2>Acceptance tests</h2>
 
 <p>Acceptance tests tell you that the software as a whole does what it is
-supposed to do. It&#8217;s important to write acceptance tests as if you
+supposed to do. It&rsquo;s important to write acceptance tests as if you
 were the user. This makes it so that the test exposes the actual
 <em>value</em> of the code, explaining <em>why</em> the code even exists.</p>
 
@@ -2990,27 +2994,27 @@ with a database, you must be able to change data in the database. If
 you need to be able to parse an empty RSS feed, then you must be able
 to create an empty RSS feed to test that functionality.</p>
 
-<p>Because acceptance tests exercise the entire system, it&#8217;s very easy
+<p>Because acceptance tests exercise the entire system, it&rsquo;s very easy
 for them to be slow, but there are a few techniques that you can use
 to help keep your total time down.</p>
 
-<p>Acceptance tests should cover the &#8220;happy path&#8221; of your software. If
+<p>Acceptance tests should cover the &ldquo;happy path&rdquo; of your software. If
 there are any extremely important failure cases, then cover those with
-acceptance tests as well. However, you don&#8217;t need to cover every
+acceptance tests as well. However, you don&rsquo;t need to cover every
 possible case. For example, use unit tests to ensure that things that
 generate errors do so consistently, and then use one acceptance test
 to make sure errors are shown correctly.</p>
 
 <p>Make sure that you minimize what data you need for an acceptance
-test. You probably don&#8217;t need to load 10,000 rows into your database
+test. You probably don&rsquo;t need to load 10,000 rows into your database
 just to make sure that a user can view their profile. Use the smallest
 amount of data you can get away with.</p>
 
-<p>Don&#8217;t get lazy and reuse one giant piece of setup code for every
+<p>Don&rsquo;t get lazy and reuse one giant piece of setup code for every
 test. This is an example of the tests telling you that your design is
 painful to use. In this case, a user would have to duplicate all of
 the steps in the setup in order to use the function you are
-testing. Maybe that&#8217;s the way it has to be, but try to make it
+testing. Maybe that&rsquo;s the way it has to be, but try to make it
 easier on the user.</p>
 
 <h2>Unit tests</h2>
@@ -3030,7 +3034,7 @@ issue.</p>
 <p>One way to achieve isolation and speed in your unit tests is to
 introduce <em>mock objects</em>. Mock objects are <em>test doubles</em> that
 surround the real code under test and assert on the messages sent
-between objects. Since they aren&#8217;t real objects, they can&#8217;t affect
+between objects. Since they aren&rsquo;t real objects, they can&rsquo;t affect
 your test correctness, and they are extremely lightweight so they will
 be fast.</p>
 
@@ -3039,7 +3043,7 @@ responds to the necessary methods and returns values as needed. Then
 point the object under test at the mock objects, run the code, and
 assert that tested object has used any returned values correctly.</p>
 
-<p>Here&#8217;s an example of doing that in Ruby. I&#8217;m eschewing using any
+<p>Here&rsquo;s an example of doing that in Ruby. I&rsquo;m eschewing using any
 libraries in an attempt to make the code as obvious as possible.</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
@@ -3079,7 +3083,7 @@ libraries in an attempt to make the code as obvious as possible.</p>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>Sorry, I lied to you; that last example was <em>not</em> a mock - although I
+<p>Sorry, I lied to you; that last example was <em>not</em> a mock &ndash; although I
 thought it was for the longest time. The double shown is actually a
 <em>stub</em>. The key point is that a mock <strong>asserts messages are
 sent</strong>. The example above asserts a state.</p>
@@ -3133,11 +3137,11 @@ sent</strong>. The example above asserts a state.</p>
 
 <p>This last example uses a mock to assert that the right messages were
 sent. Note that we removed the <code>foo</code> accessor from the first class; we
-don&#8217;t need it anymore! The state of the object is now kept where it
-should be - inside the object.</p>
+don&rsquo;t need it anymore! The state of the object is now kept where it
+should be &ndash; inside the object.</p>
 
 <p>The difference between stubs and mocks can seem subtle, but it is
-important. For a much richer discussion, read <a href="http://martinfowler.com/articles/mocksArentStubs.html">Mocks Aren&#8217;t Stubs</a> by Martin Fowler.</p>
+important. For a much richer discussion, read <a href="http://martinfowler.com/articles/mocksArentStubs.html">Mocks Aren&rsquo;t Stubs</a> by Martin Fowler.</p>
 
 <p>I make no claim that this example is a <em>good</em> use of mocks, just that
 it is how mocks are to be used.</p>
@@ -3145,12 +3149,12 @@ it is how mocks are to be used.</p>
 <h3>Object-oriented programming and mocks</h3>
 
 <p>This is all recent information that started to worm its way into my
-brain after watching <a href="http://confreaks.net/videos/659-rubyconf2011-why-you-don-t-get-mock-objects">Why You Don&#8217;t Get Mock Objects</a>
-- you should watch it too.</p>
+brain after watching <a href="http://confreaks.net/videos/659-rubyconf2011-why-you-don-t-get-mock-objects">Why You Don&rsquo;t Get Mock Objects</a>
+&ndash; you should watch it too.</p>
 
 <p>The code example above may still have a problem. The <code>Foo</code> object asks
 the <code>Bar</code> object for the value of <code>quux</code> and then manipulates the
-result. This goes against the <a href="http://pragprog.com/articles/tell-dont-ask">Tell, Don&#8217;t Ask</a> principle, and
+result. This goes against the <a href="http://pragprog.com/articles/tell-dont-ask">Tell, Don&rsquo;t Ask</a> principle, and
 could be a warning sign of <a href="http://c2.com/cgi/wiki?FeatureEnvySmell">Feature Envy</a>.</p>
 
 <p>You should only mock collaborators. Collaborators are objects that are
@@ -3178,14 +3182,14 @@ call is made more than once.</p>
 
 <p>One obvious downside is that if <em>any</em> of the intermediate objects
 decide they need to make an HTTP call themselves, our test will
-fail. What&#8217;s worse is that the failure will seem to indicate that the
+fail. What&rsquo;s worse is that the failure will seem to indicate that the
 caching is not working, so we will start debugging there. When we
-finally figure out that the test is &#8220;lying&#8221; to us, we will have wasted
+finally figure out that the test is &ldquo;lying&rdquo; to us, we will have wasted
 time and started to distrust our tests.</p>
 
 <p>We can make the test better if we move the test double closer to the
 code under test. This lets us ignore all the other objects in the call
-chain - if one of these other objects does not behave properly, this
+chain &ndash; if one of these other objects does not behave properly, this
 test will not fail. This is no free lunch; there <strong>must</strong> be unit
 tests that focus on the other objects so you can tell when they break!</p>
 
@@ -3206,7 +3210,7 @@ caching behavior in isolation.</p>
 
 <h2>A handful of things to learn next</h2>
 
-<p>My learning isn&#8217;t over, and hopefully never will be. Here is a sample
+<p>My learning isn&rsquo;t over, and hopefully never will be. Here is a sample
 of some questions currently percolating in my brain.</p>
 
 <p>Acceptance tests are often slow because they hit an external
@@ -3246,18 +3250,18 @@ covers the concepts of testing thoroughly. Introduced me to the
 {acceptance,unit}-test cycle. Also contains practical information if
 you will be testing in Ruby.</p>
 
-<h5><a href="http://martinfowler.com/articles/mocksArentStubs.html">Mocks Aren&#8217;t Stubs</a> (article)</h5>
+<h5><a href="http://martinfowler.com/articles/mocksArentStubs.html">Mocks Aren&rsquo;t Stubs</a> (article)</h5>
 
 <p>Provides an overview of terms used as well as examples to help
-separate the different concepts (in Java, but don&#8217;t be
-scared). Defines &#8220;classicist&#8221; and &#8220;mockist&#8221;; you don&#8217;t need to pick
+separate the different concepts (in Java, but don&rsquo;t be
+scared). Defines &ldquo;classicist&rdquo; and &ldquo;mockist&rdquo;; you don&rsquo;t need to pick
 one or the other, but understanding them is vital.</p>
 
-<h5><a href="http://confreaks.net/videos/659-rubyconf2011-why-you-don-t-get-mock-objects">Why You Don&#8217;t Get Mock Objects</a> (video)</h5>
+<h5><a href="http://confreaks.net/videos/659-rubyconf2011-why-you-don-t-get-mock-objects">Why You Don&rsquo;t Get Mock Objects</a> (video)</h5>
 
 <p>Session from RubyConf 2011 that started to clarify certain aspects of
 mocking and testing. Gregory Moeck also introduced me to the term
-&#8220;secondary teacher&#8221;.</p>
+&ldquo;secondary teacher&rdquo;.</p>
 
 <h5><a href="http://www.amazon.com/gp/product/0321503627/ref=as_li_ss_tl?ie=UTF8&amp;tag=jakgousblo-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399369&amp;creativeASIN=0321503627">Growing Object-Oriented Software</a> (book)</h5>
 
@@ -3272,10 +3276,10 @@ better understanding.</p>
 without tests) and make it non-legacy. Clarified how tests let you be
 confident about changes. Provides heaps of practical advice.</p>
 
-<h2>Tell me what I&#8217;ve said wrong</h2>
+<h2>Tell me what I&rsquo;ve said wrong</h2>
 
-<p>I&#8217;m certain that I&#8217;ve said something that someone will disagree
-with. If you&#8217;d care to correct my false ideas, feel free to contact me
+<p>I&rsquo;m certain that I&rsquo;ve said something that someone will disagree
+with. If you&rsquo;d care to correct my false ideas, feel free to contact me
 via Twitter. If you think it will take longer than a tweet, create a
 blog post and let me know about it!</p>
 
@@ -3293,7 +3297,7 @@ blog post and let me know about it!</p>
     <updated>2011-09-18T13:53:00-04:00</updated>
     <id>http://jakegoulding.com/blog/2011/09/18/quickly-fixing-your-last-git-commit</id>
     <content type="html"><![CDATA[<p>Git encourages you to create commits early and frequently, but I often
-find that my last commit isn&#8217;t quite as awesome as I&#8217;d like it to
+find that my last commit isn&rsquo;t quite as awesome as I&rsquo;d like it to
 be. However, there are three little tricks I use to tweak it a bit.</p>
 
 <!-- more -->
@@ -3321,14 +3325,14 @@ Just reuse the commit message!</p>
 $ git commit --amend -C HEAD
 </code></pre>
 
-<p>This is conceptually the same as the &#8220;fixup&#8221; command when rebasing, so
+<p>This is conceptually the same as the &ldquo;fixup&rdquo; command when rebasing, so
 you could alias it as <code>git fixup</code>.</p>
 
 <pre><code>$ git add README.txt
 $ git fixup
 </code></pre>
 
-<h4>Update - 8:30 PM EDT</h4>
+<h4>Update &ndash; 8:30 PM EDT</h4>
 
 <p><a href="http://twitter.com/nick_rutherford">Nick Rutherford</a> reminded me to caution everyone that you should
 never amend your commit <em>after</em> you have pushed it or made it public
@@ -3343,20 +3347,20 @@ other people may have already grabbed a copy of.</p>
     <link href="http://jakegoulding.com/blog/2011/09/18/game-of-life-in-clojure/"/>
     <updated>2011-09-18T11:22:00-04:00</updated>
     <id>http://jakegoulding.com/blog/2011/09/18/game-of-life-in-clojure</id>
-    <content type="html"><![CDATA[<p>I&#8217;ve been trying to learn <a href="http://clojure.org">Clojure</a> recently, so I wrote
-<a href="http://en.wikipedia.org/wiki/Conway's_Game_of_Life">Conway&#8217;s Game of Life</a>. I&#8217;m sure that the code is highly
-non-idiomatic, but I&#8217;d rather get it out into the wild, instead of
+    <content type="html"><![CDATA[<p>I&rsquo;ve been trying to learn <a href="http://clojure.org">Clojure</a> recently, so I wrote
+<a href="http://en.wikipedia.org/wiki/Conway's_Game_of_Life">Conway&rsquo;s Game of Life</a>. I&rsquo;m sure that the code is highly
+non-idiomatic, but I&rsquo;d rather get it out into the wild, instead of
 sitting on my disk.</p>
 
 <!-- more -->
 
 
 <p>Note that I have inline tests (the simple <code>println</code> statements) mostly
-because I wasn&#8217;t trying to figure out how to properly test in Clojure
+because I wasn&rsquo;t trying to figure out how to properly test in Clojure
 (yet).</p>
 
 <figure class='code'><figcaption><span> (life.clj)</span> <a href='http://jakegoulding.com/downloads/code/life.clj'>download</a></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: SQLite | Jake Goulding]]></title>
   <link href="http://jakegoulding.com/blog/categories/sqlite/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2013-03-11T21:03:45-04:00</updated>
+  <updated>2014-04-26T17:22:41-04:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -18,7 +18,7 @@
     <link href="http://jakegoulding.com/blog/2011/02/06/sqlite-64-bit-integers/"/>
     <updated>2011-02-06T12:00:00-05:00</updated>
     <id>http://jakegoulding.com/blog/2011/02/06/sqlite-64-bit-integers</id>
-    <content type="html"><![CDATA[<p>We recently tackled an issue that seemed rather impossible - an
+    <content type="html"><![CDATA[<p>We recently tackled an issue that seemed rather impossible &ndash; an
 unsigned 64-bit value was <em>greater than</em> the maximum value that a
 64-bit value can hold. What unfolded was a dark, gritty look at the
 underbelly of everything we hold dear (or a normal debugging session,
@@ -37,7 +37,7 @@ INSERT INTO big_numbers VALUES (9223372036854775807, 9223372036854775807, 922337
 INSERT INTO big_numbers VALUES (9223372036854775808, 9223372036854775808, 9223372036854775808, 9223372036854775808); -- 2^63
 </code></p>
 
-<p>Let's sanity check our data to make sure it looks like what we would
+<p>Let&rsquo;s sanity check our data to make sure it looks like what we would
 expect:</p>
 
 <p>``` sql</p>
@@ -52,12 +52,12 @@ i                     r                     t                     b</p>
 ```</p></blockquote>
 
 <p>Huh. We definitely were not expecting most of those floating point
-numbers, so let's see what types are being returned:</p>
+numbers, so let&rsquo;s see what types are being returned:</p>
 
 <p>``` sql</p>
 
-<blockquote><p>SELECT typeof(i),typeof(r),typeof(t),typeof(b) FROM big_numbers;
-typeof(i)   typeof(r)   typeof(t)   typeof(b)</p>
+<blockquote><p>SELECT typeof(i),typeof&reg;,typeof(t),typeof(b) FROM big_numbers;
+typeof(i)   typeof&reg;   typeof(t)   typeof(b)</p>
 
 <hr />
 
@@ -65,7 +65,7 @@ typeof(i)   typeof(r)   typeof(t)   typeof(b)</p>
 real        real        text        real
 ```</p></blockquote>
 
-<p>Sure enough, the numeric types in the second row are all reals. Let's
+<p>Sure enough, the numeric types in the second row are all reals. Let&rsquo;s
 do a nice simple addition operation on our data:</p>
 
 <p>``` sql</p>
@@ -80,8 +80,8 @@ i+1                   r+1                   t+1                   b+1</p>
 ```</p></blockquote>
 
 <p>Woah, what happened here? Those familiar with signed and unsigned
-integers are already nodding and going "Mmm-hmm". For everyone else, I
-suggest brushing up on <a href="http://en.wikipedia.org/wiki/Two's_complement">two's compliment</a> notation. Suffice it to
+integers are already nodding and going &ldquo;Mmm-hmm&rdquo;. For everyone else, I
+suggest brushing up on <a href="http://en.wikipedia.org/wiki/Two's_complement">two&rsquo;s compliment</a> notation. Suffice it to
 say that integers are usually represented by a fixed number of bits,
 and once you run out of bits you roll over back to the beginning, in
 this case a large negative number.</p>
@@ -117,7 +117,7 @@ number, the resultant number is far over the maximum of a <em>signed</em>
 64-bit integer. This causes SQLite to switch into floating-point mode
 when the value is saved to the database.</p>
 
-<p>Of course, our particular tale of woe doesn't end there. Indeed, we
+<p>Of course, our particular tale of woe doesn&rsquo;t end there. Indeed, we
 need to report this value in a status response. As an example of what
 I can only assume is premature optimization, we simply grab the string
 value from SQLite and report that. This causes another part of the
@@ -127,10 +127,10 @@ longer fit within a 64-bit type.</p>
 <h2>Wait, what?</h2>
 
 <p>How did we go from simply over- or under-flowing a 64-bit value to
-exceeding the range of the datatype? It shouldn't even be possible to
+exceeding the range of the datatype? It shouldn&rsquo;t even be possible to
 have a 64-bit value that is larger than a 64-bit value, by definition!
-As a coworker said: "It would violate the logic of the reality of the
-number". The answer stems from how the value is converted into a
+As a coworker said: &ldquo;It would violate the logic of the reality of the
+number&rdquo;. The answer stems from how the value is converted into a
 double by SQLite.</p>
 
 <p>Here is a simple example that shows what happens when you mess around
@@ -140,7 +140,7 @@ with 64-bit integer types and doubles the wrong way:</p>
 </code></pre>
 
 <p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span> (64bit-integer-float.c)</span> <a href='/downloads/code/64bit-integer-float.c'>download</a></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -168,7 +168,7 @@ with 64-bit integer types and doubles the wrong way:</p>
 </span><span class='line'><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
-<p>On Windows (Microsoft (R) C/C++ Optimizing Compiler Version
+<p>On Windows (Microsoft &reg; C/C++ Optimizing Compiler Version
 14.00.50727.762 for x64), we see:</p>
 
 <pre><code>18446744073709551615
@@ -202,21 +202,21 @@ no cast back to a 64-bit type to truncate the value. This causes
 really need to support unsigned 64-bit numbers, you could always shift
 your numbers down by 2**63. Of course, this means that you will
 need to massage any access to that column to correct for the
-offset. If you don't need to perform any calculations or sorting on
-that column inside of SQLite, it's possible that you could give the
+offset. If you don&rsquo;t need to perform any calculations or sorting on
+that column inside of SQLite, it&rsquo;s possible that you could give the
 column a text affinity, preventing SQLite from messing with the
 data.</p>
 
-<p><strong>Don't write your own marshaling code unless you really need it.</strong> If
+<p><strong>Don&rsquo;t write your own marshaling code unless you really need it.</strong> If
 we had used the actual SQLite C API for storing and retrieving our
-values, I assume (but have not verified) that this wouldn't have
+values, I assume (but have not verified) that this wouldn&rsquo;t have
 happened, not to mention we would have likely realized that SQLite
 only natively supports <strong>signed</strong> 64-bit integers. This would have led
 us to test the edge cases that were more obvious.</p>
 
 <p><strong>Test maximal and minimal values.</strong> This is such a basic testing
 strategy that it is surprising that we forget it so
-much. I'mdefinitely in the camp of people that don't do this kind of
+much. I'mdefinitely in the camp of people that don&rsquo;t do this kind of
 testing as much as I should.</p>
 ]]></content>
   </entry>

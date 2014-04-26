@@ -4,7 +4,7 @@
   <title><![CDATA[Category: GCC | Jake Goulding]]></title>
   <link href="http://jakegoulding.com/blog/categories/gcc/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2013-03-11T21:03:45-04:00</updated>
+  <updated>2014-04-26T17:22:41-04:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -22,7 +22,7 @@
 function</code> warning from GCC and asked me to take a look at it to see if
 the warning was spurious or if he was missing something. While trying
 to boil his code down to a concise example, we found an example where
-the warning got flipped - we no longer got a warning even though we
+the warning got flipped &ndash; we no longer got a warning even though we
 both expected one.</p>
 
 <!--more-->
@@ -34,7 +34,7 @@ set, then <code>value</code> is undefined. The main simply calls <code>foo</code
 command-line argument count to control what is passed to the function.</p>
 
 <p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span> (uninit-warning.c)</span> <a href='/downloads/code/uninit-warning.c'>download</a></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -99,7 +99,7 @@ $ clang -o uninit-clang uninit.c -O3 -Wall -pedantic
 <p>Neither compilation produces warnings! We tried compiling with -O0 and
 -Os, in case some optimization was being applied, but the results were
 the same. Curiosity piqued, we dropped down to the next most logical
-level - assembly.</p>
+level &ndash; assembly.</p>
 
 <h2>GCC disassembly</h2>
 
@@ -113,7 +113,7 @@ level - assembly.</p>
   40058f:       00 
 </code></pre>
 
-<p>If you want to follow along, I used the <a href="http://support.amd.com/us/Processor_TechDocs/24592.pdf">AMD64 Architecture Programmer's Manual</a> as an assembly reference.</p>
+<p>If you want to follow along, I used the <a href="http://support.amd.com/us/Processor_TechDocs/24592.pdf">AMD64 Architecture Programmer&rsquo;s Manual</a> as an assembly reference.</p>
 
 <p>GCC starts out by loading the address of the string into <code>%esi</code>, then
 loads 1 into <code>%edi</code> and <code>%eax</code> is then XORed against itself, which
@@ -141,9 +141,9 @@ boundary.</p>
 <p>Clang produces pretty much the same code, but does some different
 gyrations. The contents of <code>%rpb</code> are pushed onto the stack, then
 <code>%rsp</code> is moved to <code>%rpb</code>. The address of the string is loaded into
-<code>%edi</code> and <code>%rbp</code> is restored - never having been used. Clang has
+<code>%edi</code> and <code>%rbp</code> is restored &ndash; never having been used. Clang has
 optimized the call to <code>printf</code> to instead use the simpler <code>puts</code>
-function, so we don't see the same mucking about with <code>%edi</code> and
+function, so we don&rsquo;t see the same mucking about with <code>%edi</code> and
 <code>%eax</code>. However, it is still an <strong>unconditional</strong> jump!</p>
 
 <h2>Clang LLVM output</h2>
@@ -171,7 +171,7 @@ test.cpp(12) : warning C4701: potentially uninitialized local variable 'value' u
 </code></pre>
 
 <p>Along with the generated assembly. Note this is Windows assembly, so
-the Linux calling conventions above don't apply.</p>
+the Linux calling conventions above don&rsquo;t apply.</p>
 
 <pre><code>?foo@@YAXH@Z (void __cdecl foo(int)):
   00000000: 83 7C 24 04 00     cmp         dword ptr [esp+4],0
@@ -199,14 +199,14 @@ uninit.c:12:9: warning: The right operand of '==' is a garbage value
 
 <p>The behavior and generated code of the compilers is interesting, but I
 think they are allowed to do whatever they want when optimizing
-undefined code, so I can't fault them for that.</p>
+undefined code, so I can&rsquo;t fault them for that.</p>
 
 <p>What both my coworker and I were surprised was the lack of warning. In
 general, we have come to rely on GCC to be overly zealous about
-providing warnings. I'd much rather have an extraneous warning that I
+providing warnings. I&rsquo;d much rather have an extraneous warning that I
 can silence instead of no warning at all.</p>
 
-<p><strong>Edit 2010-01-28</strong> - added Visual Studio and clang analyzer output from reddit.</p>
+<p><strong>Edit 2010-01-28</strong> &ndash; added Visual Studio and clang analyzer output from reddit.</p>
 ]]></content>
   </entry>
   

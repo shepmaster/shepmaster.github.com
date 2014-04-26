@@ -4,7 +4,7 @@
   <title><![CDATA[Category: example | Jake Goulding]]></title>
   <link href="http://jakegoulding.com/blog/categories/example/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2013-03-11T21:03:45-04:00</updated>
+  <updated>2014-04-26T17:22:41-04:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -20,7 +20,7 @@
     <id>http://jakegoulding.com/blog/2012/09/24/a-refactoring-example-if-else-on-strings</id>
     <content type="html"><![CDATA[<p>I recently did a bit of work that turned out to be a great exercise
 for refactoring a huge sequence of if-else statements based on
-strings. There are a few ugly bits left, so I'm still poking at it,
+strings. There are a few ugly bits left, so I&rsquo;m still poking at it,
 but I am pleased with my progress so far.</p>
 
 <!-- more -->
@@ -28,7 +28,7 @@ but I am pleased with my progress so far.</p>
 
 <p>While the original code was Java, the meat of the problem can be
 easily shown in Ruby. Translating it to Ruby also makes it easier to
-make sure I don't accidentally share any proprietary information!</p>
+make sure I don&rsquo;t accidentally share any proprietary information!</p>
 
 <p>The problem involves processing a hunk of XML to create nested
 configuration objects. The original implementation used a sequence of
@@ -65,7 +65,7 @@ end
 
 <p>This function has some issues: it is pretty long, and each case has
 some similarity to the next but are different enough to be
-annoying. The code certainly doesn't try to adhere to the Single
+annoying. The code certainly doesn&rsquo;t try to adhere to the Single
 Responsibility Principle!</p>
 
 <p>My first step was to split the blocks into classes with a common interface.</p>
@@ -122,11 +122,11 @@ needs to be updated.</p>
 
 <p>```ruby
 class FooHandler
-  # As above...
+  # As above&hellip;
 end</p>
 
 <p>class BarHandler
-  # As above...
+  # As above&hellip;
 end</p>
 
 <p>class ObjectsFromXML
@@ -160,7 +160,7 @@ right handler and dealing with children elements.</p>
 
 <p>```ruby
 class FooHandler
-  # As above...</p>
+  # As above&hellip;</p>
 
 <p>  def element_name</p>
 
@@ -171,7 +171,7 @@ class FooHandler
 end</p>
 
 <p>class BarHandler
-  # As above...</p>
+  # As above&hellip;</p>
 
 <p>  def element_name</p>
 
@@ -238,7 +238,7 @@ class that is highly focused on that one responsibility.</p>
 <code>ObjectsFromXML</code> class became another <code>Handler</code> class, which made it
 the same level of abstraction as the other handlers and removed a
 redundant <code>process</code> method. The return code was removed because it
-wasn't used except in a few tests. Iterating over children was moved
+wasn&rsquo;t used except in a few tests. Iterating over children was moved
 to each class that could contain children.</p>
 ]]></content>
   </entry>

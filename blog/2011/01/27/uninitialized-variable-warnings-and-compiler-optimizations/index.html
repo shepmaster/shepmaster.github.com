@@ -20,13 +20,14 @@ the warning was &hellip;">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://jakegoulding.com/blog/2011/01/27/uninitialized-variable-warnings-and-compiler-optimizations/">
+  <link rel="canonical" href="http://jakegoulding.com/blog/2011/01/27/uninitialized-variable-warnings-and-compiler-optimizations">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="/javascripts/ender.js"></script>
-  <script src="/javascripts/octopress.js" type="text/javascript"></script>
   <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
   <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
 <link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
@@ -107,7 +108,7 @@ the warning was &hellip;">
 function</code> warning from GCC and asked me to take a look at it to see if
 the warning was spurious or if he was missing something. While trying
 to boil his code down to a concise example, we found an example where
-the warning got flipped - we no longer got a warning even though we
+the warning got flipped &ndash; we no longer got a warning even though we
 both expected one.</p>
 
 <!--more-->
@@ -119,7 +120,7 @@ set, then <code>value</code> is undefined. The main simply calls <code>foo</code
 command-line argument count to control what is passed to the function.</p>
 
 <figure class='code'><figcaption><span> (uninit-warning.c)</span> <a href='/downloads/code/uninit-warning.c'>download</a></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -185,7 +186,7 @@ $ clang -o uninit-clang uninit.c -O3 -Wall -pedantic
 <p>Neither compilation produces warnings! We tried compiling with -O0 and
 -Os, in case some optimization was being applied, but the results were
 the same. Curiosity piqued, we dropped down to the next most logical
-level - assembly.</p>
+level &ndash; assembly.</p>
 
 <h2>GCC disassembly</h2>
 
@@ -199,7 +200,7 @@ level - assembly.</p>
   40058f:       00 
 </code></pre>
 
-<p>If you want to follow along, I used the <a href="http://support.amd.com/us/Processor_TechDocs/24592.pdf">AMD64 Architecture Programmer&#8217;s Manual</a> as an assembly reference.</p>
+<p>If you want to follow along, I used the <a href="http://support.amd.com/us/Processor_TechDocs/24592.pdf">AMD64 Architecture Programmer&rsquo;s Manual</a> as an assembly reference.</p>
 
 <p>GCC starts out by loading the address of the string into <code>%esi</code>, then
 loads 1 into <code>%edi</code> and <code>%eax</code> is then XORed against itself, which
@@ -227,9 +228,9 @@ boundary.</p>
 <p>Clang produces pretty much the same code, but does some different
 gyrations. The contents of <code>%rpb</code> are pushed onto the stack, then
 <code>%rsp</code> is moved to <code>%rpb</code>. The address of the string is loaded into
-<code>%edi</code> and <code>%rbp</code> is restored - never having been used. Clang has
+<code>%edi</code> and <code>%rbp</code> is restored &ndash; never having been used. Clang has
 optimized the call to <code>printf</code> to instead use the simpler <code>puts</code>
-function, so we don&#8217;t see the same mucking about with <code>%edi</code> and
+function, so we don&rsquo;t see the same mucking about with <code>%edi</code> and
 <code>%eax</code>. However, it is still an <strong>unconditional</strong> jump!</p>
 
 <h2>Clang LLVM output</h2>
@@ -257,7 +258,7 @@ test.cpp(12) : warning C4701: potentially uninitialized local variable 'value' u
 </code></pre>
 
 <p>Along with the generated assembly. Note this is Windows assembly, so
-the Linux calling conventions above don&#8217;t apply.</p>
+the Linux calling conventions above don&rsquo;t apply.</p>
 
 <pre><code>?foo@@YAXH@Z (void __cdecl foo(int)):
   00000000: 83 7C 24 04 00     cmp         dword ptr [esp+4],0
@@ -285,14 +286,14 @@ uninit.c:12:9: warning: The right operand of '==' is a garbage value
 
 <p>The behavior and generated code of the compilers is interesting, but I
 think they are allowed to do whatever they want when optimizing
-undefined code, so I can&#8217;t fault them for that.</p>
+undefined code, so I can&rsquo;t fault them for that.</p>
 
 <p>What both my coworker and I were surprised was the lack of warning. In
 general, we have come to rely on GCC to be overly zealous about
-providing warnings. I&#8217;d much rather have an extraneous warning that I
+providing warnings. I&rsquo;d much rather have an extraneous warning that I
 can silence instead of no warning at all.</p>
 
-<p><strong>Edit 2010-01-28</strong> - added Visual Studio and clang analyzer output from reddit.</p>
+<p><strong>Edit 2010-01-28</strong> &ndash; added Visual Studio and clang analyzer output from reddit.</p>
 </div>
 
 
@@ -329,7 +330,7 @@ can silence instead of no warning at all.</p>
     
       <div class="sharing">
   
-  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2011/01/27/uninitialized-variable-warnings-and-compiler-optimizations/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2011/01/27/uninitialized-variable-warnings-and-compiler-optimizations/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2011/01/27/uninitialized-variable-warnings-and-compiler-optimizations/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2011/01/27/uninitialized-variable-warnings-and-compiler-optimizations/" >Tweet</a>
   
   
   
@@ -379,23 +380,6 @@ can silence instead of no warning at all.</p>
 </section>
 
 
-<section>
-  <h1>Latest Tweets</h1>
-  <ul id="tweets">
-    <li class="loading">Status updating...</li>
-  </ul>
-  <script type="text/javascript">
-    $.domReady(function(){
-      getTwitterFeed("jakegoulding", 4, false);
-    });
-  </script>
-  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
-  
-    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-show-count="false">Follow @jakegoulding</a>
-  
-</section>
-
-
 
 
 
@@ -406,7 +390,7 @@ can silence instead of no warning at all.</p>
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2013 - Jake Goulding -
+  Copyright &copy; 2014 - Jake Goulding -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 
@@ -424,7 +408,7 @@ can silence instead of no warning at all.</p>
       var twitterWidgets = document.createElement('script');
       twitterWidgets.type = 'text/javascript';
       twitterWidgets.async = true;
-      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
       document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
     })();
   </script>

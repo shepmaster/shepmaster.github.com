@@ -4,7 +4,7 @@
   <title><![CDATA[Category: git | Jake Goulding]]></title>
   <link href="http://jakegoulding.com/blog/categories/git/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2013-03-11T21:03:45-04:00</updated>
+  <updated>2014-04-26T17:22:41-04:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -19,7 +19,7 @@
     <updated>2011-09-18T13:53:00-04:00</updated>
     <id>http://jakegoulding.com/blog/2011/09/18/quickly-fixing-your-last-git-commit</id>
     <content type="html"><![CDATA[<p>Git encourages you to create commits early and frequently, but I often
-find that my last commit isn't quite as awesome as I'd like it to
+find that my last commit isn&rsquo;t quite as awesome as I&rsquo;d like it to
 be. However, there are three little tricks I use to tweak it a bit.</p>
 
 <!-- more -->
@@ -47,14 +47,14 @@ Just reuse the commit message!</p>
 $ git commit --amend -C HEAD
 </code></pre>
 
-<p>This is conceptually the same as the "fixup" command when rebasing, so
+<p>This is conceptually the same as the &ldquo;fixup&rdquo; command when rebasing, so
 you could alias it as <code>git fixup</code>.</p>
 
 <pre><code>$ git add README.txt
 $ git fixup
 </code></pre>
 
-<h4>Update - 8:30 PM EDT</h4>
+<h4>Update &ndash; 8:30 PM EDT</h4>
 
 <p><a href="http://twitter.com/nick_rutherford">Nick Rutherford</a> reminded me to caution everyone that you should
 never amend your commit <em>after</em> you have pushed it or made it public

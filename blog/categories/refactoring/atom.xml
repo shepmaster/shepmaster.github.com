@@ -4,7 +4,7 @@
   <title><![CDATA[Category: refactoring | Jake Goulding]]></title>
   <link href="http://jakegoulding.com/blog/categories/refactoring/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2013-03-11T21:03:45-04:00</updated>
+  <updated>2014-04-26T17:22:41-04:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -24,14 +24,14 @@ same commit, you are going to have a bad time.</p>
 <!-- more -->
 
 
-<p>Just in case you've forgotten, <a href="http://en.wikipedia.org/wiki/Refactoring">refactoring</a> is</p>
+<p>Just in case you&rsquo;ve forgotten, <a href="http://en.wikipedia.org/wiki/Refactoring">refactoring</a> is</p>
 
-<blockquote><p>the process of changing a computer program's source code without
+<blockquote><p>the process of changing a computer program&rsquo;s source code without
 modifying its external functional behavior</p></blockquote>
 
 <p>When I review a commit that claims to be refactoring, I shift into to
 a very specific mindset. I visualize myself as a world-class goalie,
-ready to stop any rogue features that come my way; I'm going to stand
+ready to stop any rogue features that come my way; I&rsquo;m going to stand
 my ground, no matter what.</p>
 
 <p>Contrast refactoring to adding new functionality. In that case, the
@@ -43,34 +43,34 @@ new code is sufficient.</p>
 
 <p>These are very different things to review for.</p>
 
-<h3>Why's it bad?</h3>
+<h3>Why&rsquo;s it bad?</h3>
 
 <p>When you combine refactoring and feature addition into the same
 commit, you double the work required to review it. In addition to
 figuring out if each changed line is correct, you also have to figure
-out what "correct" even means!</p>
+out what &ldquo;correct&rdquo; even means!</p>
 
 <p>Beyond the doubled work, you have to change your mindset for <strong>every
-line of code</strong>. That's an amazing amount of context switching. It's
-very hard to thoroughly review each line when it's hard to even
+line of code</strong>. That&rsquo;s an amazing amount of context switching. It&rsquo;s
+very hard to thoroughly review each line when it&rsquo;s hard to even
 remember what you are reviewing for.</p>
 
-<p>Combining these disparate actions into one commit isn't something that
-we do maliciously. In fact, it's likely the opposite: good programmers
+<p>Combining these disparate actions into one commit isn&rsquo;t something that
+we do maliciously. In fact, it&rsquo;s likely the opposite: good programmers
 have an innate drive to make the code better all the time. Sometimes
 we see a little problem that we just <em>have</em> to fix up.</p>
 
-<p>The problem is that when we have our programmer hats on, we don't
+<p>The problem is that when we have our programmer hats on, we don&rsquo;t
 always think about what this commit will mean to others
 downstream. This could mean reviewers, approvers, testers,
 documenters, whatever needs to happen after the commit.</p>
 
 <h3>What do I do when my commit is too big?</h3>
 
-<p>There are a few main techniques I use when I discover I've done work
+<p>There are a few main techniques I use when I discover I&rsquo;ve done work
 that should be in different commits.</p>
 
-<p>If I haven't committed yet, and the changes are separate enough, I use
+<p>If I haven&rsquo;t committed yet, and the changes are separate enough, I use
 <code>git add -pu</code> to add certain lines of code and not others.</p>
 
 <p>If the changes overlap with each other, I will edit a specific section
@@ -83,11 +83,11 @@ changes. I then repeat with the next section.</p>
 throw-away branch so I can easily compare the original and modified
 branches to make sure they end up the same.</p>
 
-<p>All of these techniques create "false history" - I didn't <em>really</em>
-make that small step. After I'm finished, I run a little script that
+<p>All of these techniques create &ldquo;false history&rdquo; &ndash; I didn&rsquo;t <em>really</em>
+make that small step. After I&rsquo;m finished, I run a little script that
 checks out each commit and runs my tests.</p>
 
-<p>Sometimes, trying to preserve my changes isn't worth the time, or I
+<p>Sometimes, trying to preserve my changes isn&rsquo;t worth the time, or I
 can see into the future a bit and know ahead of time that I am about
 to make a big set of changes. In these cases, I try a spike: I make
 the changes willy-nilly, writing down each step as I do it. Then I
@@ -95,14 +95,14 @@ throw it away and <em>invert the order of steps</em>. This allows each step
 to happen in the order I would prefer, and I often improve on each
 step.</p>
 
-<h3>Isn't too many small commits just as bad?</h3>
+<h3>Isn&rsquo;t too many small commits just as bad?</h3>
 
-<p>I've heard something like this before:</p>
+<p>I&rsquo;ve heard something like this before:</p>
 
-<blockquote><p>It's so small, it doesn't deserve it's own commit</p></blockquote>
+<blockquote><p>It&rsquo;s so small, it doesn&rsquo;t deserve it&rsquo;s own commit</p></blockquote>
 
-<p>I've <strong>never</strong> had to review a commit that was too small. I have had
-to review a commit that was too large. I'm willing to take the risk of
+<p>I&rsquo;ve <strong>never</strong> had to review a commit that was too small. I have had
+to review a commit that was too large. I&rsquo;m willing to take the risk of
 creating many small commits, especially if all the changes are going
 to be made one way or another.</p>
 
@@ -124,13 +124,13 @@ or <strong>but</strong>s. If it does, I kick it back to the author and request t
 the commit be split up into those pieces. Otherwise, I sear the commit
 message into my brain.</li>
 <li>Read the diff of the commit and evaluate each change against the
-commit message. If a line doesn't fit with the message, mark the
+commit message. If a line doesn&rsquo;t fit with the message, mark the
 change as unrelated. If it does, review the line as usual.</li>
 <li>Sometimes I keep reading the diff once you I find an unrelated
 line, other times I stop at the first one; the original author may be
 faster at separating the concerns.</li>
 <li>Make sure to thank the author when they provide a commit with a
-single focus - positive reinforcement lets us know that we are on the
+single focus &ndash; positive reinforcement lets us know that we are on the
 right track!</li>
 </ol>
 
@@ -144,7 +144,7 @@ right track!</li>
     <id>http://jakegoulding.com/blog/2012/09/24/a-refactoring-example-if-else-on-strings</id>
     <content type="html"><![CDATA[<p>I recently did a bit of work that turned out to be a great exercise
 for refactoring a huge sequence of if-else statements based on
-strings. There are a few ugly bits left, so I'm still poking at it,
+strings. There are a few ugly bits left, so I&rsquo;m still poking at it,
 but I am pleased with my progress so far.</p>
 
 <!-- more -->
@@ -152,7 +152,7 @@ but I am pleased with my progress so far.</p>
 
 <p>While the original code was Java, the meat of the problem can be
 easily shown in Ruby. Translating it to Ruby also makes it easier to
-make sure I don't accidentally share any proprietary information!</p>
+make sure I don&rsquo;t accidentally share any proprietary information!</p>
 
 <p>The problem involves processing a hunk of XML to create nested
 configuration objects. The original implementation used a sequence of
@@ -189,7 +189,7 @@ end
 
 <p>This function has some issues: it is pretty long, and each case has
 some similarity to the next but are different enough to be
-annoying. The code certainly doesn't try to adhere to the Single
+annoying. The code certainly doesn&rsquo;t try to adhere to the Single
 Responsibility Principle!</p>
 
 <p>My first step was to split the blocks into classes with a common interface.</p>
@@ -246,11 +246,11 @@ needs to be updated.</p>
 
 <p>```ruby
 class FooHandler
-  # As above...
+  # As above&hellip;
 end</p>
 
 <p>class BarHandler
-  # As above...
+  # As above&hellip;
 end</p>
 
 <p>class ObjectsFromXML
@@ -284,7 +284,7 @@ right handler and dealing with children elements.</p>
 
 <p>```ruby
 class FooHandler
-  # As above...</p>
+  # As above&hellip;</p>
 
 <p>  def element_name</p>
 
@@ -295,7 +295,7 @@ class FooHandler
 end</p>
 
 <p>class BarHandler
-  # As above...</p>
+  # As above&hellip;</p>
 
 <p>  def element_name</p>
 
@@ -362,7 +362,7 @@ class that is highly focused on that one responsibility.</p>
 <code>ObjectsFromXML</code> class became another <code>Handler</code> class, which made it
 the same level of abstraction as the other handlers and removed a
 redundant <code>process</code> method. The return code was removed because it
-wasn't used except in a few tests. Iterating over children was moved
+wasn&rsquo;t used except in a few tests. Iterating over children was moved
 to each class that could contain children.</p>
 ]]></content>
   </entry>
@@ -379,7 +379,7 @@ definition:</p>
 existing body of code, altering its internal structure without
 changing its external behavior.</p></blockquote>
 
-<p>That description seems fairly reasonable; let's look at some potential
+<p>That description seems fairly reasonable; let&rsquo;s look at some potential
 refactoring techniques.</p>
 
 <!-- more -->
@@ -420,9 +420,9 @@ class A
 end
 ```</p>
 
-<p>This one is pretty clear-cut - it's a refactoring technique that any
+<p>This one is pretty clear-cut &ndash; it&rsquo;s a refactoring technique that any
 programmer would recognize, even if she had never heard of the term
-"refactoring". It goes by the name <a href="http://martinfowler.com/refactoring/catalog/extractMethod.html">Extract Method</a>.</p>
+&ldquo;refactoring&rdquo;. It goes by the name <a href="http://martinfowler.com/refactoring/catalog/extractMethod.html">Extract Method</a>.</p>
 
 <h2>Example 2</h2>
 
@@ -509,7 +509,7 @@ one, as only one of the subclasses has the method definition to start
 with. This difference makes us less ready to call our changes
 refactoring.</p>
 
-<p>Here's the trick: from just the code above, <strong>you can't tell if these
+<p>Here&rsquo;s the trick: from just the code above, <strong>you can&rsquo;t tell if these
 changes constitute refactoring or not</strong>.</p>
 
 <h2>In which details are examined</h2>
@@ -519,12 +519,12 @@ refactoring: <em>internal</em> and <em>external</em>. These three examples only 
 the code being changed (the internal structure), not how other objects
 interact with this code (the external behavior).</p>
 
-<p>Take a look at the second example - if any object in the entire system
+<p>Take a look at the second example &ndash; if any object in the entire system
 ever calls the <code>bet</code> method, then removing the method will cause the
 behavior of the system as a whole to change.</p>
 
 <p>The first and third examples are actually the same from this point of
-view - they both add a new method. You might think that adding a
+view &ndash; they both add a new method. You might think that adding a
 method is safe, but in truth it depends on the circumstances.</p>
 
 <p>In a statically-typed language, adding a method is safe because no
@@ -536,11 +536,11 @@ new behavior elsewhere.</p>
 
 <h2>In which time is considered</h2>
 
-<p>Let's focus on the third example and assume that the above caveat
-about adding methods in dynamically-typed languages doesn't apply.</p>
+<p>Let&rsquo;s focus on the third example and assume that the above caveat
+about adding methods in dynamically-typed languages doesn&rsquo;t apply.</p>
 
 <p>First, we decide that the code would be better if we moved the <code>greet</code>
-method from <code>A</code> to <code>Parent</code>. This change would be refactoring - no
+method from <code>A</code> to <code>Parent</code>. This change would be refactoring &ndash; no
 external behavior has changed.</p>
 
 <p>Second, instead of just making the code better, assume that user
@@ -554,7 +554,7 @@ means that we:</p>
 
 
 <p>Even though the code is modified in the same way for both examples,
-the second time is <em>not refactoring</em> - we are changing the behavior of
+the second time is <em>not refactoring</em> &ndash; we are changing the behavior of
 the system from failing to passing. The only difference is that time
 has passed and the requirements of the system are different.</p>
 
@@ -567,7 +567,7 @@ external code that relies on certain behavior.</p>
 
 <p>Some refactoring techniques change code only within a single method,
 such as <a href="http://martinfowler.com/refactoring/catalog/splitLoop.html">Split Loop</a>. In most cases, these techniques
-don't have to worry about changing the external behavior. Intra-method
+don&rsquo;t have to worry about changing the external behavior. Intra-method
 refactoring can only cause a problem when the method has side-effects
 that are visible outside of the method.</p>
 
@@ -584,15 +584,15 @@ before refactoring it; if the environment is ignored, then you cannot
 possibly understand the desired behavior of the code.</p>
 
 <p>A main point from the blog post
-<a href="http://hamletdarcy.blogspot.com/2009/06/forgotten-refactorings.html">Forgotten Refactorings</a> by Hamlet D'Arcy is that it's
-not really refactoring if the code being changed isn't covered by
+<a href="http://hamletdarcy.blogspot.com/2009/06/forgotten-refactorings.html">Forgotten Refactorings</a> by Hamlet D'Arcy is that it&rsquo;s
+not really refactoring if the code being changed isn&rsquo;t covered by
 tests. This is because tests are the single-best way to nail down the
 expectations of the behavior of a system, with the benefit that they
 are continually verified.</p>
 
 <p>It is also interesting to note that the order in which code is
 modified can alter if you are performing a refactoring or not. While
-there probably isn't a practical difference between the two paths, I
+there probably isn&rsquo;t a practical difference between the two paths, I
 cannot help but wonder if choosing one or the other will have some
 practical benefit.</p>
 

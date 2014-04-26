@@ -19,13 +19,14 @@ involve quite a few engineers and take a good chunk of time. It is the &hellip;"
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://jakegoulding.com/blog/2011/02/27/how-mock-objects-make-gantt-charts-more-useless/">
+  <link rel="canonical" href="http://jakegoulding.com/blog/2011/02/27/how-mock-objects-make-gantt-charts-more-useless">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="/javascripts/ender.js"></script>
-  <script src="/javascripts/octopress.js" type="text/javascript"></script>
   <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
   <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
 <link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
@@ -109,7 +110,7 @@ prototypes of the new product have been developed (and demonstrated
 with positive feedback), but now it is time to <em>really</em> get our
 hands dirty.</p>
 
-<p>Of course, by &#8220;hands dirty&#8221;, I mean that it is time to generate reams
+<p>Of course, by &ldquo;hands dirty&rdquo;, I mean that it is time to generate reams
 and reams of project plans and software designs, both of which will
 take an inordinate amount of time to create and then be underused and
 under-maintained. One old friend that popped up during project
@@ -145,7 +146,7 @@ see how real-world projects might be coerced into Gantt chart form.</p>
 pieces of code. The most common times I have used a mock object has
 been when the real object is too complicated or slow to use in a
 test. However, there are other cases when they can be used, such as
-when the real object &#8220;does not yet exist or may change behavior&#8221;.</p>
+when the real object &ldquo;does not yet exist or may change behavior&rdquo;.</p>
 
 <div class="image_with_caption">
   <img src="/images/blog/gantt-2.png" alt="Gantt chart using mock objects" />
@@ -157,7 +158,7 @@ when the real object &#8220;does not yet exist or may change behavior&#8221;.</p
 time to create suitable mock objects for the application logic and UI
 teams (represented by the gradients at left). For example purposes, I
 hand-wavingly say that creating these objects will take one week for
-each team. In addition, there is an extra week of &#8220;integration&#8221; after
+each team. In addition, there is an extra week of &ldquo;integration&rdquo; after
 each team thinks they are done.</p>
 
 <p>If this reorganization is to be believed, then we have reduced the
@@ -182,14 +183,14 @@ lower-level support to complete some feature, they can add that
 functionality to a mock object on-demand. In return, the application
 team can then look at the created mock objects to know exactly what
 interface and functionality is required, without worrying that they
-are writing code that won&#8217;t be used.</p>
+are writing code that won&rsquo;t be used.</p>
 
 <h3>Not a panacea</h3>
 
 <p>Of course, mock objects are not a development silver bullet.</p>
 
 <p><strong>You need to be able to take advantage of the parallelization.</strong> If
-you only have one team or just one developer, it&#8217;s safe to say you
+you only have one team or just one developer, it&rsquo;s safe to say you
 wont see any time benefit from this process. For the moment, I am
 ignoring any additional benefits that mock objects might bring, such
 as reduction in testing or debugging time.</p>
@@ -229,7 +230,7 @@ developer.</p>
 <p><strong>Benefits</strong></p>
 
 <ul>
-<li>Allows parallelization of &#8220;dependent&#8221; tasks</li>
+<li>Allows parallelization of &ldquo;dependent&rdquo; tasks</li>
 <li>Create more ideal interfaces</li>
 </ul>
 
@@ -246,8 +247,8 @@ developer.</p>
 
 <h2>A note to the terminology-minded</h2>
 
-<p>I use the term &#8220;mock object&#8221; interchangeably with the more generic
-term &#8220;test double&#8221;. Martin Fowler has an <a href="http://martinfowler.com/articles/mocksArentStubs.html">excellent
+<p>I use the term &ldquo;mock object&rdquo; interchangeably with the more generic
+term &ldquo;test double&rdquo;. Martin Fowler has an <a href="http://martinfowler.com/articles/mocksArentStubs.html">excellent
 article</a> that details some of the differences between different
 types of test doubles. Any type of test double should be able to help
 break the dependency chain; it is up to each team to decide which
@@ -257,14 +258,14 @@ double is appropriate for a given situation.</p>
 
 <p><strong>EDIT 3:42 PM</strong> <a href="http://news.ycombinator.com/item?id=2268686">Groxx</a> over at Hacker News points out that I
 am unfairly attacking the Gantt chart itself, and that realistically
-the problem is one of &#8220;organizational abuse&#8221;. In addition, the Gantt
+the problem is one of &ldquo;organizational abuse&rdquo;. In addition, the Gantt
 chart is quite capable of handling my second example. In my
 experience, most Gantt charts have looked more like my first
 example, so I tend to conflate the chart with the act of
 serialization of tasks.</p>
 
 <p>My real point is that project planning often devolves into the concept
-of &#8220;we must code A before B before C&#8221;, but that by using techniques
+of &ldquo;we must code A before B before C&rdquo;, but that by using techniques
 such as mock objects, we can break the (artificial) dependency graph.</p>
 </div>
 
@@ -296,7 +297,7 @@ such as mock objects, we can break the (artificial) dependency graph.</p>
     
       <div class="sharing">
   
-  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2011/02/27/how-mock-objects-make-gantt-charts-more-useless/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2011/02/27/how-mock-objects-make-gantt-charts-more-useless/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2011/02/27/how-mock-objects-make-gantt-charts-more-useless/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2011/02/27/how-mock-objects-make-gantt-charts-more-useless/" >Tweet</a>
   
   
   
@@ -346,23 +347,6 @@ such as mock objects, we can break the (artificial) dependency graph.</p>
 </section>
 
 
-<section>
-  <h1>Latest Tweets</h1>
-  <ul id="tweets">
-    <li class="loading">Status updating...</li>
-  </ul>
-  <script type="text/javascript">
-    $.domReady(function(){
-      getTwitterFeed("jakegoulding", 4, false);
-    });
-  </script>
-  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
-  
-    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-show-count="false">Follow @jakegoulding</a>
-  
-</section>
-
-
 
 
 
@@ -373,7 +357,7 @@ such as mock objects, we can break the (artificial) dependency graph.</p>
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2013 - Jake Goulding -
+  Copyright &copy; 2014 - Jake Goulding -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 
@@ -391,7 +375,7 @@ such as mock objects, we can break the (artificial) dependency graph.</p>
       var twitterWidgets = document.createElement('script');
       twitterWidgets.type = 'text/javascript';
       twitterWidgets.async = true;
-      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
       document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
     })();
   </script>

@@ -20,13 +20,14 @@ newer Java and Ruby &hellip;">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://jakegoulding.com/blog/2012/07/01/the-stages-of-code-review/">
+  <link rel="canonical" href="http://jakegoulding.com/blog/2012/07/01/the-stages-of-code-review">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="/javascripts/ender.js"></script>
-  <script src="/javascripts/octopress.js" type="text/javascript"></script>
   <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
   <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
 <link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
@@ -112,17 +113,17 @@ reviews and testing infrastructure from day one.</p>
 
 
 <p>Starting to use gerrit on our C code has led me to think about how we
-approach code reviews, and I&#8217;ve identified some stages that we have
-gone through. It&#8217;s loosely sorted by the order in which we adopted
+approach code reviews, and I&rsquo;ve identified some stages that we have
+gone through. It&rsquo;s loosely sorted by the order in which we adopted
 each check. While not every commit needs each point, this is a general
 idea of what might be required.</p>
 
 <ol>
 <li><p>Functionality</p>
 
-<p>This was what started us on the code review path - sometimes we
-would commit something that just didn&#8217;t work right. Occasionally,
-the code wouldn&#8217;t even compile! To try and address these problems,
+<p>This was what started us on the code review path &ndash; sometimes we
+would commit something that just didn&rsquo;t work right. Occasionally,
+the code wouldn&rsquo;t even compile! To try and address these problems,
 we would have a coworker give the code a once-over before pushing
 it. We actually started doing this long before gerrit by walking
 over to another desk.</p></li>
@@ -138,10 +139,14 @@ started doing almost immediately.</p></li>
 
 <p>After a few annoying memory leaks got committed, we started looking
 at the code with a critical eye for all kinds of leaks. Resource
-leaks are easy enough to add and subsequently miss, especially in
-C. Leaks are really just a special type of non-functioning code,
+leaks are easy enough to add and subsequently miss, especially in</p>
+
+<ol type="a">
+<li>Leaks are really just a special type of non-functioning code,
 but one that bites you days/weeks/years later instead of
-immediately.</p>
+immediately.</li>
+</ol>
+
 
 <p>Sometimes we use a tool such as <a href="http://valgrind.org/">valgrind</a> to test for
 leaks, but in many cases we just inspect the code visually. We
@@ -151,11 +156,11 @@ attention to various error conditions.</p></li>
 
 <p>For better or worse, we almost always worry about how optimized our
 code is. Sometimes this is can be a valuable exercise, but in most
-situations it was probably overkill. There&#8217;s just a warm fuzzy
+situations it was probably overkill. There&rsquo;s just a warm fuzzy
 feeling when you catch an O(n<sup>2</sup>) algorithm that could be
 O(n log n), even if you spend more time coming up with the faster
 algorithm than will ever be saved in runtime. Since this focus on
-optimization is part of our culture, it has found it&#8217;s way into our
+optimization is part of our culture, it has found it&rsquo;s way into our
 reviews.</p></li>
 <li><p>Tests</p>
 
@@ -163,12 +168,12 @@ reviews.</p></li>
 code is, at best, hard and/or annoying. Add the fact that trying to
 test code that was never designed to be tested is painful, and you
 can easily see why we tend to turn a blind eye when a commit
-doesn&#8217;t add any new tests.</p></li>
+doesn&rsquo;t add any new tests.</p></li>
 <li><p>Documentation</p>
 
 <p>Code written in C should probably have more documentation than most
 other languages, simply due to all the ways you can shoot yourself
-in the foot. For example, you can&#8217;t tell if any given function will
+in the foot. For example, you can&rsquo;t tell if any given function will
 take ownership of the pointer you pass it, that information has to
 be documented somewhere. When we prefix our function names with the
 module name, the descriptive part of the name is often shortened to
@@ -176,11 +181,11 @@ prevent extremely long function names. This means the function
 documentation is vital to understand what the function does.</p>
 
 <p>Reviewing documentation often comes down to checking that it makes
-sense and is proper English. It&#8217;s impressive how mangled a sentence
+sense and is proper English. It&rsquo;s impressive how mangled a sentence
 can get when you refactor the code it is trying to describe.</p></li>
 <li><p>Coding style</p>
 
-<p>Many different aspects of code fall into &#8220;style&#8221;: the contents,
+<p>Many different aspects of code fall into &ldquo;style&rdquo;: the contents,
 formatting and spelling of comments; the names of variables, static
 functions, and structures; the size and complexity of functions;
 the contents of structures.</p>
@@ -215,11 +220,11 @@ being made, not just what or how.</p></li>
 
 <h4>Where we are now</h4>
 
-<p>The C project is currently somewhere around the &#8220;Tests&#8221; or
-&#8220;Documentation&#8221; stages. The Java and Ruby projects expect tests and
-documentation, so they hover around the &#8220;Code style&#8221; and &#8220;Test style&#8221;
-stages; I&#8217;ve only had one or two opportunities to correct someones
-verb tense :-).</p>
+<p>The C project is currently somewhere around the &ldquo;Tests&rdquo; or
+&ldquo;Documentation&rdquo; stages. The Java and Ruby projects expect tests and
+documentation, so they hover around the &ldquo;Code style&rdquo; and &ldquo;Test style&rdquo;
+stages; I&rsquo;ve only had one or two opportunities to correct someones
+verb tense :&ndash;).</p>
 </div>
 
 
@@ -250,7 +255,7 @@ verb tense :-).</p>
     
       <div class="sharing">
   
-  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2012/07/01/the-stages-of-code-review/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2012/07/01/the-stages-of-code-review/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2012/07/01/the-stages-of-code-review/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2012/07/01/the-stages-of-code-review/" >Tweet</a>
   
   
   
@@ -300,23 +305,6 @@ verb tense :-).</p>
 </section>
 
 
-<section>
-  <h1>Latest Tweets</h1>
-  <ul id="tweets">
-    <li class="loading">Status updating...</li>
-  </ul>
-  <script type="text/javascript">
-    $.domReady(function(){
-      getTwitterFeed("jakegoulding", 4, false);
-    });
-  </script>
-  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
-  
-    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-show-count="false">Follow @jakegoulding</a>
-  
-</section>
-
-
 
 
 
@@ -327,7 +315,7 @@ verb tense :-).</p>
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2013 - Jake Goulding -
+  Copyright &copy; 2014 - Jake Goulding -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 
@@ -345,7 +333,7 @@ verb tense :-).</p>
       var twitterWidgets = document.createElement('script');
       twitterWidgets.type = 'text/javascript';
       twitterWidgets.async = true;
-      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
       document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
     })();
   </script>

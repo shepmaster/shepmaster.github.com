@@ -4,7 +4,7 @@
   <title><![CDATA[Category: clojure | Jake Goulding]]></title>
   <link href="http://jakegoulding.com/blog/categories/clojure/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2013-03-11T21:03:45-04:00</updated>
+  <updated>2014-04-26T17:22:41-04:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -18,20 +18,20 @@
     <link href="http://jakegoulding.com/blog/2011/09/18/game-of-life-in-clojure/"/>
     <updated>2011-09-18T11:22:00-04:00</updated>
     <id>http://jakegoulding.com/blog/2011/09/18/game-of-life-in-clojure</id>
-    <content type="html"><![CDATA[<p>I've been trying to learn <a href="http://clojure.org">Clojure</a> recently, so I wrote
-<a href="http://en.wikipedia.org/wiki/Conway's_Game_of_Life">Conway's Game of Life</a>. I'm sure that the code is highly
-non-idiomatic, but I'd rather get it out into the wild, instead of
+    <content type="html"><![CDATA[<p>I&rsquo;ve been trying to learn <a href="http://clojure.org">Clojure</a> recently, so I wrote
+<a href="http://en.wikipedia.org/wiki/Conway's_Game_of_Life">Conway&rsquo;s Game of Life</a>. I&rsquo;m sure that the code is highly
+non-idiomatic, but I&rsquo;d rather get it out into the wild, instead of
 sitting on my disk.</p>
 
 <!-- more -->
 
 
 <p>Note that I have inline tests (the simple <code>println</code> statements) mostly
-because I wasn't trying to figure out how to properly test in Clojure
+because I wasn&rsquo;t trying to figure out how to properly test in Clojure
 (yet).</p>
 
 <p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span> (life.clj)</span> <a href='/downloads/code/life.clj'>download</a></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>

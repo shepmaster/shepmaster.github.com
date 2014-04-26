@@ -10,7 +10,7 @@
 
   
   <meta name="description" content="Git encourages you to create commits early and frequently, but I often
-find that my last commit isn&#8217;t quite as awesome as I&#8217;d like it to &hellip;">
+find that my last commit isn&rsquo;t quite as awesome as I&rsquo;d like it to &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -19,13 +19,14 @@ find that my last commit isn&#8217;t quite as awesome as I&#8217;d like it to &h
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://jakegoulding.com/blog/2011/09/18/quickly-fixing-your-last-git-commit/">
+  <link rel="canonical" href="http://jakegoulding.com/blog/2011/09/18/quickly-fixing-your-last-git-commit">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="/javascripts/ender.js"></script>
-  <script src="/javascripts/octopress.js" type="text/javascript"></script>
   <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
   <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
 <link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
@@ -103,7 +104,7 @@ find that my last commit isn&#8217;t quite as awesome as I&#8217;d like it to &h
 
 
 <div class="entry-content"><p>Git encourages you to create commits early and frequently, but I often
-find that my last commit isn&#8217;t quite as awesome as I&#8217;d like it to
+find that my last commit isn&rsquo;t quite as awesome as I&rsquo;d like it to
 be. However, there are three little tricks I use to tweak it a bit.</p>
 
 <!-- more -->
@@ -131,14 +132,14 @@ Just reuse the commit message!</p>
 $ git commit --amend -C HEAD
 </code></pre>
 
-<p>This is conceptually the same as the &#8220;fixup&#8221; command when rebasing, so
+<p>This is conceptually the same as the &ldquo;fixup&rdquo; command when rebasing, so
 you could alias it as <code>git fixup</code>.</p>
 
 <pre><code>$ git add README.txt
 $ git fixup
 </code></pre>
 
-<h4>Update - 8:30 PM EDT</h4>
+<h4>Update &ndash; 8:30 PM EDT</h4>
 
 <p><a href="http://twitter.com/nick_rutherford">Nick Rutherford</a> reminded me to caution everyone that you should
 never amend your commit <em>after</em> you have pushed it or made it public
@@ -181,7 +182,7 @@ other people may have already grabbed a copy of.</p>
     
       <div class="sharing">
   
-  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2011/09/18/quickly-fixing-your-last-git-commit/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2011/09/18/quickly-fixing-your-last-git-commit/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2011/09/18/quickly-fixing-your-last-git-commit/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2011/09/18/quickly-fixing-your-last-git-commit/" >Tweet</a>
   
   
   
@@ -231,23 +232,6 @@ other people may have already grabbed a copy of.</p>
 </section>
 
 
-<section>
-  <h1>Latest Tweets</h1>
-  <ul id="tweets">
-    <li class="loading">Status updating...</li>
-  </ul>
-  <script type="text/javascript">
-    $.domReady(function(){
-      getTwitterFeed("jakegoulding", 4, false);
-    });
-  </script>
-  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
-  
-    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-show-count="false">Follow @jakegoulding</a>
-  
-</section>
-
-
 
 
 
@@ -258,7 +242,7 @@ other people may have already grabbed a copy of.</p>
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2013 - Jake Goulding -
+  Copyright &copy; 2014 - Jake Goulding -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 
@@ -276,7 +260,7 @@ other people may have already grabbed a copy of.</p>
       var twitterWidgets = document.createElement('script');
       twitterWidgets.type = 'text/javascript';
       twitterWidgets.async = true;
-      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
       document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
     })();
   </script>

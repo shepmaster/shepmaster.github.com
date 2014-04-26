@@ -4,7 +4,7 @@
   <title><![CDATA[Category: debugging | Jake Goulding]]></title>
   <link href="http://jakegoulding.com/blog/categories/debugging/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2013-03-11T21:03:45-04:00</updated>
+  <updated>2014-04-26T17:22:41-04:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -19,9 +19,9 @@
     <updated>2012-10-10T19:41:00-04:00</updated>
     <id>http://jakegoulding.com/blog/2012/10/10/watch-out-for-lost-updates-when-using-capybara-with-selenium</id>
     <content type="html"><![CDATA[<p>At work, I am still working on finding and squashing fun test
-failures. In this case, "fun" means tests that have an intermittent
+failures. In this case, &ldquo;fun&rdquo; means tests that have an intermittent
 failure rate of 5% (or less!). The test issue I worked on today had to
-do with the "lost update" problem.</p>
+do with the &ldquo;lost update&rdquo; problem.</p>
 
 <!-- more -->
 
@@ -33,7 +33,7 @@ description and diagram of the problem:</p>
 
 <p><img src="http://jakegoulding.com/images/blog/lost-update.png" alt="The lost update problem" /></p>
 
-<p>The short version is that when you poll a system for its state, it's
+<p>The short version is that when you poll a system for its state, it&rsquo;s
 entirely possible to miss the state you are looking for. In the
 diagram, the color changes to red and then to blue before the test
 ever has a chance to see that it was red. Since this system will never
@@ -47,21 +47,21 @@ worked looked something like this:</p>
 
 <p>```ruby
 def wait_for_table_loading
-  dialog = page.find('.loading_dialog')
+  dialog = page.find(&lsquo;.loading_dialog&rsquo;)
   wait_until { dialog.visible? }
 end</p>
 
 <p>def wait_for_table_ready
-  dialog = page.find('.loading_dialog')
+  dialog = page.find(&lsquo;.loading_dialog&rsquo;)
   wait_until { ! dialog.visible? }
 end</p>
 
-<p>it 'filters the list' do
+<p>it &lsquo;filters the list&rsquo; do
   visit list_path
-  click_on 'Filter by active'
+  click_on &lsquo;Filter by active&rsquo;
   wait_for_table_loading
   wait_for_table_ready
-  page.all('.data-item').should have(3).items
+  page.all(&lsquo;.data-item&rsquo;).should have(3).items
 end
 ```</p>
 
@@ -93,15 +93,15 @@ Capybara to find a particular number of elements. Asking Capybara to
 find things in this manner will let the test leverage the built-in
 waiting facilities of Capybara.</p>
 
-<p>In this test, the number of data items won't change once the table is
+<p>In this test, the number of data items won&rsquo;t change once the table is
 loaded, so it is a safe state to poll. As an additional benefit, the
 test now has fewer lines of code and is clearer.</p>
 
-<p>As a downside, when the test fails, the Capybara error message doesn't
-include how many items were found, which isn't as informative as the
+<p>As a downside, when the test fails, the Capybara error message doesn&rsquo;t
+include how many items were found, which isn&rsquo;t as informative as the
 equivalent message from the RSpec matcher.</p>
 
-<p>Also, this test still ultimately relies on polling the DOM, so it's
+<p>Also, this test still ultimately relies on polling the DOM, so it&rsquo;s
 possible for similar bugs to pop up in the future.</p>
 
 <h3>The GOOS solution to the lost update problem</h3>
@@ -122,27 +122,27 @@ offers a nice API suited for the tests.</p>
 <p>I can imagine a Capybara test that looks something like this:</p>
 
 <p>```ruby
-it 'filters the list' do
+it &lsquo;filters the list&rsquo; do
   visit list_path
-  wait_for_js_event('table.loaded') do</p>
+  wait_for_js_event(&lsquo;table.loaded&rsquo;) do</p>
 
 <pre><code>click_on 'Filter by active'
 </code></pre>
 
 <p>  end
-  page.all('.data-item').should have(3).items
+  page.all(&lsquo;.data-item&rsquo;).should have(3).items
 end
 ```</p>
 
-<p>Under the hood, there's some extra JavaScript going on. The
+<p>Under the hood, there&rsquo;s some extra JavaScript going on. The
 <code>wait_for_js_event</code> method would inject some JavaScript into the
 running Selenium session that creates an event listener and binds it
 to the given event. This listener just collects all the events it
 receives. After yielding the block, the test code then polls the event
 listener, waiting for the event to be captured.</p>
 
-<p>It's entirely possible that code that does this already exists, but I
-don't know of it. It wouldn't be a large amount of code to write, but
+<p>It&rsquo;s entirely possible that code that does this already exists, but I
+don&rsquo;t know of it. It wouldn&rsquo;t be a large amount of code to write, but
 it would straddle the borders of Capybara, Selenium and JavaScript.</p>
 
 <p>This might be a useful thing for <a href="http://pivotal.github.com/jasmine/">Jasmine</a> tests, so it might
@@ -155,9 +155,9 @@ already exist in that ecosystem.</p>
     <link href="http://jakegoulding.com/blog/2012/10/08/finding-a-race-condition-in-capybara-with-selenium/"/>
     <updated>2012-10-08T20:40:00-04:00</updated>
     <id>http://jakegoulding.com/blog/2012/10/08/finding-a-race-condition-in-capybara-with-selenium</id>
-    <content type="html"><![CDATA[<p>At work, we've been using <a href="https://github.com/jnicklas/capybara">Capybara</a> and
+    <content type="html"><![CDATA[<p>At work, we&rsquo;ve been using <a href="https://github.com/jnicklas/capybara">Capybara</a> and
 <a href="https://code.google.com/p/selenium/">Selenium</a> to test our newest web application. Many of us
-have used this combination before for our own projects, but it's new
+have used this combination before for our own projects, but it&rsquo;s new
 territory for a work project.</p>
 
 <p>Every so often, we would get this error from a specific test:</p>
@@ -179,7 +179,7 @@ fix it once and for all.</p>
 often saw the error when running the tests on our <a href="http://jenkins-ci.org/">Jenkins</a>
 continuous integration server, so there was the possibility that the
 problem was environmental. However, we also knew that the failure was
-intermittent, so we couldn't be sure it was environmental even if the
+intermittent, so we couldn&rsquo;t be sure it was environmental even if the
 test passed locally a few times.</p>
 
 <p>I rigged up a small shell script to simply run the test over and over
@@ -187,7 +187,7 @@ again while I wandered away from my computer. The script looked
 something like:</p>
 
 <p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span> (test-script-runner.sh)</span> <a href='/downloads/code/test-script-runner.sh'>download</a></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -213,10 +213,10 @@ something like:</p>
 </span><span class='line'><span class="k">done</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
-<p>I'm sure there's a proper statistical manner to determine how many
+<p>I&rsquo;m sure there&rsquo;s a proper statistical manner to determine how many
 times the test would have to be run without failing to be reasonably
-certain that the test won't fail, but I didn't have to worry about
-that - the test failed somewhere within the first ten or so runs.</p>
+certain that the test won&rsquo;t fail, but I didn&rsquo;t have to worry about
+that &ndash; the test failed somewhere within the first ten or so runs.</p>
 
 <p>Now that I knew the test could fail on my local setup, it was time to
 dig into what the test was doing. The test was fairly concise and
@@ -230,11 +230,11 @@ it 'deletes the element', :js =&gt; true  do
 end
 </code></p>
 
-<p>The exception was coming from line #4 - when the test made the first
-assertion about the elements. Unfortunately, the stacktrace isn't very
+<p>The exception was coming from line #4 &ndash; when the test made the first
+assertion about the elements. Unfortunately, the stacktrace isn&rsquo;t very
 useful, as it mostly contains references to the JavaScript running
 inside of Firefox. The exception text indicates that the test has a
-reference to an element, but it isn't available in the cache
+reference to an element, but it isn&rsquo;t available in the cache
 anymore. Considering that the test just deleted the element, this is
 certainly suspicious.</p>
 
@@ -242,13 +242,13 @@ certainly suspicious.</p>
 around. A <code>git grep</code> quickly found where <code>has_no_css?</code> was
 <a href="https://github.com/jnicklas/capybara/blob/1.1_stable/lib/capybara/node/matchers.rb#L171">defined</a>. Following the thread of code led to
 <code>has_no_selector?</code>, which calls the <code>all</code> <a href="https://github.com/jnicklas/capybara/blob/1.1_stable/lib/capybara/node/finders.rb#L109">method</a>. This method
-had a pretty clear split between the "finding" part of the code and
-the "filtering" part. There was no magic I used here to see this, just
+had a pretty clear split between the &ldquo;finding&rdquo; part of the code and
+the &ldquo;filtering&rdquo; part. There was no magic I used here to see this, just
 previous experience debugging race conditions.</p>
 
 <p>I opened up the installed gem and inserted a sleep directly into the
-code between the "finding" and "filtering" sections. It's ugly doing
-this, but it's good to try to not change too many things at once when
+code between the &ldquo;finding&rdquo; and &ldquo;filtering&rdquo; sections. It&rsquo;s ugly doing
+this, but it&rsquo;s good to try to not change too many things at once when
 debugging. I played with the sleep value a bit and eventually found a
 value that reliably reproduced the failure. Success!</p>
 
@@ -266,17 +266,17 @@ to.</p>
 <p>Since I knew that I would want to make changes to Capybara, I used the
 <code>:path</code> parameter in the Gemfile to point to my local checkout of
 Capybara. This is an awesome feature of <a href="http://gembundler.com/">Bundler</a> that you might not
-know about. It also means I'm not messing with my generally-available
+know about. It also means I&rsquo;m not messing with my generally-available
 copy of Capybara, which is good for my sanity.</p>
 
 <p>I then created a stripped-down version of the test, the same as the
 example above. After getting everything hooked up, I ran the test but
-it didn't fail. This was bad news - I had done a few big steps between
-the production app and the smaller test case - which one of them could
+it didn&rsquo;t fail. This was bad news &ndash; I had done a few big steps between
+the production app and the smaller test case &ndash; which one of them could
 have changed the behavior?</p>
 
 <p>This is where my knowledge of our production system came in useful. In
-that application, we aren't just removing something from the page, we
+that application, we aren&rsquo;t just removing something from the page, we
 are persisting that deletion to disk. Doing that can add some time
 before the JavaScript fires to remove the item. I changed the test
 JavaScript to have a delay less than the delay in Capybara and ran the
@@ -301,9 +301,9 @@ anyone stumbling on the test app would have a clue as to what it was.</p>
 the Capybara list. I still find emailing new lists scary. Who knows
 how the list will respond? This time I got a <a href="https://groups.google.com/forum/?fromgroups=#!topic/ruby-capybara/O3Ib6INOP58">nice surprise</a>:</p>
 
-<blockquote><p>That's a very nice bug report, Jake.</p>
+<blockquote><p>That&rsquo;s a very nice bug report, Jake.</p>
 
-<p>It appears to be a bug indeed. I've been able to reproduce it on master as well.</p></blockquote>
+<p>It appears to be a bug indeed. I&rsquo;ve been able to reproduce it on master as well.</p></blockquote>
 
 <p>A GitHub issue <a href="https://github.com/jnicklas/capybara/issues/843">has been opened</a>, and the bug is well on the
 way to being fixed. Yay for Open Source!</p>
@@ -315,7 +315,7 @@ way to being fixed. Yay for Open Source!</p>
     <link href="http://jakegoulding.com/blog/2011/02/06/sqlite-64-bit-integers/"/>
     <updated>2011-02-06T12:00:00-05:00</updated>
     <id>http://jakegoulding.com/blog/2011/02/06/sqlite-64-bit-integers</id>
-    <content type="html"><![CDATA[<p>We recently tackled an issue that seemed rather impossible - an
+    <content type="html"><![CDATA[<p>We recently tackled an issue that seemed rather impossible &ndash; an
 unsigned 64-bit value was <em>greater than</em> the maximum value that a
 64-bit value can hold. What unfolded was a dark, gritty look at the
 underbelly of everything we hold dear (or a normal debugging session,
@@ -334,7 +334,7 @@ INSERT INTO big_numbers VALUES (9223372036854775807, 9223372036854775807, 922337
 INSERT INTO big_numbers VALUES (9223372036854775808, 9223372036854775808, 9223372036854775808, 9223372036854775808); -- 2^63
 </code></p>
 
-<p>Let's sanity check our data to make sure it looks like what we would
+<p>Let&rsquo;s sanity check our data to make sure it looks like what we would
 expect:</p>
 
 <p>``` sql</p>
@@ -349,12 +349,12 @@ i                     r                     t                     b</p>
 ```</p></blockquote>
 
 <p>Huh. We definitely were not expecting most of those floating point
-numbers, so let's see what types are being returned:</p>
+numbers, so let&rsquo;s see what types are being returned:</p>
 
 <p>``` sql</p>
 
-<blockquote><p>SELECT typeof(i),typeof(r),typeof(t),typeof(b) FROM big_numbers;
-typeof(i)   typeof(r)   typeof(t)   typeof(b)</p>
+<blockquote><p>SELECT typeof(i),typeof&reg;,typeof(t),typeof(b) FROM big_numbers;
+typeof(i)   typeof&reg;   typeof(t)   typeof(b)</p>
 
 <hr />
 
@@ -362,7 +362,7 @@ typeof(i)   typeof(r)   typeof(t)   typeof(b)</p>
 real        real        text        real
 ```</p></blockquote>
 
-<p>Sure enough, the numeric types in the second row are all reals. Let's
+<p>Sure enough, the numeric types in the second row are all reals. Let&rsquo;s
 do a nice simple addition operation on our data:</p>
 
 <p>``` sql</p>
@@ -377,8 +377,8 @@ i+1                   r+1                   t+1                   b+1</p>
 ```</p></blockquote>
 
 <p>Woah, what happened here? Those familiar with signed and unsigned
-integers are already nodding and going "Mmm-hmm". For everyone else, I
-suggest brushing up on <a href="http://en.wikipedia.org/wiki/Two's_complement">two's compliment</a> notation. Suffice it to
+integers are already nodding and going &ldquo;Mmm-hmm&rdquo;. For everyone else, I
+suggest brushing up on <a href="http://en.wikipedia.org/wiki/Two's_complement">two&rsquo;s compliment</a> notation. Suffice it to
 say that integers are usually represented by a fixed number of bits,
 and once you run out of bits you roll over back to the beginning, in
 this case a large negative number.</p>
@@ -414,7 +414,7 @@ number, the resultant number is far over the maximum of a <em>signed</em>
 64-bit integer. This causes SQLite to switch into floating-point mode
 when the value is saved to the database.</p>
 
-<p>Of course, our particular tale of woe doesn't end there. Indeed, we
+<p>Of course, our particular tale of woe doesn&rsquo;t end there. Indeed, we
 need to report this value in a status response. As an example of what
 I can only assume is premature optimization, we simply grab the string
 value from SQLite and report that. This causes another part of the
@@ -424,10 +424,10 @@ longer fit within a 64-bit type.</p>
 <h2>Wait, what?</h2>
 
 <p>How did we go from simply over- or under-flowing a 64-bit value to
-exceeding the range of the datatype? It shouldn't even be possible to
+exceeding the range of the datatype? It shouldn&rsquo;t even be possible to
 have a 64-bit value that is larger than a 64-bit value, by definition!
-As a coworker said: "It would violate the logic of the reality of the
-number". The answer stems from how the value is converted into a
+As a coworker said: &ldquo;It would violate the logic of the reality of the
+number&rdquo;. The answer stems from how the value is converted into a
 double by SQLite.</p>
 
 <p>Here is a simple example that shows what happens when you mess around
@@ -437,7 +437,7 @@ with 64-bit integer types and doubles the wrong way:</p>
 </code></pre>
 
 <p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span> (64bit-integer-float.c)</span> <a href='/downloads/code/64bit-integer-float.c'>download</a></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -465,7 +465,7 @@ with 64-bit integer types and doubles the wrong way:</p>
 </span><span class='line'><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
-<p>On Windows (Microsoft (R) C/C++ Optimizing Compiler Version
+<p>On Windows (Microsoft &reg; C/C++ Optimizing Compiler Version
 14.00.50727.762 for x64), we see:</p>
 
 <pre><code>18446744073709551615
@@ -499,21 +499,21 @@ no cast back to a 64-bit type to truncate the value. This causes
 really need to support unsigned 64-bit numbers, you could always shift
 your numbers down by 2**63. Of course, this means that you will
 need to massage any access to that column to correct for the
-offset. If you don't need to perform any calculations or sorting on
-that column inside of SQLite, it's possible that you could give the
+offset. If you don&rsquo;t need to perform any calculations or sorting on
+that column inside of SQLite, it&rsquo;s possible that you could give the
 column a text affinity, preventing SQLite from messing with the
 data.</p>
 
-<p><strong>Don't write your own marshaling code unless you really need it.</strong> If
+<p><strong>Don&rsquo;t write your own marshaling code unless you really need it.</strong> If
 we had used the actual SQLite C API for storing and retrieving our
-values, I assume (but have not verified) that this wouldn't have
+values, I assume (but have not verified) that this wouldn&rsquo;t have
 happened, not to mention we would have likely realized that SQLite
 only natively supports <strong>signed</strong> 64-bit integers. This would have led
 us to test the edge cases that were more obvious.</p>
 
 <p><strong>Test maximal and minimal values.</strong> This is such a basic testing
 strategy that it is surprising that we forget it so
-much. I'mdefinitely in the camp of people that don't do this kind of
+much. I'mdefinitely in the camp of people that don&rsquo;t do this kind of
 testing as much as I should.</p>
 ]]></content>
   </entry>

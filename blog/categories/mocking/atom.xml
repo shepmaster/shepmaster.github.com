@@ -4,7 +4,7 @@
   <title><![CDATA[Category: mocking | Jake Goulding]]></title>
   <link href="http://jakegoulding.com/blog/categories/mocking/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2013-03-11T21:03:45-04:00</updated>
+  <updated>2014-04-26T17:22:41-04:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -19,14 +19,14 @@
     <updated>2012-01-12T07:37:00-05:00</updated>
     <id>http://jakegoulding.com/blog/2012/01/12/test-double-terminology</id>
     <content type="html"><![CDATA[<p>While listening to the Code Quality panel discussion at
-<a href="http://codemash.org/">CodeMash</a>, I <a href="https://twitter.com/#!/JakeGoulding/status/157261614448521216">tweeted</a> about "the state
-of mocking":</p>
+<a href="http://codemash.org/">CodeMash</a>, I <a href="https://twitter.com/#!/JakeGoulding/status/157261614448521216">tweeted</a> about &ldquo;the state
+of mocking&rdquo;:</p>
 
-<blockquote><p>The state of "mocking" is that the term "mocking" is misused by
-everyone. You often mean "test double" or "stub".</p></blockquote>
+<blockquote><p>The state of &ldquo;mocking&rdquo; is that the term &ldquo;mocking&rdquo; is misused by
+everyone. You often mean &ldquo;test double&rdquo; or &ldquo;stub&rdquo;.</p></blockquote>
 
 <p>This garnered some retweets and some great replies, so I wanted to
-have the opportunity to respond in a little longer form. I've written
+have the opportunity to respond in a little longer form. I&rsquo;ve written
 this post between sessions and in the halls, so give me a little
 leeway and feel free to send me a tweet with corrections, arguments,
 whatever.</p>
@@ -36,7 +36,7 @@ whatever.</p>
 
 <h2>Test frameworks encourage misuse</h2>
 
-<blockquote><p>[I]t doesn't help that most mocking frameworks are used for stubs</p></blockquote>
+<blockquote><p>[I]t doesn&rsquo;t help that most mocking frameworks are used for stubs</p></blockquote>
 
 <p><a href="https://twitter.com/#!/F1nglas/status/157421334220120065">@F1nglas</a> mentions that <a href="http://code.google.com/p/moq/">moq</a> does this, and I
 know that <a href="http://code.google.com/p/mockito/">Mockito</a> does as well. <a href="https://www.relishapp.com/rspec">RSpec</a> does better
@@ -50,21 +50,21 @@ methods are there for backward compatibility only</p></blockquote>
 submit patches to improve them. In the meantime, we can add local
 alias methods that better express our intent.</p>
 
-<h2>Saying "mock" is just more fluid</h2>
+<h2>Saying &ldquo;mock&rdquo; is just more fluid</h2>
 
-<blockquote><p>[P]eople find it easier to say "I'll mock that out" than "I'll
-test-double that out".</p></blockquote>
+<blockquote><p>[P]eople find it easier to say &ldquo;I&rsquo;ll mock that out&rdquo; than &ldquo;I&rsquo;ll
+test-double that out&rdquo;.</p></blockquote>
 
-<p><a href="https://twitter.com/#!/jitterted/status/157265770403987456">@jitterted</a>'s point is spot on; it <em>is</em> easier to say
-"mock". However, I don't usually want to use just a test double. I
+<p><a href="https://twitter.com/#!/jitterted/status/157265770403987456">@jitterted</a>&rsquo;s point is spot on; it <em>is</em> easier to say
+&ldquo;mock&rdquo;. However, I don&rsquo;t usually want to use just a test double. I
 always want to do/use something particular: stub, mock, dummy, etc.</p>
 
-<p>I'd love it if we as a community could come up with a better verb to
-use to mean the generic "use a test double".</p>
+<p>I&rsquo;d love it if we as a community could come up with a better verb to
+use to mean the generic &ldquo;use a test double&rdquo;.</p>
 
-<h2>Doesn't language evolve?</h2>
+<h2>Doesn&rsquo;t language evolve?</h2>
 
-<blockquote><p>[A] term takes on the meaning that "everyone" gives it</p></blockquote>
+<blockquote><p>[A] term takes on the meaning that &ldquo;everyone&rdquo; gives it</p></blockquote>
 
 <p><a href="https://twitter.com/#!/JuliansThoughts/status/157372211840299009">@JuliansThoughts</a></p>
 
@@ -82,44 +82,44 @@ expanding the meaning of existing words are all good things.</p>
 
 <p>The root issue here is not that language is evolving. The root issue
 is that our understanding of the tools and techniques we are referring
-to by that language hasn't gotten to the point where we can substitute
+to by that language hasn&rsquo;t gotten to the point where we can substitute
 one for the other and know <strong>conclusively</strong> what we really mean.</p>
 
-<p>If I said to you, the programmer: "Use a list to store the names". You
+<p>If I said to you, the programmer: &ldquo;Use a list to store the names&rdquo;. You
 go off and write whatever you need, then come back for code review and
-I now say: "Why can't I look up a specific name efficiently?". You
+I now say: &ldquo;Why can&rsquo;t I look up a specific name efficiently?&rdquo;. You
 would be outraged; why did I tell you to use a list when I really
-meant a hashtable instead? My response? "Oh, you know that language
-evolves".</p>
+meant a hashtable instead? My response? &ldquo;Oh, you know that language
+evolves&rdquo;.</p>
 
-<p>If I'd originally said to use a "collection", a more abstract concept
+<p>If I&rsquo;d originally said to use a &ldquo;collection&rdquo;, a more abstract concept
 than either list or hashtable, that would force you to think about
-what you need to do and how you were going to do it. I'm not
+what you need to do and how you were going to do it. I&rsquo;m not
 conflating a specific idea with a general concept.</p>
 
 <p>As community, we have heaps of experience with various types of
-collections; we don't have that same strong background with test
-doubles yet. When we use "mock" when we should use "dummy" or "stub"
-or "test double", we avoid thinking about what we really need to do
+collections; we don&rsquo;t have that same strong background with test
+doubles yet. When we use &ldquo;mock&rdquo; when we should use &ldquo;dummy&rdquo; or &ldquo;stub&rdquo;
+or &ldquo;test double&rdquo;, we avoid thinking about what we really need to do
 and why we need to do it.</p>
 
-<p>By using "mock" inappropriately, we confuse two distinct concepts. We
-then complain that "mocks" suck and don't do what we need them to
+<p>By using &ldquo;mock&rdquo; inappropriately, we confuse two distinct concepts. We
+then complain that &ldquo;mocks&rdquo; suck and don&rsquo;t do what we need them to
 do. Mocks, stubs, fakes and dummies all have a place and a
 purpose. Just as using a list when you should use a hashtable reflects
 poorly on the programmer, so does using a mock when you should use a
 stub.</p>
 
-<p>Mocks are <strong>not</strong> stubs. Don't believe me. Believe
+<p>Mocks are <strong>not</strong> stubs. Don&rsquo;t believe me. Believe
 <a href="http://martinfowler.com/articles/mocksArentStubs.html#TheDifferenceBetweenMocksAndStubs">Martin Fowler</a>. Believe
 <a href="http://xunitpatterns.com/">Gerard Meszaros</a>. Watch
-<a href="http://confreaks.net/videos/659-rubyconf2011-why-you-don-t-get-mock-objects">Why You Don't Get Mock Objects</a> by Gregory
+<a href="http://confreaks.net/videos/659-rubyconf2011-why-you-don-t-get-mock-objects">Why You Don&rsquo;t Get Mock Objects</a> by Gregory
 Moeck. Whatever you do, make sure you understand what a mock object
 truly is before you start conflating terms.</p>
 
-<p><em>Note:</em> Don't take from this post that I always do or say the right
+<p><em>Note:</em> Don&rsquo;t take from this post that I always do or say the right
 thing. I have other posts on this same blog that incorrectly refer to
-test doubles as "mocks". Most of those posts were written before I
+test doubles as &ldquo;mocks&rdquo;. Most of those posts were written before I
 learned the difference myself. I should edit those posts to clarify my
 real intent. The important thing is that as we go forward we should be
 careful and precise about what we mean.</p>
@@ -269,19 +269,19 @@ verify(f).someMethod();
 <p>An implementation like this allows you to lean on the compiler when
 the interface changes.</p>
 
-<p>If you don't have a interface to implement, you could subclass
+<p>If you don&rsquo;t have a interface to implement, you could subclass
 the concrete builder class and insert your test-specific logic
 there. The downside to this is that newly-added methods will inherit
 their implementation from the parent class, which can cause very
 strange test failures.</p>
 
-<p>We did not have an interface to adhere to, so we used Mockito's
+<p>We did not have an interface to adhere to, so we used Mockito&rsquo;s
 <code>Answer</code> class to provide a middle ground solution. When you create a
 new mock, an <code>Answer</code> can be used to provide default behavior for
-methods. Here's the custom <code>Answer</code> we came up with:</p>
+methods. Here&rsquo;s the custom <code>Answer</code> we came up with:</p>
 
 <p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span> (AnswerWithSelf.java)</span> <a href='/downloads/code/AnswerWithSelf.java'>download</a></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>

@@ -10,7 +10,7 @@
 
   
   <meta name="description" content="At work, I am still working on finding and squashing fun test
-failures. In this case, &#8220;fun&#8221; means tests that have an intermittent
+failures. In this case, &ldquo;fun&rdquo; means tests that have an intermittent
 failure &hellip;">
   
 
@@ -20,13 +20,14 @@ failure &hellip;">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://jakegoulding.com/blog/2012/10/10/watch-out-for-lost-updates-when-using-capybara-with-selenium/">
+  <link rel="canonical" href="http://jakegoulding.com/blog/2012/10/10/watch-out-for-lost-updates-when-using-capybara-with-selenium">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="/javascripts/ender.js"></script>
-  <script src="/javascripts/octopress.js" type="text/javascript"></script>
   <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
   <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
 <link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
@@ -104,9 +105,9 @@ failure &hellip;">
 
 
 <div class="entry-content"><p>At work, I am still working on finding and squashing fun test
-failures. In this case, &#8220;fun&#8221; means tests that have an intermittent
+failures. In this case, &ldquo;fun&rdquo; means tests that have an intermittent
 failure rate of 5% (or less!). The test issue I worked on today had to
-do with the &#8220;lost update&#8221; problem.</p>
+do with the &ldquo;lost update&rdquo; problem.</p>
 
 <!-- more -->
 
@@ -118,7 +119,7 @@ description and diagram of the problem:</p>
 
 <p><img src="/images/blog/lost-update.png" alt="The lost update problem" /></p>
 
-<p>The short version is that when you poll a system for its state, it&#8217;s
+<p>The short version is that when you poll a system for its state, it&rsquo;s
 entirely possible to miss the state you are looking for. In the
 diagram, the color changes to red and then to blue before the test
 ever has a chance to see that it was red. Since this system will never
@@ -200,15 +201,15 @@ Capybara to find a particular number of elements. Asking Capybara to
 find things in this manner will let the test leverage the built-in
 waiting facilities of Capybara.</p>
 
-<p>In this test, the number of data items won&#8217;t change once the table is
+<p>In this test, the number of data items won&rsquo;t change once the table is
 loaded, so it is a safe state to poll. As an additional benefit, the
 test now has fewer lines of code and is clearer.</p>
 
-<p>As a downside, when the test fails, the Capybara error message doesn&#8217;t
-include how many items were found, which isn&#8217;t as informative as the
+<p>As a downside, when the test fails, the Capybara error message doesn&rsquo;t
+include how many items were found, which isn&rsquo;t as informative as the
 equivalent message from the RSpec matcher.</p>
 
-<p>Also, this test still ultimately relies on polling the DOM, so it&#8217;s
+<p>Also, this test still ultimately relies on polling the DOM, so it&rsquo;s
 possible for similar bugs to pop up in the future.</p>
 
 <h3>The GOOS solution to the lost update problem</h3>
@@ -245,15 +246,15 @@ offers a nice API suited for the tests.</p>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>Under the hood, there&#8217;s some extra JavaScript going on. The
+<p>Under the hood, there&rsquo;s some extra JavaScript going on. The
 <code>wait_for_js_event</code> method would inject some JavaScript into the
 running Selenium session that creates an event listener and binds it
 to the given event. This listener just collects all the events it
 receives. After yielding the block, the test code then polls the event
 listener, waiting for the event to be captured.</p>
 
-<p>It&#8217;s entirely possible that code that does this already exists, but I
-don&#8217;t know of it. It wouldn&#8217;t be a large amount of code to write, but
+<p>It&rsquo;s entirely possible that code that does this already exists, but I
+don&rsquo;t know of it. It wouldn&rsquo;t be a large amount of code to write, but
 it would straddle the borders of Capybara, Selenium and JavaScript.</p>
 
 <p>This might be a useful thing for <a href="http://pivotal.github.com/jasmine/">Jasmine</a> tests, so it might
@@ -294,7 +295,7 @@ already exist in that ecosystem.</p>
     
       <div class="sharing">
   
-  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2012/10/10/watch-out-for-lost-updates-when-using-capybara-with-selenium/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2012/10/10/watch-out-for-lost-updates-when-using-capybara-with-selenium/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2012/10/10/watch-out-for-lost-updates-when-using-capybara-with-selenium/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2012/10/10/watch-out-for-lost-updates-when-using-capybara-with-selenium/" >Tweet</a>
   
   
   
@@ -344,23 +345,6 @@ already exist in that ecosystem.</p>
 </section>
 
 
-<section>
-  <h1>Latest Tweets</h1>
-  <ul id="tweets">
-    <li class="loading">Status updating...</li>
-  </ul>
-  <script type="text/javascript">
-    $.domReady(function(){
-      getTwitterFeed("jakegoulding", 4, false);
-    });
-  </script>
-  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
-  
-    <a href="http://twitter.com/jakegoulding" class="twitter-follow-button" data-show-count="false">Follow @jakegoulding</a>
-  
-</section>
-
-
 
 
 
@@ -371,7 +355,7 @@ already exist in that ecosystem.</p>
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2013 - Jake Goulding -
+  Copyright &copy; 2014 - Jake Goulding -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 
@@ -389,7 +373,7 @@ already exist in that ecosystem.</p>
       var twitterWidgets = document.createElement('script');
       twitterWidgets.type = 'text/javascript';
       twitterWidgets.async = true;
-      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
       document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
     })();
   </script>
