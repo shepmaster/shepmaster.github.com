@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: arduino | Jake Goulding]]></title>
+  <link href="http://jakegoulding.com/blog/categories/arduino/atom.xml" rel="self"/>
+  <link href="http://jakegoulding.com/"/>
+  <updated>2016-01-02T22:28:27-05:00</updated>
+  <id>http://jakegoulding.com/</id>
+  <author>
+    <name><![CDATA[Jake Goulding]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Rust on an Arduino Uno]]></title>
+    <link href="http://jakegoulding.com/blog/2016/01/02/rust-on-an-arduino-uno/"/>
+    <updated>2016-01-02T15:26:54-05:00</updated>
+    <id>http://jakegoulding.com/blog/2016/01/02/rust-on-an-arduino-uno</id>
+    <content type="html"><![CDATA[<p>We have an <a href="https://www.arduino.cc/en/Main/ArduinoBoardUno">Arduino Uno</a> that&rsquo;s been sitting around gathering
+dust for a little while, so I decided to see how <a href="https://www.rust-lang.org/">Rust</a> worked
+on it.</p>
+
+<!-- more -->
+
+
+<p>A bit of searching led to a
+<a href="https://github.com/avr-rust/rust/">fork of Rust with AVR support, AVR-Rust</a>. This is built on
+top of a <a href="https://github.com/avr-llvm/llvm/">fork of LLVM with AVR support, AVR-LLVM</a>. Both of
+these projects are led by <a href="https://github.com/dylanmckay">Dylan McKay</a>.</p>
+
+<p>The current documentation for AVR-Rust is a bit lacking, and it was
+forked from a development version of Rust 1.4. The current development
+version is Rust 1.7, making the fork about 4.5 months old. However,
+the changes to LLVM are in the process of being merged into upstream,
+laying the groundwork for merging the changes into Rust as well.</p>
+
+<p>Let&rsquo;s start out by doing the bare minimum and try to get a version of
+<code>rustc</code> that can target the AVR chip:</p>
+
+<p><code>
+git clone https://github.com/avr-rust/rust.git
+mkdir build &amp;&amp; cd build
+../rust/configure
+make
+</code></p>
+
+<p>You&rsquo;ll note that there&rsquo;s nothing AVR specific here. Every Rust
+compiler is actually a <em>cross-compiler</em>, a compiler that executes on
+one architecture but produces code for another architecture. Because
+this fork of Rust has support files for AVR, it will be able to
+produce the correct execuatble code.</p>
+
+<p>Unfortunately, I <a href="https://github.com/avr-rust/rust/issues/13">couldn&rsquo;t get a basic file to compile</a>
+out of the box.</p>
+
+<p>So I did what any sane person would do &ndash; I started changing code
+without knowing exactly what the failure was or what the code I was
+changing did.</p>
+
+<p>First I tried updating the branch of LLVM that AVR-Rust uses. There
+are two branches in the repository &ndash; <a href="https://github.com/avr-llvm/llvm/tree/avr-support"><code>avr-support</code></a> is more
+actively updated and <a href="https://github.com/avr-llvm/llvm/tree/avr-rust-support"><code>avr-rust-support</code></a> lags behind.</p>
+
+<p>Merging <code>avr-support</code> into <code>avr-rust-support</code> went smoothly, but the
+Rust LLVM driver code needed to be updated to handle the newer LLVM
+version. I grabbed the diff from the main Rust repository and applied
+that. This seemed to work, but then I got a segfault from the stage 1
+Rust compiler, deep in the internals of LLVM.</p>
+
+<p><code>
+make: *** [x86_64-apple-darwin/stage1/lib/rustlib/x86_64-apple-darwin/lib/stamp.term] Segmentation fault: 11
+</code></p>
+
+<p>So I continued changing more stuff!</p>
+
+<p>I merged current Rust into the AVR fork of Rust and resolved the merge
+conflicts as best I could figure out. After fixing a few new errors
+and some poor merge conflicts, I was on my way. Until I hit the
+segfault again.</p>
+
+<p>That means it&rsquo;s actually time to try to figure out where the segfault
+was coming from. I configured another build with some debug information:</p>
+
+<p><code>
+./configure --enable-debug --disable-docs --enable-llvm-assertions --enable-debug-assertions
+</code></p>
+
+<p>And built. This takes a long time, as nothing gets optimized. And then
+it turns out that doing this also hides the segfault. Ugh.</p>
+
+<p>However, I do get to a new error:</p>
+
+<p><code>
+ld: unknown option: --as-needed
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+</code></p>
+
+<p>Fortunately, I know where to tweak that in the source. The downside is
+I&rsquo;ll need to wait for another long build cycle&hellip;</p>
+]]></content>
+  </entry>
+  
+</feed>

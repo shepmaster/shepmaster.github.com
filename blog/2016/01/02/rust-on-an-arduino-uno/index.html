@@ -1,0 +1,343 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Rust on an Arduino Uno - Jake Goulding</title>
+  <meta name="author" content="Jake Goulding">
+
+  
+  <meta name="description" content="We have an Arduino Uno that&rsquo;s been sitting around gathering
+dust for a little while, so I decided to see how Rust worked
+on it. A bit of &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://jakegoulding.com/blog/2016/01/02/rust-on-an-arduino-uno">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
+<link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-20521797-2']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Jake Goulding</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:jakegoulding.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul role=main-navigation>
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/presentations">Presentations</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Rust on an Arduino Uno</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2016-01-02T15:26:54-05:00" pubdate data-updated="true">Jan 2<span>nd</span>, 2016</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>We have an <a href="https://www.arduino.cc/en/Main/ArduinoBoardUno">Arduino Uno</a> that&rsquo;s been sitting around gathering
+dust for a little while, so I decided to see how <a href="https://www.rust-lang.org/">Rust</a> worked
+on it.</p>
+
+<!-- more -->
+
+
+<p>A bit of searching led to a
+<a href="https://github.com/avr-rust/rust/">fork of Rust with AVR support, AVR-Rust</a>. This is built on
+top of a <a href="https://github.com/avr-llvm/llvm/">fork of LLVM with AVR support, AVR-LLVM</a>. Both of
+these projects are led by <a href="https://github.com/dylanmckay">Dylan McKay</a>.</p>
+
+<p>The current documentation for AVR-Rust is a bit lacking, and it was
+forked from a development version of Rust 1.4. The current development
+version is Rust 1.7, making the fork about 4.5 months old. However,
+the changes to LLVM are in the process of being merged into upstream,
+laying the groundwork for merging the changes into Rust as well.</p>
+
+<p>Let&rsquo;s start out by doing the bare minimum and try to get a version of
+<code>rustc</code> that can target the AVR chip:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>git clone https://github.com/avr-rust/rust.git
+</span><span class='line'>mkdir build && cd build
+</span><span class='line'>../rust/configure
+</span><span class='line'>make</span></code></pre></td></tr></table></div></figure>
+
+
+<p>You&rsquo;ll note that there&rsquo;s nothing AVR specific here. Every Rust
+compiler is actually a <em>cross-compiler</em>, a compiler that executes on
+one architecture but produces code for another architecture. Because
+this fork of Rust has support files for AVR, it will be able to
+produce the correct execuatble code.</p>
+
+<p>Unfortunately, I <a href="https://github.com/avr-rust/rust/issues/13">couldn&rsquo;t get a basic file to compile</a>
+out of the box.</p>
+
+<p>So I did what any sane person would do &ndash; I started changing code
+without knowing exactly what the failure was or what the code I was
+changing did.</p>
+
+<p>First I tried updating the branch of LLVM that AVR-Rust uses. There
+are two branches in the repository &ndash; <a href="https://github.com/avr-llvm/llvm/tree/avr-support"><code>avr-support</code></a> is more
+actively updated and <a href="https://github.com/avr-llvm/llvm/tree/avr-rust-support"><code>avr-rust-support</code></a> lags behind.</p>
+
+<p>Merging <code>avr-support</code> into <code>avr-rust-support</code> went smoothly, but the
+Rust LLVM driver code needed to be updated to handle the newer LLVM
+version. I grabbed the diff from the main Rust repository and applied
+that. This seemed to work, but then I got a segfault from the stage 1
+Rust compiler, deep in the internals of LLVM.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>make: *** [x86_64-apple-darwin/stage1/lib/rustlib/x86_64-apple-darwin/lib/stamp.term] Segmentation fault: 11</span></code></pre></td></tr></table></div></figure>
+
+
+<p>So I continued changing more stuff!</p>
+
+<p>I merged current Rust into the AVR fork of Rust and resolved the merge
+conflicts as best I could figure out. After fixing a few new errors
+and some poor merge conflicts, I was on my way. Until I hit the
+segfault again.</p>
+
+<p>That means it&rsquo;s actually time to try to figure out where the segfault
+was coming from. I configured another build with some debug information:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>./configure --enable-debug --disable-docs --enable-llvm-assertions --enable-debug-assertions</span></code></pre></td></tr></table></div></figure>
+
+
+<p>And built. This takes a long time, as nothing gets optimized. And then
+it turns out that doing this also hides the segfault. Ugh.</p>
+
+<p>However, I do get to a new error:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ld: unknown option: --as-needed
+</span><span class='line'>clang: error: linker command failed with exit code 1 (use -v to see invocation)</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Fortunately, I know where to tweak that in the source. The downside is
+I&rsquo;ll need to wait for another long build cycle&hellip;</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Jake Goulding</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2016-01-02T15:26:54-05:00" pubdate data-updated="true">Jan 2<span>nd</span>, 2016</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/arduino/'>arduino</a>, <a class='category' href='/blog/categories/rust/'>rust</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2016/01/02/rust-on-an-arduino-uno/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2016/01/02/rust-on-an-arduino-uno/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/04/26/running-dnsmasq-on-os-x-and-routing-to-virtual-machines/" title="Previous Post: Running dnsmasq on OS X and routing to virtual machines">&laquo; Running dnsmasq on OS X and routing to virtual machines</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/01/02/rust-on-an-arduino-uno/">Rust on an Arduino Uno</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/26/running-dnsmasq-on-os-x-and-routing-to-virtual-machines/">Running dnsmasq on OS X and routing to virtual machines</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/01/20/a-final-dip-into-rubys-marshal-format/">A final dip into Ruby's Marshal format</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/01/16/another-dip-into-rubys-marshal-format/">Another dip into Ruby's Marshal format</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/01/15/a-little-dip-into-rubys-marshal-format/">A little dip into Ruby's Marshal format</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/shepmaster">@shepmaster</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'shepmaster',
+            count: 5,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - Jake Goulding -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
