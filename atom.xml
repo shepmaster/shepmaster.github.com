@@ -4,7 +4,7 @@
   <title><![CDATA[Jake Goulding]]></title>
   <link href="http://jakegoulding.com/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2016-01-02T22:28:27-05:00</updated>
+  <updated>2016-01-17T14:35:08-05:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -12,6 +12,199 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Rust on an Arduino Uno, Part 2]]></title>
+    <link href="http://jakegoulding.com/blog/2016/01/17/rust-on-an-arduino-uno-part-2/"/>
+    <updated>2016-01-17T14:34:54-05:00</updated>
+    <id>http://jakegoulding.com/blog/2016/01/17/rust-on-an-arduino-uno-part-2</id>
+    <content type="html"><![CDATA[<p>After my <a href="http://jakegoulding.com/blog/2016/01/02/rust-on-an-arduino-uno/">previous attempt</a>, I started to think that the
+issues were caused by an inability to completely link the program. If
+that were the case, could we try to link in a different way?</p>
+
+<p>Through a bit of trial and error, I was able to generate an object
+file:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>rustc --target avr-atmel-none hello.rs --emit obj</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<!-- more -->
+
+
+<p>Checking the disassembly of this file with <code>objdump -d hello.o</code> showed
+promise:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>00000000 &lt;main&gt;:
+</span><span class='line'>   0:   0e 94 00 00     call    0     ; 0x0 &lt;main&gt;
+</span><span class='line'>   4:   08 95           ret
+</span><span class='line'>
+</span><span class='line'>Disassembly of section .text._ZN4main10__rust_abiE:
+</span><span class='line'>
+</span><span class='line'>00000000 &lt;_ZN4main10__rust_abiE&gt;:
+</span><span class='line'>   0:   8f ef           ldi r24, 0xFF ; 255
+</span><span class='line'>   2:   84 b9           out 0x04, r24 ; 4
+</span><span class='line'>   4:   00 c0           rjmp    .+0   ; 0x6 &lt;LBB1_1&gt;
+</span><span class='line'>
+</span><span class='line'>00000006 &lt;LBB1_1&gt;:
+</span><span class='line'>   6:   8f ef           ldi r24, 0xFF ; 255
+</span><span class='line'>   8:   85 b9           out 0x05, r24 ; 5
+</span><span class='line'>   a:   80 e0           ldi r24, 0x00 ; 0
+</span><span class='line'>   c:   85 b9           out 0x05, r24 ; 5
+</span><span class='line'>   e:   fb cf           rjmp    .-10  ; 0x6 &lt;LBB1_1&gt;</span></code></pre></td></tr></table></div></figure>
+
+
+<p>I then used an existing installation of GCC with AVR support to finish
+linking the code together:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>avr-gcc -mmcu=atmega328p hello.o -o hello.elf</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Taking a look at the disassembly of this code shows a lot of things
+that were not present in the original object file:</p>
+
+<ol>
+<li>The interrupt vector table is established. This occupies about the
+first 25 instructions. Each instruction is a jump to the
+appropriate interrupt handler. Most importantly, table index 0 is
+the reset &ldquo;interrupt&rdquo; which controls where the processor should
+jump to when it is initialized.</li>
+<li>The EEPROM Control Register and GPIOR0 are initialized and external
+interrupts are disabled. Then <code>main</code> is called.</li>
+<li>After <code>main</code> returns, interrupts are disabled and the chip goes
+into an infinite loop.</li>
+</ol>
+
+
+<h3>Getting code on board</h3>
+
+<p>Now that we have a compiled binary, we need to get it onto the Arduino
+proper. <a href="http://www.nongnu.org/avrdude/">avrdude</a> is an in-system programmer that will allow us to
+upload the compiled code, but it prefers input in a different format:
+Intel HEX. We can convert using <code>avr-objcopy</code>:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>avr-objcopy -O ihex -R .eeprom hello.elf hello.hex</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now we can upload to the Arduino:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>avrdude -p atmega328p -c arduino -P /dev/cu.usbmodem1411 -U flash:w:hello.hex:i</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The Arduino Uno has a second Atmel chip (ATmega16U2) that looks like a
+USB-to-serial device to the host computer. On my OS X computer, that
+device shows up at <code>/dev/cu.usbmodem1411</code>. Your location will differ.</p>
+
+<h3>It&rsquo;s alive!</h3>
+
+<p>Because I have such a basic level of code, I can&rsquo;t do anything nice
+like blink an LED. Instead, I can write a tight loop that just turns
+the LED on or off some percentage of the time. This allows it to have
+a different relative brightness, which in turn lets me see that the
+code changes are actually happening.</p>
+
+<p>Check out the LED marked <code>L</code> in the following pictures.</p>
+
+<h4>LED on 100% of the time</h4>
+
+<p><img src="http://jakegoulding.com/images/blog/arduino_led/100.jpg" alt="LED at 100%" /></p>
+
+<h4>LED on 50% of the time</h4>
+
+<p><img src="http://jakegoulding.com/images/blog/arduino_led/050.jpg" alt="LED at 50%" /></p>
+
+<h4>LED on 1% of the time</h4>
+
+<p><img src="http://jakegoulding.com/images/blog/arduino_led/001.jpg" alt="LED at 1%" /></p>
+
+<h3>What&rsquo;s next?</h3>
+
+<p>This isn&rsquo;t the most <em>elegant</em> of solutions, and there are a lot of
+avenues to explore:</p>
+
+<ol>
+<li><p><strong>Avoid installing <code>avr-gcc</code> and <code>avr-objcopy</code></strong>. Right now,
+<code>avr-gcc</code> is used when compiling Rust itself (for <code>compiler-rt</code>)
+and to finish assembly of the executable. It would be ideal if all
+of this could be handled within an AVR-enabled Rust or LLVM.</p></li>
+<li><p><strong>Set interrupt handlers</strong>. I think the typical solution is
+to use a linker script, but that&rsquo;s one more moving piece I&rsquo;d like
+to avoid adding.</p></li>
+<li><p><strong>Compile <code>libcore</code></strong>! In order to get the most basic of things
+to compile, I had to straight-up copy code from <code>libcore</code>. An
+impressive amount of things are included there. Things you might
+want to use, like <em>addition</em>, not to mention <code>Option</code> or anything
+having to do with iterators. <code>libstd</code> is unlikely to ever be
+supported as it relies on memory allocation.</p></li>
+<li><p><strong>Merge the Rust fork of LLVM with the AVR fork of LLVM</strong>. The more
+frequently these are merged, the easier it will be to eventually
+include the AVR support in Rust proper. I started to do this, but
+had a large number of merge conflicts so I backed off.</p></li>
+<li><p><strong>Compile AVR-enabled Rust in non-debug mode</strong>. For some reason,
+when I compile Rust without debugging symbols, I get an &ldquo;exciting&rdquo;
+assertion failure from deep within LLVM. That is most likely a
+symptom of some problem that should be fixed.</p></li>
+</ol>
+
+
+<h3>TL;DR</h3>
+
+<p>Check out <a href="https://github.com/shepmaster/rust-arduino-blink-led-no-core">my repo</a> for an example that worked for me. In short:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># Compile object
+</span><span class='line'>rustc --target avr-atmel-none -C target-cpu=atmega328p --emit=obj hello.rs -o hello.o
+</span><span class='line'># Link together
+</span><span class='line'>avr-gcc -mmcu=atmega328p hello.o -o hello.elf
+</span><span class='line'># Reformat for upload
+</span><span class='line'>avr-objcopy -O ihex -R .eeprom hello.elf hello.hex
+</span><span class='line'># Upload to the board
+</span><span class='line'>avrdude -p atmega328p -c arduino -P /dev/cu.usbmodem1411 -U flash:w:hello.hex:i</span></code></pre></td></tr></table></div></figure>
+
+
+<p>If you are on OS X, you can install the things you need (except an
+AVR-enabled Rust build) with <a href="http://brew.sh/">homebrew</a>:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>brew tap osx-cross/avr
+</span><span class='line'>brew install avr-libc
+</span><span class='line'>brew install avrdude</span></code></pre></td></tr></table></div></figure>
+
+
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Rust on an Arduino Uno]]></title>
@@ -53,7 +246,7 @@ laying the groundwork for merging the changes into Rust as well.</p>
 compiler is actually a <em>cross-compiler</em>, a compiler that executes on
 one architecture but produces code for another architecture. Because
 this fork of Rust has support files for AVR, it will be able to
-produce the correct execuatble code.</p>
+produce the correct executable code.</p>
 
 <p>Unfortunately, I <a href="https://github.com/avr-rust/rust/issues/13">couldn&rsquo;t get a basic file to compile</a>
 out of the box.</p>
@@ -1244,7 +1437,7 @@ readable (which I highly appreciated) and looked something like:</p>
 </pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">it</span> <span class="s1">&#39;deletes the element&#39;</span><span class="p">,</span> <span class="ss">:js</span> <span class="o">=&gt;</span> <span class="kp">true</span>  <span class="k">do</span>
 </span><span class='line'>  <span class="n">visit</span> <span class="n">path_to_the_page</span>
 </span><span class='line'>  <span class="n">click_on</span> <span class="s1">&#39;Remove item&#39;</span>
-</span><span class='line'>  <span class="n">page</span><span class="o">.</span><span class="n">should_not</span> <span class="n">have_css</span><span class="p">(</span><span class="s2">&quot;.item&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="s2">&quot;Old text&quot;</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">page</span><span class="o">.</span><span class="n">should_not</span> <span class="n">have_css</span><span class="p">(</span><span class="s2">&quot;.item&quot;</span><span class="p">,</span> <span class="ss">text</span><span class="p">:</span> <span class="s2">&quot;Old text&quot;</span><span class="p">)</span>
 </span><span class='line'><span class="k">end</span>
 </span></code></pre></td></tr></table></div></figure>
 
@@ -3066,425 +3259,6 @@ cannot help but wonder if choosing one or the other will have some
 practical benefit.</p>
 
 <p>Discuss this post on <a href="http://www.reddit.com/r/programming/comments/nzzfu/when_refactoring_isnt_refactoring/">reddit</a> or <a href="http://news.ycombinator.com/item?id=3416749">Hacker News</a>.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[What I've learned about testing over the last year]]></title>
-    <link href="http://jakegoulding.com/blog/2011/10/10/learned-about-testing-last-year/"/>
-    <updated>2011-10-10T19:15:00-04:00</updated>
-    <id>http://jakegoulding.com/blog/2011/10/10/learned-about-testing-last-year</id>
-    <content type="html"><![CDATA[<p>Over the last year or so, I&rsquo;ve been trying to learn about various
-types and methodologies of testing. The Ruby community is pretty vocal
-about testing, so I felt out of place not knowing even the most basic
-of things. This post is intended to organize my current thoughts and
-hopefully provide some guidance for people on the same journey.</p>
-
-<!-- more -->
-
-
-<h2>Who should read this?</h2>
-
-<p>I had to realize two things before I could start learning:</p>
-
-<ol>
-<li>I don&rsquo;t know enough about testing.</li>
-<li>I need to know more about testing.</li>
-</ol>
-
-
-<p>If you don&rsquo;t fit into both of these categories, you probably aren&rsquo;t
-reading this post.</p>
-
-<p>If you know what &ldquo;mockist&rdquo; and &ldquo;classicist&rdquo; mean and you know which
-you are, you probably already know everything here. If you care, I
-generally take the &ldquo;mockist&rdquo; approach, and this post reflects that.</p>
-
-<p>Otherwise, feel free to continue!</p>
-
-<h2>Why should I test?</h2>
-
-<p>The simplest answer is that testing allows you to have some degree of
-confidence that the code as written is right.</p>
-
-<p>Less obvious is the fact that tests give you confidence to change
-code. Eventually, some part of the software will need to change
-while everything else should stay constant. For me, this point really
-hit home when I read <a href="http://www.amazon.com/gp/product/0131177052/ref=as_li_ss_tl?ie=UTF8&amp;tag=jakgousblo-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399369&amp;creativeASIN=0131177052">Working Effectively with Legacy Code</a> by Michael Feathers. I deal with lots of code that
-needs to be changed and I&rsquo;m usually worried that my change might
-affect some conceptually remote piece of the software.</p>
-
-<p>Maybe the hardest thing for people to believe is that tests can
-provide feedback on the design of the code. This is a core concept
-behind Test-Driven Design: if you listen to what your tests tell you
-about your code, you can make your code better.</p>
-
-<p>Note that these three things cover the entire life cycle of code;
-correctness applies to the <em>present</em> of the feature, confidence comes
-into play when the feature is in the <em>past</em>, and design feedback sheds
-light into the <em>future</em> of your code.</p>
-
-<h2>What flavors of test exist?</h2>
-
-<p>Here is a list of the types of tests that I can think of purely off the top
-of my head, I&rsquo;m sure there are lots more.</p>
-
-<ul>
-<li><a href="http://en.wikipedia.org/wiki/Unit_testing">Unit testing</a></li>
-<li><a href="http://en.wikipedia.org/wiki/Integration_testing">Integration testing</a></li>
-<li><a href="http://en.wikipedia.org/wiki/Functional_testing">Functional testing</a></li>
-<li><a href="http://en.wikipedia.org/wiki/Acceptance_testing">Acceptance testing</a></li>
-<li><a href="http://en.wikipedia.org/wiki/Load_testing">Load testing</a></li>
-<li><a href="http://en.wikipedia.org/wiki/Performance_testing">Performance testing</a></li>
-<li><a href="http://en.wikipedia.org/wiki/Fuzz_testing">Fuzz testing</a></li>
-</ul>
-
-
-<p>Those are all links to corresponding Wikipedia page; I don&rsquo;t agree
-with every nuance listed on those pages, and some pages are
-unfortunately short, but the links provide the barest minimum of
-a start if you would like to learn more about each type of test.</p>
-
-<p>I don&rsquo;t tend to draw a hard line between integration, functional, and
-acceptance tests. If you need to know the difference, this
-<a href="http://stackoverflow.com/questions/4904096/whats-the-difference-between-unit-functional-acceptance-and-integration-tests">Stack Overflow question</a> has a pretty good breakdown. I
-think of acceptance tests as a superset of functional tests, which
-are themselves supersets of integration tests.</p>
-
-<p>All I care to talk about in this post are unit and acceptance tests. I
-am <em>not</em> saying the other types of testing are not important. I am
-saying that I think that unit and acceptance tests are the most
-useful types of tests to start with.</p>
-
-<p>I am nominally a programmer, and this post will exhibit that
-bias. I certainly hope that people approaching testing from a
-different angle can benefit from this post, but no guarantees are
-made.</p>
-
-<h2>How do acceptance and unit tests fit together?</h2>
-
-<p>A great way to understand how acceptance and unit tests work in
-concert is to read <a href="http://www.amazon.com/gp/product/1934356379/ref=as_li_ss_tl?ie=UTF8&amp;tag=jakgousblo-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399369&amp;creativeASIN=1934356379">The RSpec Book</a>. If you are too lazy
-and/or cheap to read it, here&rsquo;s one extremely salient picture:</p>
-
-<p><img src="http://jakegoulding.com/images/blog/bdd-cycle.png" alt="The BDD test/develop cycle" /></p>
-
-<p>The extremely abridged version is that you write an <strong>acceptance
-test</strong> for the feature you want. This test should be written from the
-point-of-view of the user and using terms that a user would use.</p>
-
-<p>As you try to make the acceptance test pass, you will realize that you
-need to write smaller components to solve the larger problem. In an
-object-oriented language, these components will probably be
-objects. The test for each component is a <strong>unit test</strong>.</p>
-
-<h2>Acceptance tests</h2>
-
-<p>Acceptance tests tell you that the software as a whole does what it is
-supposed to do. It&rsquo;s important to write acceptance tests as if you
-were the user. This makes it so that the test exposes the actual
-<em>value</em> of the code, explaining <em>why</em> the code even exists.</p>
-
-<p>To write proper acceptance tests, you need to have complete control
-over the entire environment your software runs in. If you interact
-with a database, you must be able to change data in the database. If
-you need to be able to parse an empty RSS feed, then you must be able
-to create an empty RSS feed to test that functionality.</p>
-
-<p>Because acceptance tests exercise the entire system, it&rsquo;s very easy
-for them to be slow, but there are a few techniques that you can use
-to help keep your total time down.</p>
-
-<p>Acceptance tests should cover the &ldquo;happy path&rdquo; of your software. If
-there are any extremely important failure cases, then cover those with
-acceptance tests as well. However, you don&rsquo;t need to cover every
-possible case. For example, use unit tests to ensure that things that
-generate errors do so consistently, and then use one acceptance test
-to make sure errors are shown correctly.</p>
-
-<p>Make sure that you minimize what data you need for an acceptance
-test. You probably don&rsquo;t need to load 10,000 rows into your database
-just to make sure that a user can view their profile. Use the smallest
-amount of data you can get away with.</p>
-
-<p>Don&rsquo;t get lazy and reuse one giant piece of setup code for every
-test. This is an example of the tests telling you that your design is
-painful to use. In this case, a user would have to duplicate all of
-the steps in the setup in order to use the function you are
-testing. Maybe that&rsquo;s the way it has to be, but try to make it
-easier on the user.</p>
-
-<h2>Unit tests</h2>
-
-<p>Unit tests have some exciting qualities for a developer. Generally,
-unit tests are <em>fast</em> and can isolate exactly the one thing that is
-broken. Achieving these goals takes hard work.</p>
-
-<p>Limiting each unit test to one assertion enables isolation of
-faults. If a test fails, the name of the test by itself should serve
-to tell you exactly what went wrong. If you have multiple assertions,
-then you have to look at the failing line number to determine the real
-issue.</p>
-
-<h3>Mock objects</h3>
-
-<p>One way to achieve isolation and speed in your unit tests is to
-introduce <em>mock objects</em>. Mock objects are <em>test doubles</em> that
-surround the real code under test and assert on the messages sent
-between objects. Since they aren&rsquo;t real objects, they can&rsquo;t affect
-your test correctness, and they are extremely lightweight so they will
-be fast.</p>
-
-<p>Seems easy to use mocks, right? Just create some dummy objects that
-responds to the necessary methods and returns values as needed. Then
-point the object under test at the mock objects, run the code, and
-assert that tested object has used any returned values correctly.</p>
-
-<p>Here&rsquo;s an example of doing that in Ruby. I&rsquo;m eschewing using any
-libraries in an attempt to make the code as obvious as possible.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Foo</span>
-</span><span class='line'>  <span class="kp">attr_reader</span> <span class="n">foo</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="k">def</span> <span class="nf">calculate_foo</span><span class="p">(</span><span class="n">bar</span><span class="p">)</span>
-</span><span class='line'>    <span class="vi">@foo</span> <span class="o">=</span> <span class="n">bar</span><span class="o">.</span><span class="n">quux</span> <span class="o">*</span> <span class="mi">2</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">class</span> <span class="nc">BarDouble</span>
-</span><span class='line'>  <span class="k">def</span> <span class="nf">quux</span>
-</span><span class='line'>    <span class="mi">100</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">f</span> <span class="o">=</span> <span class="no">Foo</span><span class="o">.</span><span class="n">new</span>
-</span><span class='line'><span class="n">f</span><span class="o">.</span><span class="n">calculate_foo</span><span class="p">(</span><span class="no">BarDouble</span><span class="o">.</span><span class="n">new</span><span class="p">)</span>
-</span><span class='line'><span class="nb">puts</span> <span class="n">f</span><span class="o">.</span><span class="n">foo</span> <span class="o">==</span> <span class="mi">200</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Sorry, I lied to you; that last example was <em>not</em> a mock &ndash; although I
-thought it was for the longest time. The double shown is actually a
-<em>stub</em>. The key point is that a mock <strong>asserts messages are
-sent</strong>. The example above asserts a state.</p>
-
-<p>Here is a test that correctly uses a mock:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Foo</span>
-</span><span class='line'>  <span class="k">def</span> <span class="nf">calculate_foo</span><span class="p">(</span><span class="n">bar</span><span class="p">)</span>
-</span><span class='line'>    <span class="vi">@foo</span> <span class="o">=</span> <span class="n">bar</span><span class="o">.</span><span class="n">quux</span> <span class="o">*</span> <span class="mi">2</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">class</span> <span class="nc">BarMock</span>
-</span><span class='line'>  <span class="k">def</span> <span class="nf">quux_called?</span>
-</span><span class='line'>    <span class="vi">@quux_called</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="k">def</span> <span class="nf">quux</span>
-</span><span class='line'>    <span class="vi">@quux_called</span> <span class="o">=</span> <span class="kp">true</span>
-</span><span class='line'>    <span class="mi">100</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">f</span> <span class="o">=</span> <span class="no">Foo</span><span class="o">.</span><span class="n">new</span>
-</span><span class='line'><span class="n">b</span> <span class="o">=</span> <span class="no">BarMock</span><span class="o">.</span><span class="n">new</span>
-</span><span class='line'><span class="n">f</span><span class="o">.</span><span class="n">calculate_foo</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
-</span><span class='line'><span class="nb">puts</span> <span class="n">b</span><span class="o">.</span><span class="n">quux_called?</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>This last example uses a mock to assert that the right messages were
-sent. Note that we removed the <code>foo</code> accessor from the first class; we
-don&rsquo;t need it anymore! The state of the object is now kept where it
-should be &ndash; inside the object.</p>
-
-<p>The difference between stubs and mocks can seem subtle, but it is
-important. For a much richer discussion, read <a href="http://martinfowler.com/articles/mocksArentStubs.html">Mocks Aren&rsquo;t Stubs</a> by Martin Fowler.</p>
-
-<p>I make no claim that this example is a <em>good</em> use of mocks, just that
-it is how mocks are to be used.</p>
-
-<h3>Object-oriented programming and mocks</h3>
-
-<p>This is all recent information that started to worm its way into my
-brain after watching <a href="http://confreaks.net/videos/659-rubyconf2011-why-you-don-t-get-mock-objects">Why You Don&rsquo;t Get Mock Objects</a>
-&ndash; you should watch it too.</p>
-
-<p>The code example above may still have a problem. The <code>Foo</code> object asks
-the <code>Bar</code> object for the value of <code>quux</code> and then manipulates the
-result. This goes against the <a href="http://pragprog.com/articles/tell-dont-ask">Tell, Don&rsquo;t Ask</a> principle, and
-could be a warning sign of <a href="http://c2.com/cgi/wiki?FeatureEnvySmell">Feature Envy</a>.</p>
-
-<p>You should only mock collaborators. Collaborators are objects that are
-peers of the object under test. Collaborators should not be confused
-with objects that simply serve as implementation details. If you store
-a bit of state in a string or some integers, those are internal
-details and should not be mocked out.</p>
-
-<h3>Example of applying these ideas to real code</h3>
-
-<p>This is a real (but anonymized) feature and test example. We have a
-piece of code that manipulates data retrieved via HTTP. This retrieval
-can be fairly expensive, so we want to cache the final manipulated
-result. The code that does the manipulation and caching is separated
-from the HTTP call by a few intermediate objects.</p>
-
-<p><img src="http://jakegoulding.com/images/blog/mock-example-current.png" alt="The current code setup" /></p>
-
-<p>Our current testing strategy is to provide fake data at the end of the
-chain, effectively short-circuiting the HTTP call. We also count the
-number of times that the HTTP call is made, and the test fails if the
-call is made more than once.</p>
-
-<p><img src="http://jakegoulding.com/images/blog/mock-example-current-test.png" alt="The current test setup" /></p>
-
-<p>One obvious downside is that if <em>any</em> of the intermediate objects
-decide they need to make an HTTP call themselves, our test will
-fail. What&rsquo;s worse is that the failure will seem to indicate that the
-caching is not working, so we will start debugging there. When we
-finally figure out that the test is &ldquo;lying&rdquo; to us, we will have wasted
-time and started to distrust our tests.</p>
-
-<p>We can make the test better if we move the test double closer to the
-code under test. This lets us ignore all the other objects in the call
-chain &ndash; if one of these other objects does not behave properly, this
-test will not fail. This is no free lunch; there <strong>must</strong> be unit
-tests that focus on the other objects so you can tell when they break!</p>
-
-<p><img src="http://jakegoulding.com/images/blog/mock-example-next-test.png" alt="A better test setup" /></p>
-
-<p>While writing the caching tests, we should notice that there are two
-sets of unrelated tests: one that checks that the core functionality
-works, and one that checks that the caching works. This should
-influence us to split the object apart (better known as the
-<a href="http://en.wikipedia.org/wiki/Single_responsibility_principle">Single Responsibility Principle</a>).</p>
-
-<p><img src="http://jakegoulding.com/images/blog/mock-example-srp.png" alt="A better code setup" /></p>
-
-<p>Splitting the caching into a separate object will allow us to test the
-caching behavior in isolation.</p>
-
-<p><img src="http://jakegoulding.com/images/blog/mock-example-srp-test.png" alt="Even better test setup" /></p>
-
-<h2>A handful of things to learn next</h2>
-
-<p>My learning isn&rsquo;t over, and hopefully never will be. Here is a sample
-of some questions currently percolating in my brain.</p>
-
-<p>Acceptance tests are often slow because they hit an external
-resource. Ruby has a gem called <a href="https://github.com/myronmarston/vcr">VCR</a> (and Java has a clone
-called <a href="https://github.com/robfletcher/betamax">Betamax</a>) that record HTTP requests and responses and
-then play them back during subsequent test runs. By definition, using
-one of these tools means you are no longer always doing true
-integration tests. However, the speedup is usually noticeable.</p>
-
-<ul>
-<li>When should you use this type of tool?</li>
-<li>What are the positives and negatives of this kind of tool?</li>
-<li>How frequently do you clear the cache of saved responses?</li>
-<li>Can the concept be easily extended to non-HTTP protocols?</li>
-</ul>
-
-
-<p>Ideally, you should never add code simply to make something
-testable. At that point, you are adding complexity to a system that
-will not benefit from that complexity. My pragmatic side says that
-sometimes you have to add hooks only to be used for testing.</p>
-
-<ul>
-<li>Do you really need to add these hooks?</li>
-<li>Is there a general type of design that avoids the need for the
-hooks?</li>
-<li>Is adding this kind of hook worth it?</li>
-</ul>
-
-
-<h2>Things you should read or watch</h2>
-
-<h5><a href="http://www.amazon.com/gp/product/1934356379/ref=as_li_ss_tl?ie=UTF8&amp;tag=jakgousblo-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399369&amp;creativeASIN=1934356379">The RSpec Book</a> (book)</h5>
-
-<p>Although the book seems like it will only be about Ruby, it actually
-covers the concepts of testing thoroughly. Introduced me to the
-{acceptance,unit}-test cycle. Also contains practical information if
-you will be testing in Ruby.</p>
-
-<h5><a href="http://martinfowler.com/articles/mocksArentStubs.html">Mocks Aren&rsquo;t Stubs</a> (article)</h5>
-
-<p>Provides an overview of terms used as well as examples to help
-separate the different concepts (in Java, but don&rsquo;t be
-scared). Defines &ldquo;classicist&rdquo; and &ldquo;mockist&rdquo;; you don&rsquo;t need to pick
-one or the other, but understanding them is vital.</p>
-
-<h5><a href="http://confreaks.net/videos/659-rubyconf2011-why-you-don-t-get-mock-objects">Why You Don&rsquo;t Get Mock Objects</a> (video)</h5>
-
-<p>Session from RubyConf 2011 that started to clarify certain aspects of
-mocking and testing. Gregory Moeck also introduced me to the term
-&ldquo;secondary teacher&rdquo;.</p>
-
-<h5><a href="http://www.amazon.com/gp/product/0321503627/ref=as_li_ss_tl?ie=UTF8&amp;tag=jakgousblo-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399369&amp;creativeASIN=0321503627">Growing Object-Oriented Software</a> (book)</h5>
-
-<p>On my list of books to order and read. I used to think that I
-understood Object-Oriented Programming, but recent developments have
-changed that belief.  I hope that reading this can help guide me to a
-better understanding.</p>
-
-<h5><a href="http://www.amazon.com/gp/product/0131177052/ref=as_li_ss_tl?ie=UTF8&amp;tag=jakgousblo-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399369&amp;creativeASIN=0131177052">Working Effectively with Legacy Code</a> (book)</h5>
-
-<p>Excellent information about how to take legacy code (defined as code
-without tests) and make it non-legacy. Clarified how tests let you be
-confident about changes. Provides heaps of practical advice.</p>
-
-<h2>Tell me what I&rsquo;ve said wrong</h2>
-
-<p>I&rsquo;m certain that I&rsquo;ve said something that someone will disagree
-with. If you&rsquo;d care to correct my false ideas, feel free to contact me
-via Twitter. If you think it will take longer than a tweet, create a
-blog post and let me know about it!</p>
-
-<h2>Edits</h2>
-
-<h5>2011-10-11 9:27 EDT</h5>
-
-<p>Fixed bad link and cleaned up some poor wording.</p>
 ]]></content>
   </entry>
   

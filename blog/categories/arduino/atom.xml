@@ -4,7 +4,7 @@
   <title><![CDATA[Category: arduino | Jake Goulding]]></title>
   <link href="http://jakegoulding.com/blog/categories/arduino/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2016-01-02T22:28:27-05:00</updated>
+  <updated>2016-01-17T14:35:08-05:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -12,6 +12,178 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Rust on an Arduino Uno, Part 2]]></title>
+    <link href="http://jakegoulding.com/blog/2016/01/17/rust-on-an-arduino-uno-part-2/"/>
+    <updated>2016-01-17T14:34:54-05:00</updated>
+    <id>http://jakegoulding.com/blog/2016/01/17/rust-on-an-arduino-uno-part-2</id>
+    <content type="html"><![CDATA[<p>After my <a href="/blog/2016/01/02/rust-on-an-arduino-uno/">previous attempt</a>, I started to think that the
+issues were caused by an inability to completely link the program. If
+that were the case, could we try to link in a different way?</p>
+
+<p>Through a bit of trial and error, I was able to generate an object
+file:</p>
+
+<p><code>
+rustc --target avr-atmel-none hello.rs --emit obj
+</code></p>
+
+<!-- more -->
+
+
+<p>Checking the disassembly of this file with <code>objdump -d hello.o</code> showed
+promise:</p>
+
+<p>```
+00000000 <main>:
+   0:   0e 94 00 00     call    0     ; 0x0 <main>
+   4:   08 95           ret</p>
+
+<p>Disassembly of section .text._ZN4main10__rust_abiE:</p>
+
+<p>00000000 &lt;_ZN4main10__rust_abiE>:
+   0:   8f ef           ldi r24, 0xFF ; 255
+   2:   84 b9           out 0x04, r24 ; 4
+   4:   00 c0           rjmp    .+0   ; 0x6 &lt;LBB1_1></p>
+
+<p>00000006 &lt;LBB1_1>:
+   6:   8f ef           ldi r24, 0xFF ; 255
+   8:   85 b9           out 0x05, r24 ; 5
+   a:   80 e0           ldi r24, 0x00 ; 0
+   c:   85 b9           out 0x05, r24 ; 5
+   e:   fb cf           rjmp    .-10  ; 0x6 &lt;LBB1_1>
+```</p>
+
+<p>I then used an existing installation of GCC with AVR support to finish
+linking the code together:</p>
+
+<p><code>
+avr-gcc -mmcu=atmega328p hello.o -o hello.elf
+</code></p>
+
+<p>Taking a look at the disassembly of this code shows a lot of things
+that were not present in the original object file:</p>
+
+<ol>
+<li>The interrupt vector table is established. This occupies about the
+first 25 instructions. Each instruction is a jump to the
+appropriate interrupt handler. Most importantly, table index 0 is
+the reset &ldquo;interrupt&rdquo; which controls where the processor should
+jump to when it is initialized.</li>
+<li>The EEPROM Control Register and GPIOR0 are initialized and external
+interrupts are disabled. Then <code>main</code> is called.</li>
+<li>After <code>main</code> returns, interrupts are disabled and the chip goes
+into an infinite loop.</li>
+</ol>
+
+
+<h3>Getting code on board</h3>
+
+<p>Now that we have a compiled binary, we need to get it onto the Arduino
+proper. <a href="http://www.nongnu.org/avrdude/">avrdude</a> is an in-system programmer that will allow us to
+upload the compiled code, but it prefers input in a different format:
+Intel HEX. We can convert using <code>avr-objcopy</code>:</p>
+
+<p><code>
+avr-objcopy -O ihex -R .eeprom hello.elf hello.hex
+</code></p>
+
+<p>Now we can upload to the Arduino:</p>
+
+<p><code>
+avrdude -p atmega328p -c arduino -P /dev/cu.usbmodem1411 -U flash:w:hello.hex:i
+</code></p>
+
+<p>The Arduino Uno has a second Atmel chip (ATmega16U2) that looks like a
+USB-to-serial device to the host computer. On my OS X computer, that
+device shows up at <code>/dev/cu.usbmodem1411</code>. Your location will differ.</p>
+
+<h3>It&rsquo;s alive!</h3>
+
+<p>Because I have such a basic level of code, I can&rsquo;t do anything nice
+like blink an LED. Instead, I can write a tight loop that just turns
+the LED on or off some percentage of the time. This allows it to have
+a different relative brightness, which in turn lets me see that the
+code changes are actually happening.</p>
+
+<p>Check out the LED marked <code>L</code> in the following pictures.</p>
+
+<h4>LED on 100% of the time</h4>
+
+<p><img src="http://jakegoulding.com/images/blog/arduino_led/100.jpg" alt="LED at 100%" /></p>
+
+<h4>LED on 50% of the time</h4>
+
+<p><img src="http://jakegoulding.com/images/blog/arduino_led/050.jpg" alt="LED at 50%" /></p>
+
+<h4>LED on 1% of the time</h4>
+
+<p><img src="http://jakegoulding.com/images/blog/arduino_led/001.jpg" alt="LED at 1%" /></p>
+
+<h3>What&rsquo;s next?</h3>
+
+<p>This isn&rsquo;t the most <em>elegant</em> of solutions, and there are a lot of
+avenues to explore:</p>
+
+<ol>
+<li><p><strong>Avoid installing <code>avr-gcc</code> and <code>avr-objcopy</code></strong>. Right now,
+<code>avr-gcc</code> is used when compiling Rust itself (for <code>compiler-rt</code>)
+and to finish assembly of the executable. It would be ideal if all
+of this could be handled within an AVR-enabled Rust or LLVM.</p></li>
+<li><p><strong>Set interrupt handlers</strong>. I think the typical solution is
+to use a linker script, but that&rsquo;s one more moving piece I&rsquo;d like
+to avoid adding.</p></li>
+<li><p><strong>Compile <code>libcore</code></strong>! In order to get the most basic of things
+to compile, I had to straight-up copy code from <code>libcore</code>. An
+impressive amount of things are included there. Things you might
+want to use, like <em>addition</em>, not to mention <code>Option</code> or anything
+having to do with iterators. <code>libstd</code> is unlikely to ever be
+supported as it relies on memory allocation.</p></li>
+<li><p><strong>Merge the Rust fork of LLVM with the AVR fork of LLVM</strong>. The more
+frequently these are merged, the easier it will be to eventually
+include the AVR support in Rust proper. I started to do this, but
+had a large number of merge conflicts so I backed off.</p></li>
+<li><p><strong>Compile AVR-enabled Rust in non-debug mode</strong>. For some reason,
+when I compile Rust without debugging symbols, I get an &ldquo;exciting&rdquo;
+assertion failure from deep within LLVM. That is most likely a
+symptom of some problem that should be fixed.</p></li>
+</ol>
+
+
+<h3>TL;DR</h3>
+
+<p>Check out <a href="https://github.com/shepmaster/rust-arduino-blink-led-no-core">my repo</a> for an example that worked for me. In short:</p>
+
+<p>```</p>
+
+<h1>Compile object</h1>
+
+<p>rustc &mdash;target avr-atmel-none -C target-cpu=atmega328p &mdash;emit=obj hello.rs -o hello.o</p>
+
+<h1>Link together</h1>
+
+<p>avr-gcc -mmcu=atmega328p hello.o -o hello.elf</p>
+
+<h1>Reformat for upload</h1>
+
+<p>avr-objcopy -O ihex -R .eeprom hello.elf hello.hex</p>
+
+<h1>Upload to the board</h1>
+
+<p>avrdude -p atmega328p -c arduino -P /dev/cu.usbmodem1411 -U flash:w:hello.hex:i
+```</p>
+
+<p>If you are on OS X, you can install the things you need (except an
+AVR-enabled Rust build) with <a href="http://brew.sh/">homebrew</a>:</p>
+
+<p><code>
+brew tap osx-cross/avr
+brew install avr-libc
+brew install avrdude
+</code></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Rust on an Arduino Uno]]></title>
@@ -50,7 +222,7 @@ make
 compiler is actually a <em>cross-compiler</em>, a compiler that executes on
 one architecture but produces code for another architecture. Because
 this fork of Rust has support files for AVR, it will be able to
-produce the correct execuatble code.</p>
+produce the correct executable code.</p>
 
 <p>Unfortunately, I <a href="https://github.com/avr-rust/rust/issues/13">couldn&rsquo;t get a basic file to compile</a>
 out of the box.</p>

@@ -9,9 +9,9 @@
   <meta name="author" content="Jake Goulding">
 
   
-  <meta name="description" content="Have you ever seen a variable with a terrible name? This is of course
-a trick question; everyone has. I&rsquo;d like to look at a particular
-variable &hellip;">
+  <meta name="description" content="At work, we&rsquo;ve been using Capybara and
+Selenium to test our newest web application. Many of us
+have used this combination before for our own &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -33,18 +33,6 @@ variable &hellip;">
 <link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
 
   
-  <script type="text/javascript">
-    var _gaq = _gaq || [];
-    _gaq.push(['_setAccount', 'UA-20521797-2']);
-    _gaq.push(['_trackPageview']);
-
-    (function() {
-      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-    })();
-  </script>
-
 
 </head>
 
@@ -78,6 +66,63 @@ variable &hellip;">
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2012/10/08/finding-a-race-condition-in-capybara-with-selenium/">Finding a race condition in Capybara with Selenium</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-10-08T20:40:00-04:00" pubdate data-updated="true">Oct 8<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>At work, we&rsquo;ve been using <a href="https://github.com/jnicklas/capybara">Capybara</a> and
+<a href="https://code.google.com/p/selenium/">Selenium</a> to test our newest web application. Many of us
+have used this combination before for our own projects, but it&rsquo;s new
+territory for a work project.</p>
+
+<p>Every so often, we would get this error from a specific test:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Selenium::WebDriver::Error::StaleElementReferenceError:
+</span><span class='line'>  Element not found in the cache - perhaps the page has changed since it was looked up</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The error was intermittent, so we fell into the seductive but
+dangerous trap of simply rerunning our tests whenever it
+failed. Recently, I had a bit of time and decided to dig into it and
+fix it once and for all.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2012/10/08/finding-a-race-condition-in-capybara-with-selenium/">Continue reading &rarr;</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -496,51 +541,6 @@ refactoring techniques.</p>
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2011/10/10/learned-about-testing-last-year/">What I&#8217;ve learned about testing over the last year</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2011-10-10T19:15:00-04:00" pubdate data-updated="true">Oct 10<span>th</span>, 2011</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Over the last year or so, I&rsquo;ve been trying to learn about various
-types and methodologies of testing. The Ruby community is pretty vocal
-about testing, so I felt out of place not knowing even the most basic
-of things. This post is intended to organize my current thoughts and
-hopefully provide some guidance for people on the same journey.</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2011/10/10/learned-about-testing-last-year/">Continue reading &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/3/">&larr; Older</a>
@@ -558,6 +558,10 @@ hopefully provide some guidance for people on the same journey.</p>
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/01/17/rust-on-an-arduino-uno-part-2/">Rust on an Arduino Uno, Part 2</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/01/02/rust-on-an-arduino-uno/">Rust on an Arduino Uno</a>
       </li>
     
@@ -571,10 +575,6 @@ hopefully provide some guidance for people on the same journey.</p>
     
       <li class="post">
         <a href="/blog/2013/01/16/another-dip-into-rubys-marshal-format/">Another dip into Ruby&#8217;s Marshal format</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2013/01/15/a-little-dip-into-rubys-marshal-format/">A little dip into Ruby&#8217;s Marshal format</a>
       </li>
     
   </ul>

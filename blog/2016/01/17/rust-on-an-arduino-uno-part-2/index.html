@@ -1,0 +1,431 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Rust on an Arduino Uno, Part 2 - Jake Goulding</title>
+  <meta name="author" content="Jake Goulding">
+
+  
+  <meta name="description" content="After my previous attempt, I started to think that the
+issues were caused by an inability to completely link the program. If
+that were the case, &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://jakegoulding.com/blog/2016/01/17/rust-on-an-arduino-uno-part-2">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
+<link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Jake Goulding</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:jakegoulding.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul role=main-navigation>
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/presentations">Presentations</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Rust on an Arduino Uno, Part 2</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2016-01-17T14:34:54-05:00" pubdate data-updated="true">Jan 17<span>th</span>, 2016</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>After my <a href="/blog/2016/01/02/rust-on-an-arduino-uno/">previous attempt</a>, I started to think that the
+issues were caused by an inability to completely link the program. If
+that were the case, could we try to link in a different way?</p>
+
+<p>Through a bit of trial and error, I was able to generate an object
+file:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>rustc --target avr-atmel-none hello.rs --emit obj</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<!-- more -->
+
+
+<p>Checking the disassembly of this file with <code>objdump -d hello.o</code> showed
+promise:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>00000000 &lt;main&gt;:
+</span><span class='line'>   0:   0e 94 00 00     call    0     ; 0x0 &lt;main&gt;
+</span><span class='line'>   4:   08 95           ret
+</span><span class='line'>
+</span><span class='line'>Disassembly of section .text._ZN4main10__rust_abiE:
+</span><span class='line'>
+</span><span class='line'>00000000 &lt;_ZN4main10__rust_abiE&gt;:
+</span><span class='line'>   0:   8f ef           ldi r24, 0xFF ; 255
+</span><span class='line'>   2:   84 b9           out 0x04, r24 ; 4
+</span><span class='line'>   4:   00 c0           rjmp    .+0   ; 0x6 &lt;LBB1_1&gt;
+</span><span class='line'>
+</span><span class='line'>00000006 &lt;LBB1_1&gt;:
+</span><span class='line'>   6:   8f ef           ldi r24, 0xFF ; 255
+</span><span class='line'>   8:   85 b9           out 0x05, r24 ; 5
+</span><span class='line'>   a:   80 e0           ldi r24, 0x00 ; 0
+</span><span class='line'>   c:   85 b9           out 0x05, r24 ; 5
+</span><span class='line'>   e:   fb cf           rjmp    .-10  ; 0x6 &lt;LBB1_1&gt;</span></code></pre></td></tr></table></div></figure>
+
+
+<p>I then used an existing installation of GCC with AVR support to finish
+linking the code together:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>avr-gcc -mmcu=atmega328p hello.o -o hello.elf</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Taking a look at the disassembly of this code shows a lot of things
+that were not present in the original object file:</p>
+
+<ol>
+<li>The interrupt vector table is established. This occupies about the
+first 25 instructions. Each instruction is a jump to the
+appropriate interrupt handler. Most importantly, table index 0 is
+the reset &ldquo;interrupt&rdquo; which controls where the processor should
+jump to when it is initialized.</li>
+<li>The EEPROM Control Register and GPIOR0 are initialized and external
+interrupts are disabled. Then <code>main</code> is called.</li>
+<li>After <code>main</code> returns, interrupts are disabled and the chip goes
+into an infinite loop.</li>
+</ol>
+
+
+<h3>Getting code on board</h3>
+
+<p>Now that we have a compiled binary, we need to get it onto the Arduino
+proper. <a href="http://www.nongnu.org/avrdude/">avrdude</a> is an in-system programmer that will allow us to
+upload the compiled code, but it prefers input in a different format:
+Intel HEX. We can convert using <code>avr-objcopy</code>:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>avr-objcopy -O ihex -R .eeprom hello.elf hello.hex</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now we can upload to the Arduino:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>avrdude -p atmega328p -c arduino -P /dev/cu.usbmodem1411 -U flash:w:hello.hex:i</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The Arduino Uno has a second Atmel chip (ATmega16U2) that looks like a
+USB-to-serial device to the host computer. On my OS X computer, that
+device shows up at <code>/dev/cu.usbmodem1411</code>. Your location will differ.</p>
+
+<h3>It&rsquo;s alive!</h3>
+
+<p>Because I have such a basic level of code, I can&rsquo;t do anything nice
+like blink an LED. Instead, I can write a tight loop that just turns
+the LED on or off some percentage of the time. This allows it to have
+a different relative brightness, which in turn lets me see that the
+code changes are actually happening.</p>
+
+<p>Check out the LED marked <code>L</code> in the following pictures.</p>
+
+<h4>LED on 100% of the time</h4>
+
+<p><img src="/images/blog/arduino_led/100.jpg" alt="LED at 100%" /></p>
+
+<h4>LED on 50% of the time</h4>
+
+<p><img src="/images/blog/arduino_led/050.jpg" alt="LED at 50%" /></p>
+
+<h4>LED on 1% of the time</h4>
+
+<p><img src="/images/blog/arduino_led/001.jpg" alt="LED at 1%" /></p>
+
+<h3>What&rsquo;s next?</h3>
+
+<p>This isn&rsquo;t the most <em>elegant</em> of solutions, and there are a lot of
+avenues to explore:</p>
+
+<ol>
+<li><p><strong>Avoid installing <code>avr-gcc</code> and <code>avr-objcopy</code></strong>. Right now,
+<code>avr-gcc</code> is used when compiling Rust itself (for <code>compiler-rt</code>)
+and to finish assembly of the executable. It would be ideal if all
+of this could be handled within an AVR-enabled Rust or LLVM.</p></li>
+<li><p><strong>Set interrupt handlers</strong>. I think the typical solution is
+to use a linker script, but that&rsquo;s one more moving piece I&rsquo;d like
+to avoid adding.</p></li>
+<li><p><strong>Compile <code>libcore</code></strong>! In order to get the most basic of things
+to compile, I had to straight-up copy code from <code>libcore</code>. An
+impressive amount of things are included there. Things you might
+want to use, like <em>addition</em>, not to mention <code>Option</code> or anything
+having to do with iterators. <code>libstd</code> is unlikely to ever be
+supported as it relies on memory allocation.</p></li>
+<li><p><strong>Merge the Rust fork of LLVM with the AVR fork of LLVM</strong>. The more
+frequently these are merged, the easier it will be to eventually
+include the AVR support in Rust proper. I started to do this, but
+had a large number of merge conflicts so I backed off.</p></li>
+<li><p><strong>Compile AVR-enabled Rust in non-debug mode</strong>. For some reason,
+when I compile Rust without debugging symbols, I get an &ldquo;exciting&rdquo;
+assertion failure from deep within LLVM. That is most likely a
+symptom of some problem that should be fixed.</p></li>
+</ol>
+
+
+<h3>TL;DR</h3>
+
+<p>Check out <a href="https://github.com/shepmaster/rust-arduino-blink-led-no-core">my repo</a> for an example that worked for me. In short:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># Compile object
+</span><span class='line'>rustc --target avr-atmel-none -C target-cpu=atmega328p --emit=obj hello.rs -o hello.o
+</span><span class='line'># Link together
+</span><span class='line'>avr-gcc -mmcu=atmega328p hello.o -o hello.elf
+</span><span class='line'># Reformat for upload
+</span><span class='line'>avr-objcopy -O ihex -R .eeprom hello.elf hello.hex
+</span><span class='line'># Upload to the board
+</span><span class='line'>avrdude -p atmega328p -c arduino -P /dev/cu.usbmodem1411 -U flash:w:hello.hex:i</span></code></pre></td></tr></table></div></figure>
+
+
+<p>If you are on OS X, you can install the things you need (except an
+AVR-enabled Rust build) with <a href="http://brew.sh/">homebrew</a>:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>brew tap osx-cross/avr
+</span><span class='line'>brew install avr-libc
+</span><span class='line'>brew install avrdude</span></code></pre></td></tr></table></div></figure>
+
+
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Jake Goulding</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2016-01-17T14:34:54-05:00" pubdate data-updated="true">Jan 17<span>th</span>, 2016</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/arduino/'>arduino</a>, <a class='category' href='/blog/categories/rust/'>rust</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2016/01/17/rust-on-an-arduino-uno-part-2/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2016/01/17/rust-on-an-arduino-uno-part-2/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/01/02/rust-on-an-arduino-uno/" title="Previous Post: Rust on an Arduino Uno">&laquo; Rust on an Arduino Uno</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/01/17/rust-on-an-arduino-uno-part-2/">Rust on an Arduino Uno, Part 2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/02/rust-on-an-arduino-uno/">Rust on an Arduino Uno</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/26/running-dnsmasq-on-os-x-and-routing-to-virtual-machines/">Running dnsmasq on OS X and routing to virtual machines</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/01/20/a-final-dip-into-rubys-marshal-format/">A final dip into Ruby's Marshal format</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/01/16/another-dip-into-rubys-marshal-format/">Another dip into Ruby's Marshal format</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/shepmaster">@shepmaster</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'shepmaster',
+            count: 5,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - Jake Goulding -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

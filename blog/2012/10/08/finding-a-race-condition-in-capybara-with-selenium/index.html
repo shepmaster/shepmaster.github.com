@@ -33,18 +33,6 @@ have used this combination before for our own &hellip;">
 <link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
 
   
-  <script type="text/javascript">
-    var _gaq = _gaq || [];
-    _gaq.push(['_setAccount', 'UA-20521797-2']);
-    _gaq.push(['_trackPageview']);
-
-    (function() {
-      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-    })();
-  </script>
-
 
 </head>
 
@@ -181,7 +169,7 @@ readable (which I highly appreciated) and looked something like:</p>
 </pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">it</span> <span class="s1">&#39;deletes the element&#39;</span><span class="p">,</span> <span class="ss">:js</span> <span class="o">=&gt;</span> <span class="kp">true</span>  <span class="k">do</span>
 </span><span class='line'>  <span class="n">visit</span> <span class="n">path_to_the_page</span>
 </span><span class='line'>  <span class="n">click_on</span> <span class="s1">&#39;Remove item&#39;</span>
-</span><span class='line'>  <span class="n">page</span><span class="o">.</span><span class="n">should_not</span> <span class="n">have_css</span><span class="p">(</span><span class="s2">&quot;.item&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="s2">&quot;Old text&quot;</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">page</span><span class="o">.</span><span class="n">should_not</span> <span class="n">have_css</span><span class="p">(</span><span class="s2">&quot;.item&quot;</span><span class="p">,</span> <span class="ss">text</span><span class="p">:</span> <span class="s2">&quot;Old text&quot;</span><span class="p">)</span>
 </span><span class='line'><span class="k">end</span>
 </span></code></pre></td></tr></table></div></figure>
 
@@ -326,6 +314,10 @@ way to being fixed. Yay for Open Source!</p>
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/01/17/rust-on-an-arduino-uno-part-2/">Rust on an Arduino Uno, Part 2</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/01/02/rust-on-an-arduino-uno/">Rust on an Arduino Uno</a>
       </li>
     
@@ -339,10 +331,6 @@ way to being fixed. Yay for Open Source!</p>
     
       <li class="post">
         <a href="/blog/2013/01/16/another-dip-into-rubys-marshal-format/">Another dip into Ruby's Marshal format</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2013/01/15/a-little-dip-into-rubys-marshal-format/">A little dip into Ruby's Marshal format</a>
       </li>
     
   </ul>
