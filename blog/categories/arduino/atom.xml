@@ -4,7 +4,7 @@
   <title><![CDATA[Category: arduino | Jake Goulding]]></title>
   <link href="http://jakegoulding.com/blog/categories/arduino/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2016-01-17T14:35:08-05:00</updated>
+  <updated>2016-01-24T13:14:45-05:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -12,6 +12,191 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Rust on an Arduino Uno, Part 3]]></title>
+    <link href="http://jakegoulding.com/blog/2016/01/24/rust-on-an-arduino-uno-part-3/"/>
+    <updated>2016-01-24T13:11:12-05:00</updated>
+    <id>http://jakegoulding.com/blog/2016/01/24/rust-on-an-arduino-uno-part-3</id>
+    <content type="html"><![CDATA[<p>Now that we can <a href="/blog/2016/01/17/rust-on-an-arduino-uno-part-2/">turn an LED on</a>, let&rsquo;s see if we can do
+something more exciting: make the LED blink. Surprisingly, this is
+more difficult than you might expect!</p>
+
+<!-- more -->
+
+
+<p>Blinking boils down to &ldquo;turn the light on, wait a while, turn the
+light off, wait a while&rdquo; and repeat forever. We already know how to
+turn the light on and off, as well as repeating forever. The trick
+lies in &ldquo;wait a while&rdquo;.</p>
+
+<p>In a conventional Rust application, we&rsquo;d probably call something like
+<a href="http://doc.rust-lang.org/std/thread/fn.sleep.html"><code>std::thread::sleep</code></a>, but we don&rsquo;t have access to <code>libstd</code> on an
+Arduino as that library is too high-level. We will have to implement
+it ourselves!</p>
+
+<p>It&rsquo;s easy enough, all we have to do is loop a bunch of times. If the
+Arduino processor runs at 16MHz, we can waste 16000 cycles to take one
+millisecond. We will execute a <code>nop</code> instruction to waste the time:</p>
+
+<p>```
+fn sleep_ms(duration_ms: u16) {</p>
+
+<pre><code>const FREQUENCY_HZ: u32 = 16_000_000;
+const CYCLES_PER_MS: u16 = (FREQUENCY_HZ / 1000) as u16;
+
+for _ in 0..duration_ms {
+    for _ in 0..CYCLES_PER_MS {
+        unsafe { asm!("nop"); }
+    }
+}
+</code></pre>
+
+<p>}
+```</p>
+
+<p>Just compile this and away we go! Or not&hellip;</p>
+
+<p><code>``
+error: failed to resolve. Maybe a missing</code>extern crate iter`? [E0433]</p>
+
+<pre><code> for _ in 0..duration_ms {
+ ^~~~
+</code></pre>
+
+<p>error: unresolved name <code>iter::IntoIterator::into_iter</code> [E0425]
+```</p>
+
+<p>Right, we haven&rsquo;t actually defined any of the <code>Iterator</code> logic; that&rsquo;s
+in <code>libcore</code> which we don&rsquo;t have yet. Let&rsquo;s skip that and do something
+a little more C-like. We can just loop and increment integers and
+compare them:</p>
+
+<p>```
+fn sleep_ms(duration_ms: u16) {</p>
+
+<pre><code>const FREQUENCY_HZ: u32 = 16_000_000;
+const CYCLES_PER_MS: u16 = 16_000;
+
+let mut outer = 0;
+while outer &lt; duration_ms {
+    let mut inner = 0;
+    while inner &lt; CYCLES_PER_MS {
+        unsafe { asm!("nop"); }
+        inner += 1;
+    }
+    outer += 1;
+}
+</code></pre>
+
+<p>}
+```</p>
+
+<p>And&hellip; that fails too:</p>
+
+<p><code>``
+error: binary operation</code>/<code>cannot be applied to type</code>u32` [E0369]</p>
+
+<pre><code> const CYCLES_PER_MS: u16 = (FREQUENCY_HZ / 1000) as u16;
+                             ^~~~~~~~~~~~
+</code></pre>
+
+<p>```</p>
+
+<p>Ok, no division, even if it is just a constant and should be computed
+at compile time. Well, we can hard code it for the moment&hellip;</p>
+
+<p><code>``
+error: binary operation</code>&lt;<code>cannot be applied to type</code>_` [E0369]</p>
+
+<pre><code> while outer &lt; duration_ms {
+       ^~~~~
+</code></pre>
+
+<p>error: binary assignment operation <code>+=</code> cannot be applied to type <code>u16</code> [E0368]</p>
+
+<pre><code>     outer += 1;
+     ^~~~~
+</code></pre>
+
+<p>```</p>
+
+<p>OK, wow, no addition or comparison either. There&rsquo;s no way around
+this &ndash; we really need <code>libcore</code> or else we are stuck with a pretty
+primitive environment. Since we know we have issues compiling all of
+libcore, let&rsquo;s try a smaller part, just enough to compile this
+example.</p>
+
+<p>Previously, we had copied in some small snippets from libcore, but
+let&rsquo;s replace those excerpts with the complete files and drag in a few
+more. After some trial-and-error, this small set compiles:</p>
+
+<ul>
+<li><code>clone</code></li>
+<li><code>cmp</code></li>
+<li><code>intrinsics</code></li>
+<li><code>marker</code></li>
+<li><code>ops</code></li>
+<li><code>option</code></li>
+</ul>
+
+
+<p>With it compiling, let&rsquo;s actually call <code>sleep_ms</code> in our <code>main</code> and
+load the program onto the board:</p>
+
+<p>```
+loop {</p>
+
+<pre><code>sleep_ms(500);
+volatile_store(PORTB, 0xFF); // Everything is on
+sleep_ms(500);
+volatile_store(PORTB, 0x00); // Everything is off
+</code></pre>
+
+<p>}
+```</p>
+
+<p><video src="http://jakegoulding.com/images/blog/arduino_led/blink.mp4" controls>
+<a href="http://jakegoulding.com/images/blog/arduino_led/blink.mp4">
+A video of the blinking LED.
+</a>
+</video></p>
+
+<p>Look at that nice, steady blinking. Blinking at a rate that is
+<em>nothing</em> like 500 milliseconds. Let&rsquo;s take a look at the disassembly
+for the inner loop to understand why:</p>
+
+<p><code>
+adiw ;; Add word (16-bit)            ;; 2 cycles
+cp   ;; Compare registers            ;; 1 cycle
+cpc  ;; Compare registers with carry ;; 1 cycle
+brcs ;; Branch if carry set          ;; 1 cycle (false) / 2 cycles (true)
+</code></p>
+
+<p>We increment our counter and check to see if we&rsquo;ve exceeded our
+limit. In all cases except the last iteration we will branch back to
+the beginning of the loop, bringing the total cycle count of the loop
+to six. Compare that to the naive calculation that the <code>nop</code> would
+take one cycle and the rest of the loop would be free. Dividing the
+inner loop constant by six gets us much closer to the appropriate
+duration.</p>
+
+<p>The outer loop and the function call itself also have some overhead,
+but these only add up to a few cycles per inner loop. Since the inner
+loop corresponds to many thousands of cycles, a few cycles is a small
+error and I think can be safely ignored.</p>
+
+<p>An interesting aside is that I have no idea why the <code>nop</code> does not
+occur inside the loop. The compiler has reordered the code such that
+the <code>nop</code> occurs in the variable initialization of the function. You
+can change the code to just <code>asm!("")</code> and accomplish the same goal of
+preventing the loop from being optimized away.</p>
+
+<p>Next time, we will see if we can do something a little more structured
+than counting cycles to sleep. As before, check out
+<a href="https://github.com/shepmaster/rust-arduino-blink-led-no-core/tree/part3">the repository</a> for the code up to this point.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Rust on an Arduino Uno, Part 2]]></title>
@@ -153,7 +338,7 @@ symptom of some problem that should be fixed.</p></li>
 
 <h3>TL;DR</h3>
 
-<p>Check out <a href="https://github.com/shepmaster/rust-arduino-blink-led-no-core">my repo</a> for an example that worked for me. In short:</p>
+<p>Check out <a href="https://github.com/shepmaster/rust-arduino-blink-led-no-core/tree/part2">my repo</a> for an example that worked for me. In short:</p>
 
 <p>```</p>
 
@@ -182,6 +367,8 @@ brew tap osx-cross/avr
 brew install avr-libc
 brew install avrdude
 </code></p>
+
+<p>Continue on to <a href="/blog/2016/01/17/rust-on-an-arduino-uno-part-2/">part 3</a>.</p>
 ]]></content>
   </entry>
   
@@ -271,6 +458,8 @@ clang: error: linker command failed with exit code 1 (use -v to see invocation)
 
 <p>Fortunately, I know where to tweak that in the source. The downside is
 I&rsquo;ll need to wait for another long build cycle&hellip;</p>
+
+<p>Continue on to <a href="/blog/2016/01/17/rust-on-an-arduino-uno-part-2/">part 2</a>.</p>
 ]]></content>
   </entry>
   

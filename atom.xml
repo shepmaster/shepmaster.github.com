@@ -4,7 +4,7 @@
   <title><![CDATA[Jake Goulding]]></title>
   <link href="http://jakegoulding.com/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2016-01-17T14:35:08-05:00</updated>
+  <updated>2016-01-24T13:14:45-05:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -12,6 +12,214 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Rust on an Arduino Uno, Part 3]]></title>
+    <link href="http://jakegoulding.com/blog/2016/01/24/rust-on-an-arduino-uno-part-3/"/>
+    <updated>2016-01-24T13:11:12-05:00</updated>
+    <id>http://jakegoulding.com/blog/2016/01/24/rust-on-an-arduino-uno-part-3</id>
+    <content type="html"><![CDATA[<p>Now that we can <a href="http://jakegoulding.com/blog/2016/01/17/rust-on-an-arduino-uno-part-2/">turn an LED on</a>, let&rsquo;s see if we can do
+something more exciting: make the LED blink. Surprisingly, this is
+more difficult than you might expect!</p>
+
+<!-- more -->
+
+
+<p>Blinking boils down to &ldquo;turn the light on, wait a while, turn the
+light off, wait a while&rdquo; and repeat forever. We already know how to
+turn the light on and off, as well as repeating forever. The trick
+lies in &ldquo;wait a while&rdquo;.</p>
+
+<p>In a conventional Rust application, we&rsquo;d probably call something like
+<a href="http://doc.rust-lang.org/std/thread/fn.sleep.html"><code>std::thread::sleep</code></a>, but we don&rsquo;t have access to <code>libstd</code> on an
+Arduino as that library is too high-level. We will have to implement
+it ourselves!</p>
+
+<p>It&rsquo;s easy enough, all we have to do is loop a bunch of times. If the
+Arduino processor runs at 16MHz, we can waste 16000 cycles to take one
+millisecond. We will execute a <code>nop</code> instruction to waste the time:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>fn sleep_ms(duration_ms: u16) {
+</span><span class='line'>    const FREQUENCY_HZ: u32 = 16_000_000;
+</span><span class='line'>    const CYCLES_PER_MS: u16 = (FREQUENCY_HZ / 1000) as u16;
+</span><span class='line'>
+</span><span class='line'>    for _ in 0..duration_ms {
+</span><span class='line'>        for _ in 0..CYCLES_PER_MS {
+</span><span class='line'>            unsafe { asm!("nop"); }
+</span><span class='line'>        }
+</span><span class='line'>    }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Just compile this and away we go! Or not&hellip;</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>error: failed to resolve. Maybe a missing `extern crate iter`? [E0433]
+</span><span class='line'>     for _ in 0..duration_ms {
+</span><span class='line'>     ^~~~
+</span><span class='line'>
+</span><span class='line'>error: unresolved name `iter::IntoIterator::into_iter` [E0425]</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Right, we haven&rsquo;t actually defined any of the <code>Iterator</code> logic; that&rsquo;s
+in <code>libcore</code> which we don&rsquo;t have yet. Let&rsquo;s skip that and do something
+a little more C-like. We can just loop and increment integers and
+compare them:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>fn sleep_ms(duration_ms: u16) {
+</span><span class='line'>    const FREQUENCY_HZ: u32 = 16_000_000;
+</span><span class='line'>    const CYCLES_PER_MS: u16 = 16_000;
+</span><span class='line'>
+</span><span class='line'>    let mut outer = 0;
+</span><span class='line'>    while outer &lt; duration_ms {
+</span><span class='line'>        let mut inner = 0;
+</span><span class='line'>        while inner &lt; CYCLES_PER_MS {
+</span><span class='line'>            unsafe { asm!("nop"); }
+</span><span class='line'>            inner += 1;
+</span><span class='line'>        }
+</span><span class='line'>        outer += 1;
+</span><span class='line'>    }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>And&hellip; that fails too:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>error: binary operation `/` cannot be applied to type `u32` [E0369]
+</span><span class='line'>     const CYCLES_PER_MS: u16 = (FREQUENCY_HZ / 1000) as u16;
+</span><span class='line'>                                 ^~~~~~~~~~~~</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Ok, no division, even if it is just a constant and should be computed
+at compile time. Well, we can hard code it for the moment&hellip;</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>error: binary operation `&lt;` cannot be applied to type `_` [E0369]
+</span><span class='line'>     while outer &lt; duration_ms {
+</span><span class='line'>           ^~~~~
+</span><span class='line'>
+</span><span class='line'>error: binary assignment operation `+=` cannot be applied to type `u16` [E0368]
+</span><span class='line'>         outer += 1;
+</span><span class='line'>         ^~~~~</span></code></pre></td></tr></table></div></figure>
+
+
+<p>OK, wow, no addition or comparison either. There&rsquo;s no way around
+this &ndash; we really need <code>libcore</code> or else we are stuck with a pretty
+primitive environment. Since we know we have issues compiling all of
+libcore, let&rsquo;s try a smaller part, just enough to compile this
+example.</p>
+
+<p>Previously, we had copied in some small snippets from libcore, but
+let&rsquo;s replace those excerpts with the complete files and drag in a few
+more. After some trial-and-error, this small set compiles:</p>
+
+<ul>
+<li><code>clone</code></li>
+<li><code>cmp</code></li>
+<li><code>intrinsics</code></li>
+<li><code>marker</code></li>
+<li><code>ops</code></li>
+<li><code>option</code></li>
+</ul>
+
+
+<p>With it compiling, let&rsquo;s actually call <code>sleep_ms</code> in our <code>main</code> and
+load the program onto the board:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>loop {
+</span><span class='line'>    sleep_ms(500);
+</span><span class='line'>    volatile_store(PORTB, 0xFF); // Everything is on
+</span><span class='line'>    sleep_ms(500);
+</span><span class='line'>    volatile_store(PORTB, 0x00); // Everything is off
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p><video src="http://jakegoulding.com/images/blog/arduino_led/blink.mp4" controls>
+<a href="http://jakegoulding.com/images/blog/arduino_led/blink.mp4">
+A video of the blinking LED.
+</a>
+</video></p>
+
+<p>Look at that nice, steady blinking. Blinking at a rate that is
+<em>nothing</em> like 500 milliseconds. Let&rsquo;s take a look at the disassembly
+for the inner loop to understand why:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>adiw ;; Add word (16-bit)            ;; 2 cycles
+</span><span class='line'>cp   ;; Compare registers            ;; 1 cycle
+</span><span class='line'>cpc  ;; Compare registers with carry ;; 1 cycle
+</span><span class='line'>brcs ;; Branch if carry set          ;; 1 cycle (false) / 2 cycles (true)</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We increment our counter and check to see if we&rsquo;ve exceeded our
+limit. In all cases except the last iteration we will branch back to
+the beginning of the loop, bringing the total cycle count of the loop
+to six. Compare that to the naive calculation that the <code>nop</code> would
+take one cycle and the rest of the loop would be free. Dividing the
+inner loop constant by six gets us much closer to the appropriate
+duration.</p>
+
+<p>The outer loop and the function call itself also have some overhead,
+but these only add up to a few cycles per inner loop. Since the inner
+loop corresponds to many thousands of cycles, a few cycles is a small
+error and I think can be safely ignored.</p>
+
+<p>An interesting aside is that I have no idea why the <code>nop</code> does not
+occur inside the loop. The compiler has reordered the code such that
+the <code>nop</code> occurs in the variable initialization of the function. You
+can change the code to just <code>asm!("")</code> and accomplish the same goal of
+preventing the loop from being optimized away.</p>
+
+<p>Next time, we will see if we can do something a little more structured
+than counting cycles to sleep. As before, check out
+<a href="https://github.com/shepmaster/rust-arduino-blink-led-no-core/tree/part3">the repository</a> for the code up to this point.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Rust on an Arduino Uno, Part 2]]></title>
@@ -171,7 +379,7 @@ symptom of some problem that should be fixed.</p></li>
 
 <h3>TL;DR</h3>
 
-<p>Check out <a href="https://github.com/shepmaster/rust-arduino-blink-led-no-core">my repo</a> for an example that worked for me. In short:</p>
+<p>Check out <a href="https://github.com/shepmaster/rust-arduino-blink-led-no-core/tree/part2">my repo</a> for an example that worked for me. In short:</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -202,7 +410,7 @@ AVR-enabled Rust build) with <a href="http://brew.sh/">homebrew</a>:</p>
 </span><span class='line'>brew install avrdude</span></code></pre></td></tr></table></div></figure>
 
 
-
+<p>Continue on to <a href="http://jakegoulding.com/blog/2016/01/17/rust-on-an-arduino-uno-part-2/">part 3</a>.</p>
 ]]></content>
   </entry>
   
@@ -296,6 +504,8 @@ it turns out that doing this also hides the segfault. Ugh.</p>
 
 <p>Fortunately, I know where to tweak that in the source. The downside is
 I&rsquo;ll need to wait for another long build cycle&hellip;</p>
+
+<p>Continue on to <a href="http://jakegoulding.com/blog/2016/01/17/rust-on-an-arduino-uno-part-2/">part 2</a>.</p>
 ]]></content>
   </entry>
   
@@ -3000,265 +3210,6 @@ methods. Here&rsquo;s the custom <code>Answer</code> we came up with:</p>
 
 <p>This <code>Answer</code> can be used with any <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent interface</a> that
 returns the original object.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[When refactoring isn't refactoring]]></title>
-    <link href="http://jakegoulding.com/blog/2012/01/02/when-refactoring-isnt-refactoring/"/>
-    <updated>2012-01-02T12:00:00-05:00</updated>
-    <id>http://jakegoulding.com/blog/2012/01/02/when-refactoring-isnt-refactoring</id>
-    <content type="html"><![CDATA[<p>What is refactoring? Martin Fowler <a href="http://martinfowler.com/refactoring/">provides</a> a solid
-definition:</p>
-
-<blockquote><p>Refactoring is a disciplined technique for restructuring an
-existing body of code, altering its internal structure without
-changing its external behavior.</p></blockquote>
-
-<p>That description seems fairly reasonable; let&rsquo;s look at some potential
-refactoring techniques.</p>
-
-<!-- more -->
-
-
-<h2>Example 1</h2>
-
-<h4>Before</h4>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">A</span>
-</span><span class='line'>  <span class="k">def</span> <span class="nf">foobar</span>
-</span><span class='line'>    <span class="s1">&#39;foo&#39;</span> <span class="o">+</span> <span class="s1">&#39;bar&#39;</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h4>After</h4>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">A</span>
-</span><span class='line'>  <span class="k">def</span> <span class="nf">foobar</span>
-</span><span class='line'>    <span class="s1">&#39;foo&#39;</span> <span class="o">+</span> <span class="n">bar</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="k">def</span> <span class="nf">bar</span>
-</span><span class='line'>    <span class="s1">&#39;bar&#39;</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>This one is pretty clear-cut &ndash; it&rsquo;s a refactoring technique that any
-programmer would recognize, even if she had never heard of the term
-&ldquo;refactoring&rdquo;. It goes by the name <a href="http://martinfowler.com/refactoring/catalog/extractMethod.html">Extract Method</a>.</p>
-
-<h2>Example 2</h2>
-
-<h4>Before</h4>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">A</span>
-</span><span class='line'>  <span class="k">def</span> <span class="nf">alphabet</span>
-</span><span class='line'>    <span class="s1">&#39;alpha&#39;</span> <span class="o">+</span> <span class="n">bet</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="k">def</span> <span class="nf">bet</span>
-</span><span class='line'>    <span class="s1">&#39;bet&#39;</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h4>After</h4>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">A</span>
-</span><span class='line'>  <span class="k">def</span> <span class="nf">alphabet</span>
-</span><span class='line'>    <span class="s1">&#39;alpha&#39;</span> <span class="o">+</span> <span class="s1">&#39;bet&#39;</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>This is the inverse of the first example, but is it a refactoring
-technique?  There is a technique called
-<a href="http://martinfowler.com/refactoring/catalog/inlineMethod.html">Inline Method</a>, so it certainly seems plausible.</p>
-
-<h2>Example 3</h2>
-
-<h4>Before</h4>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Parent</span>
-</span><span class='line'><span class="k">end</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">class</span> <span class="nc">A</span> <span class="o">&lt;</span> <span class="no">Parent</span>
-</span><span class='line'>  <span class="k">def</span> <span class="nf">greet</span>
-</span><span class='line'>    <span class="s1">&#39;hello&#39;</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">class</span> <span class="nc">B</span> <span class="o">&lt;</span> <span class="no">Parent</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h4>After</h4>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Parent</span>
-</span><span class='line'>  <span class="k">def</span> <span class="nf">greet</span>
-</span><span class='line'>    <span class="s1">&#39;hello&#39;</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">class</span> <span class="nc">A</span> <span class="o">&lt;</span> <span class="no">Parent</span>
-</span><span class='line'><span class="k">end</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">class</span> <span class="nc">B</span> <span class="o">&lt;</span> <span class="no">Parent</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Again, there is a related refactoring technique,
-<a href="http://martinfowler.com/refactoring/catalog/pullUpMethod.html">Pull Up Method</a>. This example differs from the linked
-one, as only one of the subclasses has the method definition to start
-with. This difference makes us less ready to call our changes
-refactoring.</p>
-
-<p>Here&rsquo;s the trick: from just the code above, <strong>you can&rsquo;t tell if these
-changes constitute refactoring or not</strong>.</p>
-
-<h2>In which details are examined</h2>
-
-<p>The distinction comes from two important words in the definition of
-refactoring: <em>internal</em> and <em>external</em>. These three examples only show
-the code being changed (the internal structure), not how other objects
-interact with this code (the external behavior).</p>
-
-<p>Take a look at the second example &ndash; if any object in the entire system
-ever calls the <code>bet</code> method, then removing the method will cause the
-behavior of the system as a whole to change.</p>
-
-<p>The first and third examples are actually the same from this point of
-view &ndash; they both add a new method. You might think that adding a
-method is safe, but in truth it depends on the circumstances.</p>
-
-<p>In a statically-typed language, adding a method is safe because no
-other code could have tried to call the method without getting a
-syntax error. In contrast, a dynamically-typed language like Ruby can
-make runtime decisions based on what methods an object
-implements. This means that adding a method might trigger completely
-new behavior elsewhere.</p>
-
-<h2>In which time is considered</h2>
-
-<p>Let&rsquo;s focus on the third example and assume that the above caveat
-about adding methods in dynamically-typed languages doesn&rsquo;t apply.</p>
-
-<p>First, we decide that the code would be better if we moved the <code>greet</code>
-method from <code>A</code> to <code>Parent</code>. This change would be refactoring &ndash; no
-external behavior has changed.</p>
-
-<p>Second, instead of just making the code better, assume that user
-feedback suggests that that the <code>B</code> class needs a <code>greet</code> method. This
-means that we:</p>
-
-<ol>
-<li>Create a failing test for our new functionality.</li>
-<li>Move the <code>greet</code> method from <code>A</code> to <code>Parent</code>.</li>
-</ol>
-
-
-<p>Even though the code is modified in the same way for both examples,
-the second time is <em>not refactoring</em> &ndash; we are changing the behavior of
-the system from failing to passing. The only difference is that time
-has passed and the requirements of the system are different.</p>
-
-<h2>In which exceptions are noted</h2>
-
-<p>All three of the original examples have one thing in common: they all
-show refactoring techniques that change the interface of the
-class. Doing so means that collaborating objects must be viewed as the
-external code that relies on certain behavior.</p>
-
-<p>Some refactoring techniques change code only within a single method,
-such as <a href="http://martinfowler.com/refactoring/catalog/splitLoop.html">Split Loop</a>. In most cases, these techniques
-don&rsquo;t have to worry about changing the external behavior. Intra-method
-refactoring can only cause a problem when the method has side-effects
-that are visible outside of the method.</p>
-
-<p>Another factor that can come into play is the visibility of the
-method(s) being refactored. If they are <code>private</code> (or whatever
-language equivalent), you can feel more secure when refactoring. This
-is because limited visibility restricts what code can be considered
-external.</p>
-
-<h2>In which the real world is consulted</h2>
-
-<p>It is imperative to consider the environment in which code exists
-before refactoring it; if the environment is ignored, then you cannot
-possibly understand the desired behavior of the code.</p>
-
-<p>A main point from the blog post
-<a href="http://hamletdarcy.blogspot.com/2009/06/forgotten-refactorings.html">Forgotten Refactorings</a> by Hamlet D&#8217;Arcy is that it&rsquo;s
-not really refactoring if the code being changed isn&rsquo;t covered by
-tests. This is because tests are the single-best way to nail down the
-expectations of the behavior of a system, with the benefit that they
-are continually verified.</p>
-
-<p>It is also interesting to note that the order in which code is
-modified can alter if you are performing a refactoring or not. While
-there probably isn&rsquo;t a practical difference between the two paths, I
-cannot help but wonder if choosing one or the other will have some
-practical benefit.</p>
-
-<p>Discuss this post on <a href="http://www.reddit.com/r/programming/comments/nzzfu/when_refactoring_isnt_refactoring/">reddit</a> or <a href="http://news.ycombinator.com/item?id=3416749">Hacker News</a>.</p>
 ]]></content>
   </entry>
   

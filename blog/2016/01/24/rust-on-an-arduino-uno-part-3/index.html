@@ -1,0 +1,458 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Rust on an Arduino Uno, Part 3 - Jake Goulding</title>
+  <meta name="author" content="Jake Goulding">
+
+  
+  <meta name="description" content="Now that we can turn an LED on, let&rsquo;s see if we can do
+something more exciting: make the LED blink. Surprisingly, this is
+more difficult than &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://jakegoulding.com/blog/2016/01/24/rust-on-an-arduino-uno-part-3">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
+<link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-20521797-2']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Jake Goulding</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:jakegoulding.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul role=main-navigation>
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/presentations">Presentations</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Rust on an Arduino Uno, Part 3</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2016-01-24T13:11:12-05:00" pubdate data-updated="true">Jan 24<span>th</span>, 2016</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Now that we can <a href="/blog/2016/01/17/rust-on-an-arduino-uno-part-2/">turn an LED on</a>, let&rsquo;s see if we can do
+something more exciting: make the LED blink. Surprisingly, this is
+more difficult than you might expect!</p>
+
+<!-- more -->
+
+
+<p>Blinking boils down to &ldquo;turn the light on, wait a while, turn the
+light off, wait a while&rdquo; and repeat forever. We already know how to
+turn the light on and off, as well as repeating forever. The trick
+lies in &ldquo;wait a while&rdquo;.</p>
+
+<p>In a conventional Rust application, we&rsquo;d probably call something like
+<a href="http://doc.rust-lang.org/std/thread/fn.sleep.html"><code>std::thread::sleep</code></a>, but we don&rsquo;t have access to <code>libstd</code> on an
+Arduino as that library is too high-level. We will have to implement
+it ourselves!</p>
+
+<p>It&rsquo;s easy enough, all we have to do is loop a bunch of times. If the
+Arduino processor runs at 16MHz, we can waste 16000 cycles to take one
+millisecond. We will execute a <code>nop</code> instruction to waste the time:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>fn sleep_ms(duration_ms: u16) {
+</span><span class='line'>    const FREQUENCY_HZ: u32 = 16_000_000;
+</span><span class='line'>    const CYCLES_PER_MS: u16 = (FREQUENCY_HZ / 1000) as u16;
+</span><span class='line'>
+</span><span class='line'>    for _ in 0..duration_ms {
+</span><span class='line'>        for _ in 0..CYCLES_PER_MS {
+</span><span class='line'>            unsafe { asm!("nop"); }
+</span><span class='line'>        }
+</span><span class='line'>    }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Just compile this and away we go! Or not&hellip;</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>error: failed to resolve. Maybe a missing `extern crate iter`? [E0433]
+</span><span class='line'>     for _ in 0..duration_ms {
+</span><span class='line'>     ^~~~
+</span><span class='line'>
+</span><span class='line'>error: unresolved name `iter::IntoIterator::into_iter` [E0425]</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Right, we haven&rsquo;t actually defined any of the <code>Iterator</code> logic; that&rsquo;s
+in <code>libcore</code> which we don&rsquo;t have yet. Let&rsquo;s skip that and do something
+a little more C-like. We can just loop and increment integers and
+compare them:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>fn sleep_ms(duration_ms: u16) {
+</span><span class='line'>    const FREQUENCY_HZ: u32 = 16_000_000;
+</span><span class='line'>    const CYCLES_PER_MS: u16 = 16_000;
+</span><span class='line'>
+</span><span class='line'>    let mut outer = 0;
+</span><span class='line'>    while outer &lt; duration_ms {
+</span><span class='line'>        let mut inner = 0;
+</span><span class='line'>        while inner &lt; CYCLES_PER_MS {
+</span><span class='line'>            unsafe { asm!("nop"); }
+</span><span class='line'>            inner += 1;
+</span><span class='line'>        }
+</span><span class='line'>        outer += 1;
+</span><span class='line'>    }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>And&hellip; that fails too:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>error: binary operation `/` cannot be applied to type `u32` [E0369]
+</span><span class='line'>     const CYCLES_PER_MS: u16 = (FREQUENCY_HZ / 1000) as u16;
+</span><span class='line'>                                 ^~~~~~~~~~~~</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Ok, no division, even if it is just a constant and should be computed
+at compile time. Well, we can hard code it for the moment&hellip;</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>error: binary operation `&lt;` cannot be applied to type `_` [E0369]
+</span><span class='line'>     while outer &lt; duration_ms {
+</span><span class='line'>           ^~~~~
+</span><span class='line'>
+</span><span class='line'>error: binary assignment operation `+=` cannot be applied to type `u16` [E0368]
+</span><span class='line'>         outer += 1;
+</span><span class='line'>         ^~~~~</span></code></pre></td></tr></table></div></figure>
+
+
+<p>OK, wow, no addition or comparison either. There&rsquo;s no way around
+this &ndash; we really need <code>libcore</code> or else we are stuck with a pretty
+primitive environment. Since we know we have issues compiling all of
+libcore, let&rsquo;s try a smaller part, just enough to compile this
+example.</p>
+
+<p>Previously, we had copied in some small snippets from libcore, but
+let&rsquo;s replace those excerpts with the complete files and drag in a few
+more. After some trial-and-error, this small set compiles:</p>
+
+<ul>
+<li><code>clone</code></li>
+<li><code>cmp</code></li>
+<li><code>intrinsics</code></li>
+<li><code>marker</code></li>
+<li><code>ops</code></li>
+<li><code>option</code></li>
+</ul>
+
+
+<p>With it compiling, let&rsquo;s actually call <code>sleep_ms</code> in our <code>main</code> and
+load the program onto the board:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>loop {
+</span><span class='line'>    sleep_ms(500);
+</span><span class='line'>    volatile_store(PORTB, 0xFF); // Everything is on
+</span><span class='line'>    sleep_ms(500);
+</span><span class='line'>    volatile_store(PORTB, 0x00); // Everything is off
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p><video src="/images/blog/arduino_led/blink.mp4" controls>
+<a href="/images/blog/arduino_led/blink.mp4">
+A video of the blinking LED.
+</a>
+</video></p>
+
+<p>Look at that nice, steady blinking. Blinking at a rate that is
+<em>nothing</em> like 500 milliseconds. Let&rsquo;s take a look at the disassembly
+for the inner loop to understand why:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>adiw ;; Add word (16-bit)            ;; 2 cycles
+</span><span class='line'>cp   ;; Compare registers            ;; 1 cycle
+</span><span class='line'>cpc  ;; Compare registers with carry ;; 1 cycle
+</span><span class='line'>brcs ;; Branch if carry set          ;; 1 cycle (false) / 2 cycles (true)</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We increment our counter and check to see if we&rsquo;ve exceeded our
+limit. In all cases except the last iteration we will branch back to
+the beginning of the loop, bringing the total cycle count of the loop
+to six. Compare that to the naive calculation that the <code>nop</code> would
+take one cycle and the rest of the loop would be free. Dividing the
+inner loop constant by six gets us much closer to the appropriate
+duration.</p>
+
+<p>The outer loop and the function call itself also have some overhead,
+but these only add up to a few cycles per inner loop. Since the inner
+loop corresponds to many thousands of cycles, a few cycles is a small
+error and I think can be safely ignored.</p>
+
+<p>An interesting aside is that I have no idea why the <code>nop</code> does not
+occur inside the loop. The compiler has reordered the code such that
+the <code>nop</code> occurs in the variable initialization of the function. You
+can change the code to just <code>asm!("")</code> and accomplish the same goal of
+preventing the loop from being optimized away.</p>
+
+<p>Next time, we will see if we can do something a little more structured
+than counting cycles to sleep. As before, check out
+<a href="https://github.com/shepmaster/rust-arduino-blink-led-no-core/tree/part3">the repository</a> for the code up to this point.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Jake Goulding</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2016-01-24T13:11:12-05:00" pubdate data-updated="true">Jan 24<span>th</span>, 2016</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/arduino/'>arduino</a>, <a class='category' href='/blog/categories/rust/'>rust</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2016/01/24/rust-on-an-arduino-uno-part-3/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2016/01/24/rust-on-an-arduino-uno-part-3/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/01/17/rust-on-an-arduino-uno-part-2/" title="Previous Post: Rust on an Arduino Uno, Part 2">&laquo; Rust on an Arduino Uno, Part 2</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/01/24/rust-on-an-arduino-uno-part-3/">Rust on an Arduino Uno, Part 3</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/17/rust-on-an-arduino-uno-part-2/">Rust on an Arduino Uno, Part 2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/02/rust-on-an-arduino-uno/">Rust on an Arduino Uno</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/26/running-dnsmasq-on-os-x-and-routing-to-virtual-machines/">Running dnsmasq on OS X and routing to virtual machines</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/01/20/a-final-dip-into-rubys-marshal-format/">A final dip into Ruby's Marshal format</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/shepmaster">@shepmaster</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'shepmaster',
+            count: 5,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - Jake Goulding -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
