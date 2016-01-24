@@ -87,6 +87,8 @@ clang: error: linker command failed with exit code 1 (use -v to see invocation)
 Fortunately, I know where to tweak that in the source. The downside is
 I'll need to wait for another long build cycle...
 
+Continue on to [part 2][].
+
 [Arduino Uno]: https://www.arduino.cc/en/Main/ArduinoBoardUno
 [Dylan McKay]: https://github.com/dylanmckay
 [Rust]: https://www.rust-lang.org/
@@ -95,3 +97,4 @@ I'll need to wait for another long build cycle...
 [avr-llvm]: https://github.com/avr-llvm/llvm/
 [avr-rust]: https://github.com/avr-rust/rust/
 [first-compile]: https://github.com/avr-rust/rust/issues/13
+[part 2]: /blog/2016/01/17/rust-on-an-arduino-uno-part-2/
