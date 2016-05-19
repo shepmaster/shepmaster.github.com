@@ -4,7 +4,7 @@
   <title><![CDATA[Jake Goulding]]></title>
   <link href="http://jakegoulding.com/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2016-01-24T13:14:45-05:00</updated>
+  <updated>2016-05-19T10:46:06-04:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -12,6 +12,414 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Rust on an Arduino Uno, Part 4]]></title>
+    <link href="http://jakegoulding.com/blog/2016/05/12/rust-on-an-arduino-uno-part-4/"/>
+    <updated>2016-05-12T13:04:43-04:00</updated>
+    <id>http://jakegoulding.com/blog/2016/05/12/rust-on-an-arduino-uno-part-4</id>
+    <content type="html"><![CDATA[<p>When we left off, we were <a href="http://jakegoulding.com/blog/2016/01/24/rust-on-an-arduino-uno-part-3/">blinking the LED</a>. Let&rsquo;s take a
+brief detour and document how to get a working Rust compiler. This is
+mostly a way for me to document what I&rsquo;ve been doing so I can find it
+again!</p>
+
+<!-- more -->
+
+
+<p>We are going to start by getting a local version of LLVM that supports
+targeting AVR. After cloning <a href="https://github.com/avr-llvm/llvm">the repository</a>, we will need
+to set up for a build. Note that the upstream <code>avr-rust-support</code>
+branch sometimes lags compared to <code>avr-support</code>, so you will probably
+want to merge the two branches to get any updates.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>cd avr-llvm
+</span><span class='line'>git checkout avr-support
+</span><span class='line'>git merge origin/avr-rust-support
+</span><span class='line'>mkdir -p debug/build
+</span><span class='line'>cd debug/build</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We will then configure LLVM. This <em>particular</em> configuration I have
+here is based off the current Rust build and is specific to OS X (see
+the <code>C_FLAGS</code> and <code>CXX_FLAGS</code>). If you are using a different platform,
+you&rsquo;ll need to poke at the Rust build process to see the appropriate
+flags.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>cmake ../.. \
+</span><span class='line'>  -DLLVM_TARGETS_TO_BUILD="X86;AVR" \
+</span><span class='line'>  -DLLVM_INCLUDE_EXAMPLES=OFF \
+</span><span class='line'>  -DLLVM_INCLUDE_TESTS=OFF \
+</span><span class='line'>  -DLLVM_INCLUDE_DOCS=OFF \
+</span><span class='line'>  -DLLVM_ENABLE_ZLIB=OFF \
+</span><span class='line'>  -DWITH_POLLY=OFF \
+</span><span class='line'>  -DLLVM_ENABLE_TERMINFO=OFF \
+</span><span class='line'>  -DLLVM_INSTALL_UTILS=ON \
+</span><span class='line'>  -DCMAKE_C_FLAGS="-ffunction-sections -fdata-sections -m64 -fPIC -stdlib=libc++ -mmacosx-version-min=10.7" \
+</span><span class='line'>  -DCMAKE_CXX_FLAGS="-ffunction-sections -fdata-sections -m64 -fPIC -stdlib=libc++ -mmacosx-version-min=10.7" \
+</span><span class='line'>  -DCMAKE_INSTALL_PREFIX=..</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Then it&rsquo;s just a matter of building and installing. Since it created
+normal <code>Makefile</code>s for me, I passed an extra make flag to build in
+parallel. The LLVM build is pretty fast this way!</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>cmake --build . -- -j7
+</span><span class='line'>cmake --build . --target install</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Then we need to build Rust with this custom LLVM. After cloning
+<a href="https://github.com/avr-rust/rust">the repository</a>, set up the structure:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>cd avr-rust
+</span><span class='line'>git checkout avr-support
+</span><span class='line'>mkdir -p debug
+</span><span class='line'>cd debug/</span></code></pre></td></tr></table></div></figure>
+
+
+<p>AVR-LLVM is based on a very new version of LLVM, so we need to use the
+in-progress Rust build system called &ldquo;rustbuild&rdquo;. Using in-development
+build systems with in-development compilers, what could go wrong?</p>
+
+<p>Note that it&rsquo;s very important to use an absolute path to your LLVM
+directory.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>../configure \
+</span><span class='line'>  --enable-rustbuild \
+</span><span class='line'>  --enable-debug \
+</span><span class='line'>  --disable-docs \
+</span><span class='line'>  --enable-debug-assertions \
+</span><span class='line'>  --disable-jemalloc \
+</span><span class='line'>  --llvm-root=/absolute/path/to/avr-llvm/debug</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Then we build!</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>make -j7</span></code></pre></td></tr></table></div></figure>
+
+
+<p><strong>Hours later</strong>, you will have a fully-built compiler. However, you
+can usually get up-and-running earlier by using the stage 1 compiler,
+located in <code>debug/build/*/stage1</code>. This will be available pretty
+quickly, before the build is complete.</p>
+
+<p>We then add this build as a <a href="https://github.com/brson/multirust">multirust</a> toolchain and use it as the
+override compiler in a directory:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>multirust override avr --link-local /path/to/rust/debug/build/*/stage1</span></code></pre></td></tr></table></div></figure>
+
+
+<p>And for convenience, we will copy in a <a href="https://github.com/rust-lang/cargo#installing-cargo">nightly version of Cargo</a>.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>cp cargo-nightly/cargo/bin/cargo /path/to/rust/debug/build/*/stage1/bin/</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Note that this will only produce a cross-compiler, but none of the
+libraries that make things actually work. That&rsquo;s still coming!</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Rust on an Arduino Uno, Part 4]]></title>
+    <link href="http://jakegoulding.com/blog/2016/01/25/rust-on-an-arduino-uno-part-4/"/>
+    <updated>2016-01-25T14:41:21-05:00</updated>
+    <id>http://jakegoulding.com/blog/2016/01/25/rust-on-an-arduino-uno-part-4</id>
+    <content type="html"><![CDATA[<p>Previously, we wrote some code that allowed us to
+<a href="">sleep by waiting for a number of cycles to pass</a>. However, we
+had to peek at the disassembly to know how many cycles we were
+spending and adapt our source code to match. While it got us started,
+it&rsquo;s not a very elegant solution.</p>
+
+<!-- more -->
+
+
+<p>The Arduino Uno uses an ATmega328P processor. One of the features of
+this processor are 3 built-in timers that can trigger <em>interrupts</em> at
+certain periods. Interrupts are special bits of code that take over
+control of the processor when something important happens. These are
+often time-critical things that need to be handled quickly.</p>
+
+<p>What would be ideal is if we could rely on the timer feature to
+implement our <code>sleep</code> method. To get started, we are going to need the
+ability to specify the <em>interrupt vector</em>.</p>
+
+<p>The interrupt vector is a table of 26 instructions that must be placed
+at a specific section in memory. Each element in the table corresponds
+to a specific interrupt, and should consist of one instruction that
+jumps to the appropriate interrupt handler.</p>
+
+<p>To do this, we need to write a little bit of assembly:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ivr:
+</span><span class='line'>        jmp _ivr_reset
+</span><span class='line'>        jmp _ivr_irq0
+</span><span class='line'>        jmp _ivr_irq1
+</span><span class='line'>        ;; continues for all the rest</span></code></pre></td></tr></table></div></figure>
+
+
+<p>In order to use this, we need to include it when linking all of our
+code together. We also have to disable the existing interrupt vector
+that would be added (the <code>-nostartfiles</code> flag):</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>avr-gcc -mmcu=atmega328p interrupt_vector.S hello.o -nostartfiles -o hello.elf</span></code></pre></td></tr></table></div></figure>
+
+
+<p>If you compile right now, you will get a whole bunch of errors of the
+form:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>temp_file_name.o: In function `ivr':
+</span><span class='line'>(.text+0x0): undefined reference to `_ivr_reset'</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Our interrupt vector is trying to jump to a bunch of symbols that we
+haven&rsquo;t yet defined. We could do the simple thing and define a bunch
+of <code>_ivr_*</code> methods in Rust (and I did, to start with), but that&rsquo;s
+rather annoying. Instead, we can use <em>weak linking</em> to define a kind
+of &ldquo;fallback&rdquo; symbol. We will have one simple handler that just
+returns from the interrupt, and set each handler to use that unless it
+is defined:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>_ivr_undefined:
+</span><span class='line'>        reti
+</span><span class='line'>
+</span><span class='line'>.weak _ivr_irq0
+</span><span class='line'>.set  _ivr_irq0, _ivr_undefined
+</span><span class='line'>;;; And so on</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The only outlier is <code>_ivr_reset</code> which we define to point to our
+<code>main</code> method, avoiding extraneous indirection. At this point, we
+should be compiling again, but not using the interrupts yet. Let&rsquo;s
+change that.</p>
+
+<p>Following <a href="http://www.instructables.com/id/Arduino-Timer-Interrupts/?ALLSTEPS">this guide</a>, we can see all the details of
+setting up the timer. At a high level it&rsquo;s:</p>
+
+<ol>
+<li>Register an interrupt handler.</li>
+<li>Disable interrupts.</li>
+<li>Set a bunch of values as determined by the datasheet and math.</li>
+<li>Enable interrupts.</li>
+</ol>
+
+
+<p>We will copy all of the values and registers from this article to
+setup timer 0, but with a 1kHz rate instead of 2kHz. This matches
+nicer with our <code>sleep_ms</code> method which waits milliseconds.</p>
+
+<p>Let&rsquo;s use a little bit of nice Rust for a change. When we disable
+interrupts, we <em>really</em> want to make sure we enable them again! In a
+language like Rust, we can use a (misleadingly labeled) pattern known
+as Resource Acquisition Is Initialization (RAII). We will create a
+<code>struct</code> that disables interrupts when it is created and enables them
+when the struct is dropped. This means we can never forget as the
+compiler will ensure things are restored!</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>struct DisableInterrupts(PhantomData&lt;()&gt;);
+</span><span class='line'>impl DisableInterrupts {
+</span><span class='line'>    fn new() -&gt; DisableInterrupts {
+</span><span class='line'>        unsafe { asm!("CLI") }
+</span><span class='line'>        DisableInterrupts(PhantomData)
+</span><span class='line'>    }
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>impl Drop for DisableInterrupts {
+</span><span class='line'>    fn drop(&mut self) {
+</span><span class='line'>        unsafe { asm!("SEI") }
+</span><span class='line'>    }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We can bundle this into a nice wrapper:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>fn without_interrupts&lt;F, T&gt;(f: F) -&gt; T
+</span><span class='line'>    where F: FnOnce() -&gt; T
+</span><span class='line'>{
+</span><span class='line'>    let _disabled = DisableInterrupts::new();
+</span><span class='line'>    f()
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>And use it like so:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>without_interrupts(|| {
+</span><span class='line'>    volatile_store(TCCR0A, 0);
+</span><span class='line'>});</span></code></pre></td></tr></table></div></figure>
+
+
+<p>To define the interrupt handler, we simply create a method that
+matches the expected name from our assembly file. The method simply
+increments a global variable each time it is triggered:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>static mut N_MS_ELAPSED: u8 = 0;
+</span><span class='line'>
+</span><span class='line'>#[no_mangle]
+</span><span class='line'>pub unsafe extern fn _ivr_timer0_compare_a() {
+</span><span class='line'>    N_MS_ELAPSED += 1;
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>And re-implement our <code>sleep_ms</code> function to:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>fn sleep_ms(duration_ms: u8) {
+</span><span class='line'>    unsafe {
+</span><span class='line'>        volatile_store(&mut N_MS_ELAPSED, 0);
+</span><span class='line'>        while volatile_load(&mut N_MS_ELAPSED) &lt; duration_ms {
+</span><span class='line'>            // spin
+</span><span class='line'>        }
+</span><span class='line'>    }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Compile this and load it onto the board, and we are greeted with the
+sight of <em>nothing blinking</em>. It&rsquo;s time to dig into more
+disassembly. Here&rsquo;s what <code>_ivr_timer0_compare_a</code> looks like:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>lds     r24, 0x0000
+</span><span class='line'>inc     r24
+</span><span class='line'>sts     0x0000, r24
+</span><span class='line'>ret</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Checking the instruction set manual and the datasheet, we will notice a few problems:</p>
+
+<ol>
+<li>We use <code>ret</code> (Return from Subroutine) instead of <code>reti</code> (Return from Interrupt).</li>
+<li>We do not save and restore the Status register.</li>
+<li>We do not save and restore the <code>r24</code> register.</li>
+</ol>
+
+
+<p>Let&rsquo;s modify our handler with a bit more assembly to address all three issues:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>#[no_mangle]
+</span><span class='line'>pub unsafe extern fn _ivr_timer0_compare_a() {
+</span><span class='line'>    asm!{
+</span><span class='line'>        "PUSH R24
+</span><span class='line'>         IN R24, 0x3F
+</span><span class='line'>         PUSH R24"
+</span><span class='line'>    };
+</span><span class='line'>
+</span><span class='line'>    N_MS_ELAPSED += 1;
+</span><span class='line'>
+</span><span class='line'>    asm!{
+</span><span class='line'>        "POP R24
+</span><span class='line'>         OUT 0x3F, R24
+</span><span class='line'>         POP R24
+</span><span class='line'>         RETI"
+</span><span class='line'>    };
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>That&rsquo;s certainly a bit longer, but it compiles and works again! And it
+will continue to work, so long as the compiler always decides to use
+<code>r24</code> for the incremented value, something we have no control over. As
+you might guess, there&rsquo;s a better solution.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Rust on an Arduino Uno, Part 3]]></title>
@@ -2809,407 +3217,6 @@ method that redirects to the object&rsquo;s implementation:</p>
 </span><span class='line'><span class="k">end</span>
 </span></code></pre></td></tr></table></div></figure>
 
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Test Double Terminology]]></title>
-    <link href="http://jakegoulding.com/blog/2012/01/12/test-double-terminology/"/>
-    <updated>2012-01-12T07:37:00-05:00</updated>
-    <id>http://jakegoulding.com/blog/2012/01/12/test-double-terminology</id>
-    <content type="html"><![CDATA[<p>While listening to the Code Quality panel discussion at
-<a href="http://codemash.org/">CodeMash</a>, I <a href="https://twitter.com/#!/JakeGoulding/status/157261614448521216">tweeted</a> about &ldquo;the state
-of mocking&rdquo;:</p>
-
-<blockquote><p>The state of &ldquo;mocking&rdquo; is that the term &ldquo;mocking&rdquo; is misused by
-everyone. You often mean &ldquo;test double&rdquo; or &ldquo;stub&rdquo;.</p></blockquote>
-
-<p>This garnered some retweets and some great replies, so I wanted to
-have the opportunity to respond in a little longer form. I&rsquo;ve written
-this post between sessions and in the halls, so give me a little
-leeway and feel free to send me a tweet with corrections, arguments,
-whatever.</p>
-
-<!-- more -->
-
-
-<h2>Test frameworks encourage misuse</h2>
-
-<blockquote><p>[I]t doesn&rsquo;t help that most mocking frameworks are used for stubs</p></blockquote>
-
-<p><a href="https://twitter.com/#!/F1nglas/status/157421334220120065">@F1nglas</a> mentions that <a href="http://code.google.com/p/moq/">moq</a> does this, and I
-know that <a href="http://code.google.com/p/mockito/">Mockito</a> does as well. <a href="https://www.relishapp.com/rspec">RSpec</a> does better
-in this area. From the <a href="https://www.relishapp.com/rspec/rspec-mocks">rspec-mock</a> documentation:</p>
-
-<blockquote><p>Use the <code>double</code> method to create [a test double.] You can also use
-the <code>mock</code> and <code>stub</code> methods to create test doubles, however these
-methods are there for backward compatibility only</p></blockquote>
-
-<p>Remember that most of these tools we use are open source: we can
-submit patches to improve them. In the meantime, we can add local
-alias methods that better express our intent.</p>
-
-<h2>Saying &ldquo;mock&rdquo; is just more fluid</h2>
-
-<blockquote><p>[P]eople find it easier to say &ldquo;I&rsquo;ll mock that out&rdquo; than &ldquo;I&rsquo;ll
-test-double that out&rdquo;.</p></blockquote>
-
-<p><a href="https://twitter.com/#!/jitterted/status/157265770403987456">@jitterted</a>&rsquo;s point is spot on; it <em>is</em> easier to say
-&ldquo;mock&rdquo;. However, I don&rsquo;t usually want to use just a test double. I
-always want to do/use something particular: stub, mock, dummy, etc.</p>
-
-<p>I&rsquo;d love it if we as a community could come up with a better verb to
-use to mean the generic &ldquo;use a test double&rdquo;.</p>
-
-<h2>Doesn&rsquo;t language evolve?</h2>
-
-<blockquote><p>[A] term takes on the meaning that &ldquo;everyone&rdquo; gives it</p></blockquote>
-
-<p><a href="https://twitter.com/#!/JuliansThoughts/status/157372211840299009">@JuliansThoughts</a></p>
-
-<blockquote><p>The meaning of a word is defined by common understanding</p></blockquote>
-
-<p><a href="https://twitter.com/#!/roblally/status/157361888420827137">@roblally</a></p>
-
-<blockquote><p>[M]isused by everyone is an evolving definition</p></blockquote>
-
-<p><a href="https://twitter.com/#!/boulderDanH/status/157262539372249088">@boulderDanH</a></p>
-
-<p>Let me get this out of the way first: I <strong>love</strong> the evolution of
-language. Dropping irrelevant words, new words being created, and
-expanding the meaning of existing words are all good things.</p>
-
-<p>The root issue here is not that language is evolving. The root issue
-is that our understanding of the tools and techniques we are referring
-to by that language hasn&rsquo;t gotten to the point where we can substitute
-one for the other and know <strong>conclusively</strong> what we really mean.</p>
-
-<p>If I said to you, the programmer: &ldquo;Use a list to store the names&rdquo;. You
-go off and write whatever you need, then come back for code review and
-I now say: &ldquo;Why can&rsquo;t I look up a specific name efficiently?&rdquo;. You
-would be outraged; why did I tell you to use a list when I really
-meant a hashtable instead? My response? &ldquo;Oh, you know that language
-evolves&rdquo;.</p>
-
-<p>If I&rsquo;d originally said to use a &ldquo;collection&rdquo;, a more abstract concept
-than either list or hashtable, that would force you to think about
-what you need to do and how you were going to do it. I&rsquo;m not
-conflating a specific idea with a general concept.</p>
-
-<p>As community, we have heaps of experience with various types of
-collections; we don&rsquo;t have that same strong background with test
-doubles yet. When we use &ldquo;mock&rdquo; when we should use &ldquo;dummy&rdquo; or &ldquo;stub&rdquo;
-or &ldquo;test double&rdquo;, we avoid thinking about what we really need to do
-and why we need to do it.</p>
-
-<p>By using &ldquo;mock&rdquo; inappropriately, we confuse two distinct concepts. We
-then complain that &ldquo;mocks&rdquo; suck and don&rsquo;t do what we need them to
-do. Mocks, stubs, fakes and dummies all have a place and a
-purpose. Just as using a list when you should use a hashtable reflects
-poorly on the programmer, so does using a mock when you should use a
-stub.</p>
-
-<p>Mocks are <strong>not</strong> stubs. Don&rsquo;t believe me. Believe
-<a href="http://martinfowler.com/articles/mocksArentStubs.html#TheDifferenceBetweenMocksAndStubs">Martin Fowler</a>. Believe
-<a href="http://xunitpatterns.com/">Gerard Meszaros</a>. Watch
-<a href="http://confreaks.net/videos/659-rubyconf2011-why-you-don-t-get-mock-objects">Why You Don&rsquo;t Get Mock Objects</a> by Gregory
-Moeck. Whatever you do, make sure you understand what a mock object
-truly is before you start conflating terms.</p>
-
-<p><em>Note:</em> Don&rsquo;t take from this post that I always do or say the right
-thing. I have other posts on this same blog that incorrectly refer to
-test doubles as &ldquo;mocks&rdquo;. Most of those posts were written before I
-learned the difference myself. I should edit those posts to clarify my
-real intent. The important thing is that as we go forward we should be
-careful and precise about what we mean.</p>
-
-<p>Discuss on <a href="http://www.reddit.com/r/programming/comments/off9p/test_double_terminology_the_misuse_of_the_term/">reddit</a> or <a href="http://news.ycombinator.com/item?id=3460509">Hacker News</a>.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Stubbing the Builder pattern in Mockito]]></title>
-    <link href="http://jakegoulding.com/blog/2012/01/09/stubbing-builder-pattern-in-mockito/"/>
-    <updated>2012-01-09T12:00:00-05:00</updated>
-    <id>http://jakegoulding.com/blog/2012/01/09/stubbing-builder-pattern-in-mockito</id>
-    <content type="html"><![CDATA[<p>Recently, I was asked to help review new tests for production code
-that made use of the <a href="http://en.wikipedia.org/wiki/Builder_pattern">Builder</a> pattern. The code in question
-did not lend itself to nice and easy testing, but leveraging a
-lesser-used bit of <a href="http://code.google.com/p/mockito/">Mockito</a> functionality helped make the
-code better.</p>
-
-<!-- more -->
-
-
-<p>Originally, the tests created a test double for the builder object and
-then stubbed all of the methods on the builder to return the builder
-double itself. The code looked a bit like:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Test</span>
-</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">builder_test_v1</span><span class="o">()</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="n">Foo</span> <span class="n">f</span> <span class="o">=</span> <span class="n">mock</span><span class="o">(</span><span class="n">Foo</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
-</span><span class='line'>    <span class="n">FooBuilder</span> <span class="n">b</span> <span class="o">=</span> <span class="n">mock</span><span class="o">(</span><span class="n">FooBuilder</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
-</span><span class='line'>    <span class="n">when</span><span class="o">(</span><span class="n">b</span><span class="o">.</span><span class="na">enableAlpha</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
-</span><span class='line'>    <span class="n">when</span><span class="o">(</span><span class="n">b</span><span class="o">.</span><span class="na">disableBeta</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
-</span><span class='line'>    <span class="n">when</span><span class="o">(</span><span class="n">b</span><span class="o">.</span><span class="na">increaseGamma</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
-</span><span class='line'>    <span class="n">when</span><span class="o">(</span><span class="n">b</span><span class="o">.</span><span class="na">build</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">f</span><span class="o">);</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="n">productionCode</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
-</span><span class='line'>    <span class="n">verify</span><span class="o">(</span><span class="n">f</span><span class="o">).</span><span class="na">someMethod</span><span class="o">();</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">productionCode</span><span class="o">(</span><span class="n">FooBuilder</span> <span class="n">builder</span><span class="o">)</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="c1">// code that uses the builder...</span>
-</span><span class='line'>    <span class="n">Foo</span> <span class="n">foo</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="na">enableAlpha</span><span class="o">().</span><span class="na">disableBeta</span><span class="o">().</span><span class="na">increaseGamma</span><span class="o">().</span><span class="na">build</span><span class="o">();</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>There are a few downsides to this approach. The first thing we noticed
-was the amount of work done to set up the builder compared to the rest
-of the test. All that line noise distracts us from the meaning of the
-test. This can be easily improved by pulling the builder setup into a
-separate method:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Test</span>
-</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">builder_test_v2</span><span class="o">()</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="n">Foo</span> <span class="n">f</span> <span class="o">=</span> <span class="n">mock</span><span class="o">(</span><span class="n">Foo</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
-</span><span class='line'>    <span class="n">FooBuilder</span> <span class="n">b</span> <span class="o">=</span> <span class="n">newBuilderMock</span><span class="o">();</span>
-</span><span class='line'>    <span class="n">when</span><span class="o">(</span><span class="n">b</span><span class="o">.</span><span class="na">build</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">f</span><span class="o">);</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="n">productionCode</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
-</span><span class='line'>    <span class="n">verify</span><span class="o">(</span><span class="n">f</span><span class="o">).</span><span class="na">someMethod</span><span class="o">();</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">private</span> <span class="n">FooBuilder</span> <span class="nf">newBuilderMock</span><span class="o">()</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="n">FooBuilder</span> <span class="n">b</span> <span class="o">=</span> <span class="n">mock</span><span class="o">(</span><span class="n">FooBuilder</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
-</span><span class='line'>    <span class="n">when</span><span class="o">(</span><span class="n">b</span><span class="o">.</span><span class="na">enableAlpha</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
-</span><span class='line'>    <span class="n">when</span><span class="o">(</span><span class="n">b</span><span class="o">.</span><span class="na">disableBeta</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
-</span><span class='line'>    <span class="n">when</span><span class="o">(</span><span class="n">b</span><span class="o">.</span><span class="na">increaseGamma</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
-</span><span class='line'>    <span class="k">return</span> <span class="n">b</span><span class="o">;</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>While the test is now easier to read and the new method is reusable in
-other tests, we still will be in trouble when the methods of the
-builder change.</p>
-
-<p>If your builder implements an interface, you should consider creating
-an implementation of that interface that you can easily configure for
-testing. Something like:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">TestingFooBuilder</span> <span class="kd">implements</span> <span class="n">FooBuilder</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="kd">private</span> <span class="n">Foo</span> <span class="n">returnValue</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="kd">public</span> <span class="nf">TestingFooBuilder</span><span class="o">(</span><span class="n">Foo</span> <span class="n">returnValue</span><span class="o">)</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>        <span class="k">this</span><span class="o">.</span><span class="na">returnValue</span> <span class="o">=</span> <span class="n">returnValue</span><span class="o">;</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="kd">public</span> <span class="n">FooBuilder</span> <span class="nf">enableAlpha</span><span class="o">()</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>        <span class="k">return</span> <span class="k">this</span><span class="o">;</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="kd">public</span> <span class="n">FooBuilder</span> <span class="nf">disableBeta</span><span class="o">()</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>        <span class="k">return</span> <span class="k">this</span><span class="o">;</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="kd">public</span> <span class="n">FooBuilder</span> <span class="nf">increaseGamma</span><span class="o">()</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>        <span class="k">return</span> <span class="k">this</span><span class="o">;</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="kd">public</span> <span class="n">Foo</span> <span class="nf">build</span><span class="o">()</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>        <span class="k">return</span> <span class="n">returnValue</span><span class="o">;</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Test</span>
-</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">builder_test_v3</span><span class="o">()</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="n">Foo</span> <span class="n">f</span> <span class="o">=</span> <span class="n">mock</span><span class="o">(</span><span class="n">Foo</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
-</span><span class='line'>    <span class="n">FooBuilder</span> <span class="n">b</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TestingFooBuilder</span><span class="o">(</span><span class="n">f</span><span class="o">);</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="n">productionCode</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
-</span><span class='line'>    <span class="n">verify</span><span class="o">(</span><span class="n">f</span><span class="o">).</span><span class="na">someMethod</span><span class="o">();</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>An implementation like this allows you to lean on the compiler when
-the interface changes.</p>
-
-<p>If you don&rsquo;t have a interface to implement, you could subclass
-the concrete builder class and insert your test-specific logic
-there. The downside to this is that newly-added methods will inherit
-their implementation from the parent class, which can cause very
-strange test failures.</p>
-
-<p>We did not have an interface to adhere to, so we used Mockito&rsquo;s
-<code>Answer</code> class to provide a middle ground solution. When you create a
-new mock, an <code>Answer</code> can be used to provide default behavior for
-methods. Here&rsquo;s the custom <code>Answer</code> we came up with:</p>
-
-<figure class='code'><figcaption><span> (AnswerWithSelf.java)</span> <a href='http://jakegoulding.com/downloads/code/AnswerWithSelf.java'>download</a></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/**</span>
-</span><span class='line'><span class="cm"> * Returns the mock object itself for any method that returns the specified class.</span>
-</span><span class='line'><span class="cm"> */</span>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">AnswerWithSelf</span> <span class="kd">implements</span> <span class="n">Answer</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">&gt;</span> <span class="o">{</span>
-</span><span class='line'>    <span class="kd">private</span> <span class="kd">final</span> <span class="n">Answer</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">&gt;</span> <span class="n">delegate</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ReturnsEmptyValues</span><span class="o">();</span>
-</span><span class='line'>    <span class="kd">private</span> <span class="kd">final</span> <span class="n">Class</span><span class="o">&lt;?&gt;</span> <span class="n">clazz</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="kd">public</span> <span class="nf">AnswerWithSelf</span><span class="o">(</span><span class="n">Class</span><span class="o">&lt;?&gt;</span> <span class="n">clazz</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>        <span class="k">this</span><span class="o">.</span><span class="na">clazz</span> <span class="o">=</span> <span class="n">clazz</span><span class="o">;</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="kd">public</span> <span class="n">Object</span> <span class="nf">answer</span><span class="o">(</span><span class="n">InvocationOnMock</span> <span class="n">invocation</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Throwable</span> <span class="o">{</span>
-</span><span class='line'>        <span class="n">Class</span><span class="o">&lt;?&gt;</span> <span class="n">returnType</span> <span class="o">=</span> <span class="n">invocation</span><span class="o">.</span><span class="na">getMethod</span><span class="o">().</span><span class="na">getReturnType</span><span class="o">();</span>
-</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">returnType</span> <span class="o">==</span> <span class="n">clazz</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>            <span class="k">return</span> <span class="n">invocation</span><span class="o">.</span><span class="na">getMock</span><span class="o">();</span>
-</span><span class='line'>        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
-</span><span class='line'>            <span class="k">return</span> <span class="n">delegate</span><span class="o">.</span><span class="na">answer</span><span class="o">(</span><span class="n">invocation</span><span class="o">);</span>
-</span><span class='line'>        <span class="o">}</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>The answer can be used like this:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Test</span>
-</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">builder_test_v4</span><span class="o">()</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="n">Foo</span> <span class="n">f</span> <span class="o">=</span> <span class="n">mock</span><span class="o">(</span><span class="n">Foo</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
-</span><span class='line'>    <span class="n">FooBuilder</span> <span class="n">b</span> <span class="o">=</span> <span class="n">mock</span><span class="o">(</span><span class="n">FooBuilder</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="k">new</span> <span class="n">AnswerWithSelf</span><span class="o">(</span><span class="n">FooBuilder</span><span class="o">.</span><span class="na">class</span><span class="o">));</span>
-</span><span class='line'>    <span class="n">when</span><span class="o">(</span><span class="n">b</span><span class="o">.</span><span class="na">build</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">f</span><span class="o">);</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="n">productionCode</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
-</span><span class='line'>    <span class="n">verify</span><span class="o">(</span><span class="n">f</span><span class="o">).</span><span class="na">someMethod</span><span class="o">();</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>This <code>Answer</code> can be used with any <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent interface</a> that
-returns the original object.</p>
 ]]></content>
   </entry>
   

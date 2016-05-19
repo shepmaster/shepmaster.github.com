@@ -4,7 +4,7 @@
   <title><![CDATA[Category: arduino | Jake Goulding]]></title>
   <link href="http://jakegoulding.com/blog/categories/arduino/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2016-01-24T13:14:45-05:00</updated>
+  <updated>2016-05-19T10:46:06-04:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -12,6 +12,361 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Rust on an Arduino Uno, Part 4]]></title>
+    <link href="http://jakegoulding.com/blog/2016/05/12/rust-on-an-arduino-uno-part-4/"/>
+    <updated>2016-05-12T13:04:43-04:00</updated>
+    <id>http://jakegoulding.com/blog/2016/05/12/rust-on-an-arduino-uno-part-4</id>
+    <content type="html"><![CDATA[<p>When we left off, we were <a href="/blog/2016/01/24/rust-on-an-arduino-uno-part-3/">blinking the LED</a>. Let&rsquo;s take a
+brief detour and document how to get a working Rust compiler. This is
+mostly a way for me to document what I&rsquo;ve been doing so I can find it
+again!</p>
+
+<!-- more -->
+
+
+<p>We are going to start by getting a local version of LLVM that supports
+targeting AVR. After cloning <a href="https://github.com/avr-llvm/llvm">the repository</a>, we will need
+to set up for a build. Note that the upstream <code>avr-rust-support</code>
+branch sometimes lags compared to <code>avr-support</code>, so you will probably
+want to merge the two branches to get any updates.</p>
+
+<p><code>
+cd avr-llvm
+git checkout avr-support
+git merge origin/avr-rust-support
+mkdir -p debug/build
+cd debug/build
+</code></p>
+
+<p>We will then configure LLVM. This <em>particular</em> configuration I have
+here is based off the current Rust build and is specific to OS X (see
+the <code>C_FLAGS</code> and <code>CXX_FLAGS</code>). If you are using a different platform,
+you&rsquo;ll need to poke at the Rust build process to see the appropriate
+flags.</p>
+
+<p><code>
+cmake ../.. \
+  -DLLVM_TARGETS_TO_BUILD="X86;AVR" \
+  -DLLVM_INCLUDE_EXAMPLES=OFF \
+  -DLLVM_INCLUDE_TESTS=OFF \
+  -DLLVM_INCLUDE_DOCS=OFF \
+  -DLLVM_ENABLE_ZLIB=OFF \
+  -DWITH_POLLY=OFF \
+  -DLLVM_ENABLE_TERMINFO=OFF \
+  -DLLVM_INSTALL_UTILS=ON \
+  -DCMAKE_C_FLAGS="-ffunction-sections -fdata-sections -m64 -fPIC -stdlib=libc++ -mmacosx-version-min=10.7" \
+  -DCMAKE_CXX_FLAGS="-ffunction-sections -fdata-sections -m64 -fPIC -stdlib=libc++ -mmacosx-version-min=10.7" \
+  -DCMAKE_INSTALL_PREFIX=..
+</code></p>
+
+<p>Then it&rsquo;s just a matter of building and installing. Since it created
+normal <code>Makefile</code>s for me, I passed an extra make flag to build in
+parallel. The LLVM build is pretty fast this way!</p>
+
+<p><code>
+cmake --build . -- -j7
+cmake --build . --target install
+</code></p>
+
+<p>Then we need to build Rust with this custom LLVM. After cloning
+<a href="https://github.com/avr-rust/rust">the repository</a>, set up the structure:</p>
+
+<p><code>
+cd avr-rust
+git checkout avr-support
+mkdir -p debug
+cd debug/
+</code></p>
+
+<p>AVR-LLVM is based on a very new version of LLVM, so we need to use the
+in-progress Rust build system called &ldquo;rustbuild&rdquo;. Using in-development
+build systems with in-development compilers, what could go wrong?</p>
+
+<p>Note that it&rsquo;s very important to use an absolute path to your LLVM
+directory.</p>
+
+<p><code>
+../configure \
+  --enable-rustbuild \
+  --enable-debug \
+  --disable-docs \
+  --enable-debug-assertions \
+  --disable-jemalloc \
+  --llvm-root=/absolute/path/to/avr-llvm/debug
+</code></p>
+
+<p>Then we build!</p>
+
+<p><code>
+make -j7
+</code></p>
+
+<p><strong>Hours later</strong>, you will have a fully-built compiler. However, you
+can usually get up-and-running earlier by using the stage 1 compiler,
+located in <code>debug/build/*/stage1</code>. This will be available pretty
+quickly, before the build is complete.</p>
+
+<p>We then add this build as a <a href="https://github.com/brson/multirust">multirust</a> toolchain and use it as the
+override compiler in a directory:</p>
+
+<p><code>
+multirust override avr --link-local /path/to/rust/debug/build/*/stage1
+</code></p>
+
+<p>And for convenience, we will copy in a <a href="https://github.com/rust-lang/cargo#installing-cargo">nightly version of Cargo</a>.</p>
+
+<p><code>
+cp cargo-nightly/cargo/bin/cargo /path/to/rust/debug/build/*/stage1/bin/
+</code></p>
+
+<p>Note that this will only produce a cross-compiler, but none of the
+libraries that make things actually work. That&rsquo;s still coming!</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Rust on an Arduino Uno, Part 4]]></title>
+    <link href="http://jakegoulding.com/blog/2016/01/25/rust-on-an-arduino-uno-part-4/"/>
+    <updated>2016-01-25T14:41:21-05:00</updated>
+    <id>http://jakegoulding.com/blog/2016/01/25/rust-on-an-arduino-uno-part-4</id>
+    <content type="html"><![CDATA[<p>Previously, we wrote some code that allowed us to
+<a href="">sleep by waiting for a number of cycles to pass</a>. However, we
+had to peek at the disassembly to know how many cycles we were
+spending and adapt our source code to match. While it got us started,
+it&rsquo;s not a very elegant solution.</p>
+
+<!-- more -->
+
+
+<p>The Arduino Uno uses an ATmega328P processor. One of the features of
+this processor are 3 built-in timers that can trigger <em>interrupts</em> at
+certain periods. Interrupts are special bits of code that take over
+control of the processor when something important happens. These are
+often time-critical things that need to be handled quickly.</p>
+
+<p>What would be ideal is if we could rely on the timer feature to
+implement our <code>sleep</code> method. To get started, we are going to need the
+ability to specify the <em>interrupt vector</em>.</p>
+
+<p>The interrupt vector is a table of 26 instructions that must be placed
+at a specific section in memory. Each element in the table corresponds
+to a specific interrupt, and should consist of one instruction that
+jumps to the appropriate interrupt handler.</p>
+
+<p>To do this, we need to write a little bit of assembly:</p>
+
+<p>```
+ivr:</p>
+
+<pre><code>    jmp _ivr_reset
+    jmp _ivr_irq0
+    jmp _ivr_irq1
+    ;; continues for all the rest
+</code></pre>
+
+<p>```</p>
+
+<p>In order to use this, we need to include it when linking all of our
+code together. We also have to disable the existing interrupt vector
+that would be added (the <code>-nostartfiles</code> flag):</p>
+
+<p><code>
+avr-gcc -mmcu=atmega328p interrupt_vector.S hello.o -nostartfiles -o hello.elf
+</code></p>
+
+<p>If you compile right now, you will get a whole bunch of errors of the
+form:</p>
+
+<p><code>
+temp_file_name.o: In function `ivr':
+(.text+0x0): undefined reference to `_ivr_reset'
+</code></p>
+
+<p>Our interrupt vector is trying to jump to a bunch of symbols that we
+haven&rsquo;t yet defined. We could do the simple thing and define a bunch
+of <code>_ivr_*</code> methods in Rust (and I did, to start with), but that&rsquo;s
+rather annoying. Instead, we can use <em>weak linking</em> to define a kind
+of &ldquo;fallback&rdquo; symbol. We will have one simple handler that just
+returns from the interrupt, and set each handler to use that unless it
+is defined:</p>
+
+<p>```
+_ivr_undefined:</p>
+
+<pre><code>    reti
+</code></pre>
+
+<p>.weak <em>ivr_irq0
+.set  </em>ivr_irq0, _ivr_undefined
+;;; And so on
+```</p>
+
+<p>The only outlier is <code>_ivr_reset</code> which we define to point to our
+<code>main</code> method, avoiding extraneous indirection. At this point, we
+should be compiling again, but not using the interrupts yet. Let&rsquo;s
+change that.</p>
+
+<p>Following <a href="http://www.instructables.com/id/Arduino-Timer-Interrupts/?ALLSTEPS">this guide</a>, we can see all the details of
+setting up the timer. At a high level it&rsquo;s:</p>
+
+<ol>
+<li>Register an interrupt handler.</li>
+<li>Disable interrupts.</li>
+<li>Set a bunch of values as determined by the datasheet and math.</li>
+<li>Enable interrupts.</li>
+</ol>
+
+
+<p>We will copy all of the values and registers from this article to
+setup timer 0, but with a 1kHz rate instead of 2kHz. This matches
+nicer with our <code>sleep_ms</code> method which waits milliseconds.</p>
+
+<p>Let&rsquo;s use a little bit of nice Rust for a change. When we disable
+interrupts, we <em>really</em> want to make sure we enable them again! In a
+language like Rust, we can use a (misleadingly labeled) pattern known
+as Resource Acquisition Is Initialization (RAII). We will create a
+<code>struct</code> that disables interrupts when it is created and enables them
+when the struct is dropped. This means we can never forget as the
+compiler will ensure things are restored!</p>
+
+<p>```
+struct DisableInterrupts(PhantomData&lt;()>);
+impl DisableInterrupts {</p>
+
+<pre><code>fn new() -&gt; DisableInterrupts {
+    unsafe { asm!("CLI") }
+    DisableInterrupts(PhantomData)
+}
+</code></pre>
+
+<p>}</p>
+
+<p>impl Drop for DisableInterrupts {</p>
+
+<pre><code>fn drop(&amp;mut self) {
+    unsafe { asm!("SEI") }
+}
+</code></pre>
+
+<p>}
+```</p>
+
+<p>We can bundle this into a nice wrapper:</p>
+
+<p>```
+fn without_interrupts&lt;F, T>(f: F) &ndash;> T</p>
+
+<pre><code>where F: FnOnce() -&gt; T
+</code></pre>
+
+<p>{</p>
+
+<pre><code>let _disabled = DisableInterrupts::new();
+f()
+</code></pre>
+
+<p>}
+```</p>
+
+<p>And use it like so:</p>
+
+<p>```
+without_interrupts(|| {</p>
+
+<pre><code>volatile_store(TCCR0A, 0);
+</code></pre>
+
+<p>});
+```</p>
+
+<p>To define the interrupt handler, we simply create a method that
+matches the expected name from our assembly file. The method simply
+increments a global variable each time it is triggered:</p>
+
+<p>```
+static mut N_MS_ELAPSED: u8 = 0;</p>
+
+<h1>[no_mangle]</h1>
+
+<p>pub unsafe extern fn _ivr_timer0_compare_a() {</p>
+
+<pre><code>N_MS_ELAPSED += 1;
+</code></pre>
+
+<p>}
+```</p>
+
+<p>And re-implement our <code>sleep_ms</code> function to:</p>
+
+<p>```
+fn sleep_ms(duration_ms: u8) {</p>
+
+<pre><code>unsafe {
+    volatile_store(&amp;mut N_MS_ELAPSED, 0);
+    while volatile_load(&amp;mut N_MS_ELAPSED) &lt; duration_ms {
+        // spin
+    }
+}
+</code></pre>
+
+<p>}
+```</p>
+
+<p>Compile this and load it onto the board, and we are greeted with the
+sight of <em>nothing blinking</em>. It&rsquo;s time to dig into more
+disassembly. Here&rsquo;s what <code>_ivr_timer0_compare_a</code> looks like:</p>
+
+<p><code>
+lds     r24, 0x0000
+inc     r24
+sts     0x0000, r24
+ret
+</code></p>
+
+<p>Checking the instruction set manual and the datasheet, we will notice a few problems:</p>
+
+<ol>
+<li>We use <code>ret</code> (Return from Subroutine) instead of <code>reti</code> (Return from Interrupt).</li>
+<li>We do not save and restore the Status register.</li>
+<li>We do not save and restore the <code>r24</code> register.</li>
+</ol>
+
+
+<p>Let&rsquo;s modify our handler with a bit more assembly to address all three issues:</p>
+
+<p>```</p>
+
+<h1>[no_mangle]</h1>
+
+<p>pub unsafe extern fn _ivr_timer0_compare_a() {</p>
+
+<pre><code>asm!{
+    "PUSH R24
+     IN R24, 0x3F
+     PUSH R24"
+};
+
+N_MS_ELAPSED += 1;
+
+asm!{
+    "POP R24
+     OUT 0x3F, R24
+     POP R24
+     RETI"
+};
+</code></pre>
+
+<p>}
+```</p>
+
+<p>That&rsquo;s certainly a bit longer, but it compiles and works again! And it
+will continue to work, so long as the compiler always decides to use
+<code>r24</code> for the incremented value, something we have no control over. As
+you might guess, there&rsquo;s a better solution.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Rust on an Arduino Uno, Part 3]]></title>

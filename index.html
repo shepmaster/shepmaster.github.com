@@ -9,9 +9,9 @@
   <meta name="author" content="Jake Goulding">
 
   
-  <meta name="description" content="Now that we can turn an LED on, let&rsquo;s see if we can do
-something more exciting: make the LED blink. Surprisingly, this is
-more difficult than &hellip;">
+  <meta name="description" content="When we left off, we were blinking the LED. Let&rsquo;s take a
+brief detour and document how to get a working Rust compiler. This is
+mostly a way for &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -78,6 +78,95 @@ more difficult than &hellip;">
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/05/12/rust-on-an-arduino-uno-part-4/">Rust on an Arduino Uno, Part 4</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2016-05-12T13:04:43-04:00" pubdate data-updated="true">May 12<span>th</span>, 2016</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>When we left off, we were <a href="/blog/2016/01/24/rust-on-an-arduino-uno-part-3/">blinking the LED</a>. Let&rsquo;s take a
+brief detour and document how to get a working Rust compiler. This is
+mostly a way for me to document what I&rsquo;ve been doing so I can find it
+again!</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/05/12/rust-on-an-arduino-uno-part-4/">Continue reading &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/01/25/rust-on-an-arduino-uno-part-4/">Rust on an Arduino Uno, Part 4</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2016-01-25T14:41:21-05:00" pubdate data-updated="true">Jan 25<span>th</span>, 2016</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Previously, we wrote some code that allowed us to
+<a href="">sleep by waiting for a number of cycles to pass</a>. However, we
+had to peek at the disassembly to know how many cycles we were
+spending and adapt our source code to match. While it got us started,
+it&rsquo;s not a very elegant solution.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/01/25/rust-on-an-arduino-uno-part-4/">Continue reading &rarr;</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -450,91 +539,6 @@ constraint at all!  As such, I wanted to finish it up to see what my
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2012/11/04/refactor-and-make-changes-in-different-commits/">Refactor and make changes in different commits</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-11-04T14:31:00-05:00" pubdate data-updated="true">Nov 4<span>th</span>, 2012</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>If you combine refactoring and making a change to your code into the
-same commit, you are going to have a bad time.</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2012/11/04/refactor-and-make-changes-in-different-commits/">Continue reading &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2012/10/18/run-your-tests-in-a-deterministic-random-order/">Run your tests in a deterministic random order</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-10-18T18:56:00-04:00" pubdate data-updated="true">Oct 18<span>th</span>, 2012</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Running your tests in a random order is a good idea to help shake out
-implicit dependencies between tests. Running your tests in a
-deterministic random order is even better.</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2012/10/18/run-your-tests-in-a-deterministic-random-order/">Continue reading &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/2/">&larr; Older</a>
@@ -550,6 +554,14 @@ deterministic random order is even better.</p>
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/05/12/rust-on-an-arduino-uno-part-4/">Rust on an Arduino Uno, Part 4</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/25/rust-on-an-arduino-uno-part-4/">Rust on an Arduino Uno, Part 4</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/01/24/rust-on-an-arduino-uno-part-3/">Rust on an Arduino Uno, Part 3</a>
       </li>
     
@@ -559,14 +571,6 @@ deterministic random order is even better.</p>
     
       <li class="post">
         <a href="/blog/2016/01/02/rust-on-an-arduino-uno/">Rust on an Arduino Uno</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2014/04/26/running-dnsmasq-on-os-x-and-routing-to-virtual-machines/">Running dnsmasq on OS X and routing to virtual machines</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2013/01/20/a-final-dip-into-rubys-marshal-format/">A final dip into Ruby&#8217;s Marshal format</a>
       </li>
     
   </ul>
