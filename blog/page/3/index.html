@@ -9,9 +9,9 @@
   <meta name="author" content="Jake Goulding">
 
   
-  <meta name="description" content="While listening to the Code Quality panel discussion at
-CodeMash, I tweeted about &ldquo;the state
-of mocking&rdquo;: The state of &ldquo;mocking& &hellip;">
+  <meta name="description" content="Recently, I was asked to help review new tests for production code
+that made use of the Builder pattern. The code in question
+did not lend itself to &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -78,58 +78,6 @@ of mocking&rdquo;: The state of &ldquo;mocking& &hellip;">
     <div id="content">
       <div class="blog-index">
   
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2012/01/12/test-double-terminology/">Test Double Terminology</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-01-12T07:37:00-05:00" pubdate data-updated="true">Jan 12<span>th</span>, 2012</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>While listening to the Code Quality panel discussion at
-<a href="http://codemash.org/">CodeMash</a>, I <a href="https://twitter.com/#!/JakeGoulding/status/157261614448521216">tweeted</a> about &ldquo;the state
-of mocking&rdquo;:</p>
-
-<blockquote><p>The state of &ldquo;mocking&rdquo; is that the term &ldquo;mocking&rdquo; is misused by
-everyone. You often mean &ldquo;test double&rdquo; or &ldquo;stub&rdquo;.</p></blockquote>
-
-<p>This garnered some retweets and some great replies, so I wanted to
-have the opportunity to respond in a little longer form. I&rsquo;ve written
-this post between sessions and in the halls, so give me a little
-leeway and feel free to send me a tweet with corrections, arguments,
-whatever.</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2012/01/12/test-double-terminology/">Continue reading &rarr;</a>
-    </footer>
-  
-
-
-    </article>
   
   
     <article>
@@ -546,6 +494,52 @@ M. Weinberg.</p>
 
     </article>
   
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2011/01/27/uninitialized-variable-warnings-and-compiler-optimizations/">Uninitialized variable warnings and compiler optimizations</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2011-01-27T12:00:00-05:00" pubdate data-updated="true">Jan 27<span>th</span>, 2011</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>A coworker recently got the <code>may be used uninitialized in this
+function</code> warning from GCC and asked me to take a look at it to see if
+the warning was spurious or if he was missing something. While trying
+to boil his code down to a concise example, we found an example where
+the warning got flipped &ndash; we no longer got a warning even though we
+both expected one.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2011/01/27/uninitialized-variable-warnings-and-compiler-optimizations/">Continue reading &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/4/">&larr; Older</a>
@@ -567,10 +561,6 @@ M. Weinberg.</p>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/01/25/rust-on-an-arduino-uno-part-4/">Rust on an Arduino Uno, Part 4</a>
-      </li>
-    
-      <li class="post">
         <a href="/blog/2016/01/24/rust-on-an-arduino-uno-part-3/">Rust on an Arduino Uno, Part 3</a>
       </li>
     
@@ -580,6 +570,10 @@ M. Weinberg.</p>
     
       <li class="post">
         <a href="/blog/2016/01/02/rust-on-an-arduino-uno/">Rust on an Arduino Uno</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/26/running-dnsmasq-on-os-x-and-routing-to-virtual-machines/">Running dnsmasq on OS X and routing to virtual machines</a>
       </li>
     
   </ul>
