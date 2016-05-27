@@ -9,9 +9,8 @@
   <meta name="author" content="Jake Goulding">
 
   
-  <meta name="description" content="When we left off, we were blinking the LED. Let&rsquo;s take a
-brief detour and document how to get a working Rust compiler. This is
-mostly a way for &hellip;">
+  <meta name="description" content="We can&rsquo;t yet compile the stock version of libcore, so in the meantime
+we have our own version with the essentials. Because we&rsquo;ve directly &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -78,6 +77,96 @@ mostly a way for &hellip;">
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/05/27/rust-on-an-arduino-uno-part-6/">Rust on an Arduino Uno, Part 6</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2016-05-27T11:11:11-04:00" pubdate data-updated="true">May 27<span>th</span>, 2016</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>We can&rsquo;t yet compile the stock version of libcore, so in the meantime
+we have our own version with the essentials. Because we&rsquo;ve directly
+added this code to our project, each recompile takes a while. It&rsquo;d be
+really nice if we could use Cargo like a Real Rust Project would,
+allowing us to compile our modified libcore once and reuse it.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/05/27/rust-on-an-arduino-uno-part-6/">Continue reading &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/05/19/rust-on-an-arduino-uno-part-5/">Rust on an Arduino Uno, Part 5</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2016-05-19T13:57:04-04:00" pubdate data-updated="true">May 19<span>th</span>, 2016</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Previously, we wrote some code that allowed us to
+<a href="/blog/2016/01/24/rust-on-an-arduino-uno-part-3/">sleep by waiting for a number of cycles to pass</a>. However, we
+had to peek at the disassembly to know how many cycles we were
+spending and adapt our source code to match. While it got us started,
+it&rsquo;s not a very elegant solution.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/05/19/rust-on-an-arduino-uno-part-5/">Continue reading &rarr;</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -443,99 +532,6 @@ learned in the process.</p>
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2012/12/13/conways-game-of-life-without-return-values/">Conway&#8217;s Game of Life without return values</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-12-13T15:14:00-05:00" pubdate data-updated="true">Dec 13<span>th</span>, 2012</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>On 2012-12-08, I attended the Pittsburgh
-<a href="http://globalday.coderetreat.org/">Global Day of Code Retreat</a> facilitated by <a href="https://twitter.com/josephrkramer">Joe Kramer</a>
-and <a href="https://twitter.com/jthurne">Jim Hurne</a>. As usual, I had a great time, and got to meet
-new people from the Pittsburgh tech scene. It&rsquo;s always good for me to
-remember that there are non-Ruby developers out there! I even started
-the day off by doing the Game of Life in C#.</p>
-
-<p>One of the more contentious constraints of the day was &ldquo;no return
-values&rdquo;. I feel like I was the only one in the room that liked this
-constraint at all!  As such, I wanted to finish it up to see what my
-<a href="https://github.com/shepmaster/gdcr-no-return-values">final code</a> and observations would look like.</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2012/12/13/conways-game-of-life-without-return-values/">Continue reading &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2012/11/04/refactor-and-make-changes-in-different-commits/">Refactor and make changes in different commits</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-11-04T14:31:00-05:00" pubdate data-updated="true">Nov 4<span>th</span>, 2012</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>If you combine refactoring and making a change to your code into the
-same commit, you are going to have a bad time.</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2012/11/04/refactor-and-make-changes-in-different-commits/">Continue reading &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/2/">&larr; Older</a>
@@ -551,6 +547,14 @@ same commit, you are going to have a bad time.</p>
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/05/27/rust-on-an-arduino-uno-part-6/">Rust on an Arduino Uno, Part 6</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/05/19/rust-on-an-arduino-uno-part-5/">Rust on an Arduino Uno, Part 5</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/05/12/rust-on-an-arduino-uno-part-4/">Rust on an Arduino Uno, Part 4</a>
       </li>
     
@@ -560,14 +564,6 @@ same commit, you are going to have a bad time.</p>
     
       <li class="post">
         <a href="/blog/2016/01/17/rust-on-an-arduino-uno-part-2/">Rust on an Arduino Uno, Part 2</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/01/02/rust-on-an-arduino-uno/">Rust on an Arduino Uno</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2014/04/26/running-dnsmasq-on-os-x-and-routing-to-virtual-machines/">Running dnsmasq on OS X and routing to virtual machines</a>
       </li>
     
   </ul>

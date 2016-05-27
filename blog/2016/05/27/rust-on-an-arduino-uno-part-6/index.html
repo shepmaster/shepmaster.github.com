@@ -1,0 +1,381 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Rust on an Arduino Uno, Part 6 - Jake Goulding</title>
+  <meta name="author" content="Jake Goulding">
+
+  
+  <meta name="description" content="We can&rsquo;t yet compile the stock version of libcore, so in the meantime
+we have our own version with the essentials. Because we&rsquo;ve directly &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://jakegoulding.com/blog/2016/05/27/rust-on-an-arduino-uno-part-6">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Jake Goulding" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google's Web font directory at http://google.com/webfonts -->
+<link href='http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-20521797-2']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Jake Goulding</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:jakegoulding.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul role=main-navigation>
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/presentations">Presentations</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Rust on an Arduino Uno, Part 6</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2016-05-27T11:11:11-04:00" pubdate data-updated="true">May 27<span>th</span>, 2016</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>We can&rsquo;t yet compile the stock version of libcore, so in the meantime
+we have our own version with the essentials. Because we&rsquo;ve directly
+added this code to our project, each recompile takes a while. It&rsquo;d be
+really nice if we could use Cargo like a Real Rust Project would,
+allowing us to compile our modified libcore once and reuse it.</p>
+
+<!-- more -->
+
+
+<p>Create a new library crate (<code>cargo new avr-core</code>) and move all of the
+hacked-up core files that we created before into the <code>src</code> directory:</p>
+
+<ul>
+<li>clone.rs</li>
+<li>cmp.rs</li>
+<li>intrinsics.rs</li>
+<li>marker.rs</li>
+<li>ops.rs</li>
+<li>option.rs</li>
+</ul>
+
+
+<p>Additionally, create a <code>lib.rs</code> with the top-level core items:</p>
+
+<ul>
+<li>all the <code>feature</code> flags</li>
+<li>the <code>prelude</code></li>
+<li>module references</li>
+<li>the <code>eh_personality</code> and <code>panic</code> handlers.</li>
+</ul>
+
+
+<p>Now we can create a binary crate that will use our AVR-compatible
+libcore. After <code>cargo new --bin blink</code>, add a path to the core library:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[dependencies.avr-core]
+</span><span class='line'>path = "../avr-core"</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We can remove a bunch of junk from our <code>main.rs</code> and just import the
+interesting core items:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>extern crate avr_core;
+</span><span class='line'>
+</span><span class='line'>use avr_core::prelude::*;
+</span><span class='line'>use avr_core::intrinsics::{volatile_load, volatile_store};
+</span><span class='line'>use avr_core::marker::PhantomData;</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now when we compile, we only need to rebuild our own code, not all of
+libcore! Much better.</p>
+
+<hr />
+
+<p>Let&rsquo;s continue improving our code. The last thing we did was to hook
+up an interrupt handler for the timers, but we had to add a bunch of
+assembly to make the handler behave in the proper way. As suggested in
+the previous post, there&rsquo;s a much better way to do it.</p>
+
+<p>Rust allows us to declare <code>extern</code> functions with a <em>calling
+convention</em>. A calling convention describes where the arguments are
+located, where the return value should be placed, and what registers a
+function is allowed to change.</p>
+
+<p>There are two special calling conventions for AVR code:
+<code>avr-interrupt</code> and <code>avr-non-blocking-interrupt</code>. They are basically
+the same, except that the latter immediately re-enables interrupt
+handling when it starts. With the former, you don&rsquo;t have to worry
+about one interrupt happening while you are handling another.</p>
+
+<p>That means we can rewrite our interrupt handler much easier:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>#[no_mangle]
+</span><span class='line'>pub unsafe extern "avr-interrupt" fn _ivr_timer1_compare_a() {
+</span><span class='line'>    let prev_value = volatile_load(PORTB);
+</span><span class='line'>    volatile_store(PORTB, prev_value ^ PINB5);
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<hr />
+
+<p>Now that we are using Cargo, it would be nice if we didn&rsquo;t have to
+directly call <code>avr-gcc</code> ourselves. We can accomplish this with a
+<em>target file</em>. This is JSON configuration that can enhance the Rust
+compiler&rsquo;s knowledge about how to compile a piece of code.</p>
+
+<p>There are many fields that are required (check the <a href="https://github.com/shepmaster/rust-arduino-blink-led-no-core-with-cargo">repository</a>
+for the full reference), but the important one is that we can tell the
+compiler to use <code>avr-gcc</code> as our linker:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>  "linker": "avr-gcc",
+</span><span class='line'>  "pre-link-args": ["-mmcu=atmega328p", "-nostartfiles", "../interrupt_vector.S"],
+</span><span class='line'>  "exe-suffix": ".elf",
+</span><span class='line'>  "post-link-args": ["-Wl,--no-gc-sections"],</span></code></pre></td></tr></table></div></figure>
+
+
+<p>And we can use this JSON target file when compiling:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>cargo build --release --target=./arduino.json</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This will create our ELF file, automatically linking to our interrupt
+vector definition, and ready to be processed with <code>avr-objcopy</code> and
+uploaded to the board. We are getting closer and closer to an
+enjoyable development experience!</p>
+
+<p>As before, the <a href="https://github.com/shepmaster/rust-arduino-blink-led-no-core-with-cargo">complete source</a> is available on Github.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Jake Goulding</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2016-05-27T11:11:11-04:00" pubdate data-updated="true">May 27<span>th</span>, 2016</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/arduino/'>arduino</a>, <a class='category' href='/blog/categories/rust/'>rust</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://jakegoulding.com/blog/2016/05/27/rust-on-an-arduino-uno-part-6/" data-via="jakegoulding" data-counturl="http://jakegoulding.com/blog/2016/05/27/rust-on-an-arduino-uno-part-6/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/05/19/rust-on-an-arduino-uno-part-5/" title="Previous Post: Rust on an Arduino Uno, Part 5">&laquo; Rust on an Arduino Uno, Part 5</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/05/27/rust-on-an-arduino-uno-part-6/">Rust on an Arduino Uno, Part 6</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/05/19/rust-on-an-arduino-uno-part-5/">Rust on an Arduino Uno, Part 5</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/05/12/rust-on-an-arduino-uno-part-4/">Rust on an Arduino Uno, Part 4</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/24/rust-on-an-arduino-uno-part-3/">Rust on an Arduino Uno, Part 3</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/17/rust-on-an-arduino-uno-part-2/">Rust on an Arduino Uno, Part 2</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/shepmaster">@shepmaster</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'shepmaster',
+            count: 5,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - Jake Goulding -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

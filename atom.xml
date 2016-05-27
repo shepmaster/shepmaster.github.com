@@ -4,7 +4,7 @@
   <title><![CDATA[Jake Goulding]]></title>
   <link href="http://jakegoulding.com/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2016-05-19T10:50:22-04:00</updated>
+  <updated>2016-05-27T11:13:24-04:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -12,6 +12,408 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Rust on an Arduino Uno, Part 6]]></title>
+    <link href="http://jakegoulding.com/blog/2016/05/27/rust-on-an-arduino-uno-part-6/"/>
+    <updated>2016-05-27T11:11:11-04:00</updated>
+    <id>http://jakegoulding.com/blog/2016/05/27/rust-on-an-arduino-uno-part-6</id>
+    <content type="html"><![CDATA[<p>We can&rsquo;t yet compile the stock version of libcore, so in the meantime
+we have our own version with the essentials. Because we&rsquo;ve directly
+added this code to our project, each recompile takes a while. It&rsquo;d be
+really nice if we could use Cargo like a Real Rust Project would,
+allowing us to compile our modified libcore once and reuse it.</p>
+
+<!-- more -->
+
+
+<p>Create a new library crate (<code>cargo new avr-core</code>) and move all of the
+hacked-up core files that we created before into the <code>src</code> directory:</p>
+
+<ul>
+<li>clone.rs</li>
+<li>cmp.rs</li>
+<li>intrinsics.rs</li>
+<li>marker.rs</li>
+<li>ops.rs</li>
+<li>option.rs</li>
+</ul>
+
+
+<p>Additionally, create a <code>lib.rs</code> with the top-level core items:</p>
+
+<ul>
+<li>all the <code>feature</code> flags</li>
+<li>the <code>prelude</code></li>
+<li>module references</li>
+<li>the <code>eh_personality</code> and <code>panic</code> handlers.</li>
+</ul>
+
+
+<p>Now we can create a binary crate that will use our AVR-compatible
+libcore. After <code>cargo new --bin blink</code>, add a path to the core library:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[dependencies.avr-core]
+</span><span class='line'>path = "../avr-core"</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We can remove a bunch of junk from our <code>main.rs</code> and just import the
+interesting core items:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>extern crate avr_core;
+</span><span class='line'>
+</span><span class='line'>use avr_core::prelude::*;
+</span><span class='line'>use avr_core::intrinsics::{volatile_load, volatile_store};
+</span><span class='line'>use avr_core::marker::PhantomData;</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now when we compile, we only need to rebuild our own code, not all of
+libcore! Much better.</p>
+
+<hr />
+
+<p>Let&rsquo;s continue improving our code. The last thing we did was to hook
+up an interrupt handler for the timers, but we had to add a bunch of
+assembly to make the handler behave in the proper way. As suggested in
+the previous post, there&rsquo;s a much better way to do it.</p>
+
+<p>Rust allows us to declare <code>extern</code> functions with a <em>calling
+convention</em>. A calling convention describes where the arguments are
+located, where the return value should be placed, and what registers a
+function is allowed to change.</p>
+
+<p>There are two special calling conventions for AVR code:
+<code>avr-interrupt</code> and <code>avr-non-blocking-interrupt</code>. They are basically
+the same, except that the latter immediately re-enables interrupt
+handling when it starts. With the former, you don&rsquo;t have to worry
+about one interrupt happening while you are handling another.</p>
+
+<p>That means we can rewrite our interrupt handler much easier:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>#[no_mangle]
+</span><span class='line'>pub unsafe extern "avr-interrupt" fn _ivr_timer1_compare_a() {
+</span><span class='line'>    let prev_value = volatile_load(PORTB);
+</span><span class='line'>    volatile_store(PORTB, prev_value ^ PINB5);
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<hr />
+
+<p>Now that we are using Cargo, it would be nice if we didn&rsquo;t have to
+directly call <code>avr-gcc</code> ourselves. We can accomplish this with a
+<em>target file</em>. This is JSON configuration that can enhance the Rust
+compiler&rsquo;s knowledge about how to compile a piece of code.</p>
+
+<p>There are many fields that are required (check the <a href="https://github.com/shepmaster/rust-arduino-blink-led-no-core-with-cargo">repository</a>
+for the full reference), but the important one is that we can tell the
+compiler to use <code>avr-gcc</code> as our linker:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>  "linker": "avr-gcc",
+</span><span class='line'>  "pre-link-args": ["-mmcu=atmega328p", "-nostartfiles", "../interrupt_vector.S"],
+</span><span class='line'>  "exe-suffix": ".elf",
+</span><span class='line'>  "post-link-args": ["-Wl,--no-gc-sections"],</span></code></pre></td></tr></table></div></figure>
+
+
+<p>And we can use this JSON target file when compiling:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>cargo build --release --target=./arduino.json</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This will create our ELF file, automatically linking to our interrupt
+vector definition, and ready to be processed with <code>avr-objcopy</code> and
+uploaded to the board. We are getting closer and closer to an
+enjoyable development experience!</p>
+
+<p>As before, the <a href="https://github.com/shepmaster/rust-arduino-blink-led-no-core-with-cargo">complete source</a> is available on Github.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Rust on an Arduino Uno, Part 5]]></title>
+    <link href="http://jakegoulding.com/blog/2016/05/19/rust-on-an-arduino-uno-part-5/"/>
+    <updated>2016-05-19T13:57:04-04:00</updated>
+    <id>http://jakegoulding.com/blog/2016/05/19/rust-on-an-arduino-uno-part-5</id>
+    <content type="html"><![CDATA[<p>Previously, we wrote some code that allowed us to
+<a href="http://jakegoulding.com/blog/2016/01/24/rust-on-an-arduino-uno-part-3/">sleep by waiting for a number of cycles to pass</a>. However, we
+had to peek at the disassembly to know how many cycles we were
+spending and adapt our source code to match. While it got us started,
+it&rsquo;s not a very elegant solution.</p>
+
+<!-- more -->
+
+
+<p>The Arduino Uno uses an ATmega328P processor. One of the features of
+this processor are 3 built-in timers that can trigger <em>interrupts</em> at
+certain periods. Interrupts are special bits of code that take over
+control of the processor when something important happens. These are
+often time-critical things that need to be handled quickly.</p>
+
+<p>What would be ideal is if we could rely on the timer feature to
+implement our <code>sleep</code> method. To get started, we are going to need the
+ability to specify the <em>interrupt vector</em>.</p>
+
+<p>The interrupt vector is a table of 26 instructions that must be placed
+at a specific section in memory. Each element in the table corresponds
+to a specific interrupt, and should consist of one instruction that
+jumps to the appropriate interrupt handler.</p>
+
+<p>To do this, we need to write a little bit of assembly:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ivr:
+</span><span class='line'>        jmp _ivr_reset
+</span><span class='line'>        jmp _ivr_irq0
+</span><span class='line'>        jmp _ivr_irq1
+</span><span class='line'>        ;; continues for all the rest</span></code></pre></td></tr></table></div></figure>
+
+
+<p>In order to use this, we need to include it when linking all of our
+code together. We also have to disable the existing interrupt vector
+that would be added. This is done via the <code>-nostartfiles</code> flag:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>avr-gcc -mmcu=atmega328p interrupt_vector.S hello.o -nostartfiles -o hello.elf</span></code></pre></td></tr></table></div></figure>
+
+
+<p>If you compile right now, you will get a whole bunch of errors of the
+form:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>temp_file_name.o: In function `ivr':
+</span><span class='line'>(.text+0x0): undefined reference to `_ivr_reset'</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Our interrupt vector is trying to jump to a bunch of symbols that we
+haven&rsquo;t yet defined. We could do the simple thing and define a bunch
+of <code>_ivr_*</code> methods in Rust (and I did, to start with), but that&rsquo;s
+rather annoying. Instead, we can use <em>weak linking</em> to define a kind
+of &ldquo;fallback&rdquo; symbol. We will have one simple handler that just
+returns from the interrupt, and set each handler to use that unless it
+is defined:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>_ivr_undefined:
+</span><span class='line'>        reti
+</span><span class='line'>
+</span><span class='line'>.weak _ivr_irq0
+</span><span class='line'>.set  _ivr_irq0, _ivr_undefined
+</span><span class='line'>;;; And so on</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The only outlier is <code>_ivr_reset</code> which we define to point to our
+<code>main</code> method, avoiding extraneous indirection. At this point, we
+should be compiling again, but not using the interrupts yet. Let&rsquo;s
+change that.</p>
+
+<p>Following <a href="http://www.instructables.com/id/Arduino-Timer-Interrupts/?ALLSTEPS">this guide</a>, we can see all the details of
+setting up the timer. At a high level it&rsquo;s:</p>
+
+<ol>
+<li>Register an interrupt handler.</li>
+<li>Disable interrupts.</li>
+<li>Set a bunch of values as determined by the datasheet and math.</li>
+<li>Enable interrupts.</li>
+</ol>
+
+
+<p>We will copy all of the values and registers from this article to
+setup timer 0, but with a 1kHz rate instead of 2kHz. This matches
+nicer with our <code>sleep_ms</code> method which waits milliseconds.</p>
+
+<p>Let&rsquo;s use a little bit of nice Rust for a change. When we disable
+interrupts, we <em>really</em> want to make sure we enable them again! In a
+language like Rust, we can use a (misleadingly labeled) pattern known
+as Resource Acquisition Is Initialization (RAII). We will create a
+<code>struct</code> that disables interrupts when it is created and enables them
+when the struct is dropped. This means we can never forget to
+re-enable interrupts as the compiler will ensure things are restored!</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>struct DisableInterrupts(PhantomData&lt;()&gt;);
+</span><span class='line'>impl DisableInterrupts {
+</span><span class='line'>    fn new() -&gt; DisableInterrupts {
+</span><span class='line'>        unsafe { asm!("CLI") }
+</span><span class='line'>        DisableInterrupts(PhantomData)
+</span><span class='line'>    }
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>impl Drop for DisableInterrupts {
+</span><span class='line'>    fn drop(&mut self) {
+</span><span class='line'>        unsafe { asm!("SEI") }
+</span><span class='line'>    }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We can bundle this into a nice wrapper:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>fn without_interrupts&lt;F, T&gt;(f: F) -&gt; T
+</span><span class='line'>    where F: FnOnce() -&gt; T
+</span><span class='line'>{
+</span><span class='line'>    let _disabled = DisableInterrupts::new();
+</span><span class='line'>    f()
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>And use it like so:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>without_interrupts(|| {
+</span><span class='line'>    volatile_store(TCCR0A, 0);
+</span><span class='line'>});</span></code></pre></td></tr></table></div></figure>
+
+
+<p>To define the interrupt handler, we simply create a method that
+matches the expected name from our assembly file. The method simply
+increments a global variable each time it is triggered:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>static mut N_MS_ELAPSED: u8 = 0;
+</span><span class='line'>
+</span><span class='line'>#[no_mangle]
+</span><span class='line'>pub unsafe extern fn _ivr_timer0_compare_a() {
+</span><span class='line'>    N_MS_ELAPSED += 1;
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>And re-implement our <code>sleep_ms</code> function to:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>fn sleep_ms(duration_ms: u8) {
+</span><span class='line'>    unsafe {
+</span><span class='line'>        volatile_store(&mut N_MS_ELAPSED, 0);
+</span><span class='line'>        while volatile_load(&mut N_MS_ELAPSED) &lt; duration_ms {
+</span><span class='line'>            // spin
+</span><span class='line'>        }
+</span><span class='line'>    }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Compile this and load it onto the board, and we are greeted with the
+sight of <em>nothing blinking</em>. It&rsquo;s time to dig into more
+disassembly. Here&rsquo;s what <code>_ivr_timer0_compare_a</code> looks like:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>lds     r24, 0x0000
+</span><span class='line'>inc     r24
+</span><span class='line'>sts     0x0000, r24
+</span><span class='line'>ret</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Checking the instruction set manual and the datasheet, we will notice a few problems:</p>
+
+<ol>
+<li>We use <code>ret</code> (Return from Subroutine) instead of <code>reti</code> (Return from Interrupt).</li>
+<li>We do not save and restore the Status register.</li>
+<li>We do not save and restore the <code>r24</code> register.</li>
+</ol>
+
+
+<p>Let&rsquo;s modify our handler with a bit more assembly to address all three issues:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>#[no_mangle]
+</span><span class='line'>pub unsafe extern fn _ivr_timer0_compare_a() {
+</span><span class='line'>    asm!{
+</span><span class='line'>        "PUSH R24
+</span><span class='line'>         IN R24, 0x3F
+</span><span class='line'>         PUSH R24"
+</span><span class='line'>    };
+</span><span class='line'>
+</span><span class='line'>    N_MS_ELAPSED += 1;
+</span><span class='line'>
+</span><span class='line'>    asm!{
+</span><span class='line'>        "POP R24
+</span><span class='line'>         OUT 0x3F, R24
+</span><span class='line'>         POP R24
+</span><span class='line'>         RETI"
+</span><span class='line'>    };
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>That&rsquo;s certainly a bit longer, but it compiles and works again! And it
+will continue to work, so long as the compiler always decides to use
+<code>r24</code> for the incremented value, something we have no control over. As
+you might guess, there&rsquo;s a better solution.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Rust on an Arduino Uno, Part 4]]></title>
@@ -2721,347 +3123,6 @@ being made, not just what or how.</p></li>
 documentation, so they hover around the &ldquo;Code style&rdquo; and &ldquo;Test style&rdquo;
 stages; I&rsquo;ve only had one or two opportunities to correct someones
 verb tense :&ndash;).</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Attaching top-level methods to an object in Ruby]]></title>
-    <link href="http://jakegoulding.com/blog/2012/03/03/attaching-top-level-methods-to-an-object-in-ruby/"/>
-    <updated>2012-03-03T10:48:00-05:00</updated>
-    <id>http://jakegoulding.com/blog/2012/03/03/attaching-top-level-methods-to-an-object-in-ruby</id>
-    <content type="html"><![CDATA[<p>Sometimes when you are doing rapid development, you need to create a
-new method <em>right now</em>, but you don&rsquo;t put the method in the right
-spot. Maybe you aren&rsquo;t sure what object should ultimately have the
-functionality. Maybe you are simply too lazy to open the correct
-file. Whatever the reason, you decide to define the method right there
-at the top-level, pretending you are a procedural programmer.</p>
-
-<!-- more -->
-
-
-<p>Time passes, and you finally decide it is time to move that method to
-where it belongs. The problem is that someone (certainly not you&hellip;)
-has been calling that method from <em>everywhere</em>. Fixing all the calls
-to the method at once will be a huge change; you prefer to make
-smaller, easier to review changes. Or maybe you don&rsquo;t have control
-over all code that calls the method, and so you <em>can&rsquo;t</em> change all the
-the calls.</p>
-
-<p>Here&rsquo;s an example of the problem</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">add_value</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
-</span><span class='line'>  <span class="n">object</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">param</span>
-</span><span class='line'><span class="k">end</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">class</span> <span class="nc">MyObject</span>
-</span><span class='line'>  <span class="k">def</span> <span class="nf">value</span>
-</span><span class='line'>    <span class="mi">10</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">obj</span> <span class="o">=</span> <span class="no">MyObject</span><span class="o">.</span><span class="n">new</span>
-</span><span class='line'><span class="n">add_value</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>You&rsquo;d really like <code>MyObject</code> to have an <code>add_value</code> method, instead of
-it just floating around at the top-level. However, you don&rsquo;t want to
-just copy code around &ndash; what if one of the implementations changes?
-Your first instinct might be to do something like this:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">MyObject</span>
-</span><span class='line'>  <span class="k">def</span> <span class="nf">add_value</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
-</span><span class='line'>    <span class="n">add_value</span><span class="p">(</span><span class="nb">self</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>The problem with this is that once you are inside the class
-definition, all calls to <code>add_value</code> will be handled by the instance,
-not the top-level method.</p>
-
-<p>You could avoid this by making the top-level method and the instance
-method have unique names. If you like the existing name for both
-methods, you could alias the original name to a more unique one to
-avoid shadowing it:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">alias</span> <span class="ss">:i_am_secret_method_add_value</span> <span class="ss">:add_value</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">class</span> <span class="nc">MyObject</span>
-</span><span class='line'>  <span class="k">def</span> <span class="nf">add_value</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
-</span><span class='line'>    <span class="n">i_am_secret_method_add_value</span><span class="p">(</span><span class="nb">self</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Another solution is to qualify access to the top-level method. This
-can be done by maintaining a reference to the object that defines the
-method.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">reference_to_main</span> <span class="o">=</span> <span class="nb">self</span>                            <span class="c1"># 1</span>
-</span><span class='line'><span class="no">MyObject</span><span class="o">.</span><span class="n">class_eval</span> <span class="k">do</span>                              <span class="c1"># 2</span>
-</span><span class='line'>  <span class="n">define_method</span> <span class="ss">:add_value</span> <span class="k">do</span> <span class="o">|</span><span class="n">param</span><span class="o">|</span>
-</span><span class='line'>    <span class="n">reference_to_main</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="ss">:add_value</span><span class="p">,</span> <span class="nb">self</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span> <span class="c1"># 3</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<ol>
-<li>We start by stashing a reference to the object that defines the
-top-level method. This object is named &ldquo;main&rdquo;.</li>
-<li>If we reopened our class the traditional way, using <code>class MyObject</code>,
-the reference to main would fall out of scope. Instead, we use
-<code>class_eval</code>.</li>
-<li>The definition of the <code>add_value</code> instance method must use <code>send</code> as
-the top-level method is private.</li>
-</ol>
-
-
-<p>If you don&rsquo;t want to modify the object directly, you can apply the
-same techniques to a module:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">module</span> <span class="nn">MathModule</span>
-</span><span class='line'><span class="k">end</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">reference_to_main</span> <span class="o">=</span> <span class="nb">self</span>
-</span><span class='line'><span class="no">MathModule</span><span class="o">.</span><span class="n">module_eval</span> <span class="k">do</span>
-</span><span class='line'>  <span class="n">define_method</span> <span class="ss">:add_value</span> <span class="k">do</span> <span class="o">|</span><span class="n">param</span><span class="o">|</span>
-</span><span class='line'>    <span class="n">reference_to_main</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="ss">:add_value</span><span class="p">,</span> <span class="nb">self</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">obj</span> <span class="o">=</span> <span class="no">MyObject</span><span class="o">.</span><span class="n">new</span>
-</span><span class='line'><span class="n">obj</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="no">MathModule</span><span class="p">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Using modules leads to another solution. You can move the top-level
-method into a module, and use the module with both the class and the
-main object.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">module</span> <span class="nn">MathModule</span>
-</span><span class='line'>  <span class="k">def</span> <span class="nf">add_value</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
-</span><span class='line'>    <span class="n">object</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">param</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span><span class='line'>
-</span><span class='line'><span class="kp">extend</span> <span class="no">MathModule</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">class</span> <span class="nc">MyObject</span>
-</span><span class='line'>  <span class="kp">include</span> <span class="no">MathModule</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="k">def</span> <span class="nf">add_value</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
-</span><span class='line'>    <span class="k">super</span><span class="p">(</span><span class="nb">self</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>The downside to this solution is that the object now has two
-<code>add_value</code> methods. One of the methods takes any instance of the
-class, which would be confusing to anyone trying to figure out how to
-use the object.</p>
-
-<p>The easiest and clearest solution to this problem is not to use clever
-metaprogramming, but just flip the way you think about the
-problem. Move the entire method into the object and leave a stub
-method that redirects to the object&rsquo;s implementation:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">add_value</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
-</span><span class='line'>  <span class="n">object</span><span class="o">.</span><span class="n">add_value</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
-</span><span class='line'><span class="k">end</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">class</span> <span class="nc">MyObject</span>
-</span><span class='line'>  <span class="k">def</span> <span class="nf">add_value</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
-</span><span class='line'>    <span class="n">value</span> <span class="o">+</span> <span class="n">param</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Test Double Terminology]]></title>
-    <link href="http://jakegoulding.com/blog/2012/01/12/test-double-terminology/"/>
-    <updated>2012-01-12T07:37:00-05:00</updated>
-    <id>http://jakegoulding.com/blog/2012/01/12/test-double-terminology</id>
-    <content type="html"><![CDATA[<p>While listening to the Code Quality panel discussion at
-<a href="http://codemash.org/">CodeMash</a>, I <a href="https://twitter.com/#!/JakeGoulding/status/157261614448521216">tweeted</a> about &ldquo;the state
-of mocking&rdquo;:</p>
-
-<blockquote><p>The state of &ldquo;mocking&rdquo; is that the term &ldquo;mocking&rdquo; is misused by
-everyone. You often mean &ldquo;test double&rdquo; or &ldquo;stub&rdquo;.</p></blockquote>
-
-<p>This garnered some retweets and some great replies, so I wanted to
-have the opportunity to respond in a little longer form. I&rsquo;ve written
-this post between sessions and in the halls, so give me a little
-leeway and feel free to send me a tweet with corrections, arguments,
-whatever.</p>
-
-<!-- more -->
-
-
-<h2>Test frameworks encourage misuse</h2>
-
-<blockquote><p>[I]t doesn&rsquo;t help that most mocking frameworks are used for stubs</p></blockquote>
-
-<p><a href="https://twitter.com/#!/F1nglas/status/157421334220120065">@F1nglas</a> mentions that <a href="http://code.google.com/p/moq/">moq</a> does this, and I
-know that <a href="http://code.google.com/p/mockito/">Mockito</a> does as well. <a href="https://www.relishapp.com/rspec">RSpec</a> does better
-in this area. From the <a href="https://www.relishapp.com/rspec/rspec-mocks">rspec-mock</a> documentation:</p>
-
-<blockquote><p>Use the <code>double</code> method to create [a test double.] You can also use
-the <code>mock</code> and <code>stub</code> methods to create test doubles, however these
-methods are there for backward compatibility only</p></blockquote>
-
-<p>Remember that most of these tools we use are open source: we can
-submit patches to improve them. In the meantime, we can add local
-alias methods that better express our intent.</p>
-
-<h2>Saying &ldquo;mock&rdquo; is just more fluid</h2>
-
-<blockquote><p>[P]eople find it easier to say &ldquo;I&rsquo;ll mock that out&rdquo; than &ldquo;I&rsquo;ll
-test-double that out&rdquo;.</p></blockquote>
-
-<p><a href="https://twitter.com/#!/jitterted/status/157265770403987456">@jitterted</a>&rsquo;s point is spot on; it <em>is</em> easier to say
-&ldquo;mock&rdquo;. However, I don&rsquo;t usually want to use just a test double. I
-always want to do/use something particular: stub, mock, dummy, etc.</p>
-
-<p>I&rsquo;d love it if we as a community could come up with a better verb to
-use to mean the generic &ldquo;use a test double&rdquo;.</p>
-
-<h2>Doesn&rsquo;t language evolve?</h2>
-
-<blockquote><p>[A] term takes on the meaning that &ldquo;everyone&rdquo; gives it</p></blockquote>
-
-<p><a href="https://twitter.com/#!/JuliansThoughts/status/157372211840299009">@JuliansThoughts</a></p>
-
-<blockquote><p>The meaning of a word is defined by common understanding</p></blockquote>
-
-<p><a href="https://twitter.com/#!/roblally/status/157361888420827137">@roblally</a></p>
-
-<blockquote><p>[M]isused by everyone is an evolving definition</p></blockquote>
-
-<p><a href="https://twitter.com/#!/boulderDanH/status/157262539372249088">@boulderDanH</a></p>
-
-<p>Let me get this out of the way first: I <strong>love</strong> the evolution of
-language. Dropping irrelevant words, new words being created, and
-expanding the meaning of existing words are all good things.</p>
-
-<p>The root issue here is not that language is evolving. The root issue
-is that our understanding of the tools and techniques we are referring
-to by that language hasn&rsquo;t gotten to the point where we can substitute
-one for the other and know <strong>conclusively</strong> what we really mean.</p>
-
-<p>If I said to you, the programmer: &ldquo;Use a list to store the names&rdquo;. You
-go off and write whatever you need, then come back for code review and
-I now say: &ldquo;Why can&rsquo;t I look up a specific name efficiently?&rdquo;. You
-would be outraged; why did I tell you to use a list when I really
-meant a hashtable instead? My response? &ldquo;Oh, you know that language
-evolves&rdquo;.</p>
-
-<p>If I&rsquo;d originally said to use a &ldquo;collection&rdquo;, a more abstract concept
-than either list or hashtable, that would force you to think about
-what you need to do and how you were going to do it. I&rsquo;m not
-conflating a specific idea with a general concept.</p>
-
-<p>As community, we have heaps of experience with various types of
-collections; we don&rsquo;t have that same strong background with test
-doubles yet. When we use &ldquo;mock&rdquo; when we should use &ldquo;dummy&rdquo; or &ldquo;stub&rdquo;
-or &ldquo;test double&rdquo;, we avoid thinking about what we really need to do
-and why we need to do it.</p>
-
-<p>By using &ldquo;mock&rdquo; inappropriately, we confuse two distinct concepts. We
-then complain that &ldquo;mocks&rdquo; suck and don&rsquo;t do what we need them to
-do. Mocks, stubs, fakes and dummies all have a place and a
-purpose. Just as using a list when you should use a hashtable reflects
-poorly on the programmer, so does using a mock when you should use a
-stub.</p>
-
-<p>Mocks are <strong>not</strong> stubs. Don&rsquo;t believe me. Believe
-<a href="http://martinfowler.com/articles/mocksArentStubs.html#TheDifferenceBetweenMocksAndStubs">Martin Fowler</a>. Believe
-<a href="http://xunitpatterns.com/">Gerard Meszaros</a>. Watch
-<a href="http://confreaks.net/videos/659-rubyconf2011-why-you-don-t-get-mock-objects">Why You Don&rsquo;t Get Mock Objects</a> by Gregory
-Moeck. Whatever you do, make sure you understand what a mock object
-truly is before you start conflating terms.</p>
-
-<p><em>Note:</em> Don&rsquo;t take from this post that I always do or say the right
-thing. I have other posts on this same blog that incorrectly refer to
-test doubles as &ldquo;mocks&rdquo;. Most of those posts were written before I
-learned the difference myself. I should edit those posts to clarify my
-real intent. The important thing is that as we go forward we should be
-careful and precise about what we mean.</p>
-
-<p>Discuss on <a href="http://www.reddit.com/r/programming/comments/off9p/test_double_terminology_the_misuse_of_the_term/">reddit</a> or <a href="http://news.ycombinator.com/item?id=3460509">Hacker News</a>.</p>
 ]]></content>
   </entry>
   

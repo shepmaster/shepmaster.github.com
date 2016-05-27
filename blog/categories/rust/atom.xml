@@ -4,7 +4,7 @@
   <title><![CDATA[Category: rust | Jake Goulding]]></title>
   <link href="http://jakegoulding.com/blog/categories/rust/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2016-05-19T10:50:22-04:00</updated>
+  <updated>2016-05-27T11:13:24-04:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -12,6 +12,373 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Rust on an Arduino Uno, Part 6]]></title>
+    <link href="http://jakegoulding.com/blog/2016/05/27/rust-on-an-arduino-uno-part-6/"/>
+    <updated>2016-05-27T11:11:11-04:00</updated>
+    <id>http://jakegoulding.com/blog/2016/05/27/rust-on-an-arduino-uno-part-6</id>
+    <content type="html"><![CDATA[<p>We can&rsquo;t yet compile the stock version of libcore, so in the meantime
+we have our own version with the essentials. Because we&rsquo;ve directly
+added this code to our project, each recompile takes a while. It&rsquo;d be
+really nice if we could use Cargo like a Real Rust Project would,
+allowing us to compile our modified libcore once and reuse it.</p>
+
+<!-- more -->
+
+
+<p>Create a new library crate (<code>cargo new avr-core</code>) and move all of the
+hacked-up core files that we created before into the <code>src</code> directory:</p>
+
+<ul>
+<li>clone.rs</li>
+<li>cmp.rs</li>
+<li>intrinsics.rs</li>
+<li>marker.rs</li>
+<li>ops.rs</li>
+<li>option.rs</li>
+</ul>
+
+
+<p>Additionally, create a <code>lib.rs</code> with the top-level core items:</p>
+
+<ul>
+<li>all the <code>feature</code> flags</li>
+<li>the <code>prelude</code></li>
+<li>module references</li>
+<li>the <code>eh_personality</code> and <code>panic</code> handlers.</li>
+</ul>
+
+
+<p>Now we can create a binary crate that will use our AVR-compatible
+libcore. After <code>cargo new --bin blink</code>, add a path to the core library:</p>
+
+<p><code>
+[dependencies.avr-core]
+path = "../avr-core"
+</code></p>
+
+<p>We can remove a bunch of junk from our <code>main.rs</code> and just import the
+interesting core items:</p>
+
+<p>```
+extern crate avr_core;</p>
+
+<p>use avr_core::prelude::*;
+use avr_core::intrinsics::{volatile_load, volatile_store};
+use avr_core::marker::PhantomData;
+```</p>
+
+<p>Now when we compile, we only need to rebuild our own code, not all of
+libcore! Much better.</p>
+
+<hr />
+
+<p>Let&rsquo;s continue improving our code. The last thing we did was to hook
+up an interrupt handler for the timers, but we had to add a bunch of
+assembly to make the handler behave in the proper way. As suggested in
+the previous post, there&rsquo;s a much better way to do it.</p>
+
+<p>Rust allows us to declare <code>extern</code> functions with a <em>calling
+convention</em>. A calling convention describes where the arguments are
+located, where the return value should be placed, and what registers a
+function is allowed to change.</p>
+
+<p>There are two special calling conventions for AVR code:
+<code>avr-interrupt</code> and <code>avr-non-blocking-interrupt</code>. They are basically
+the same, except that the latter immediately re-enables interrupt
+handling when it starts. With the former, you don&rsquo;t have to worry
+about one interrupt happening while you are handling another.</p>
+
+<p>That means we can rewrite our interrupt handler much easier:</p>
+
+<p>```</p>
+
+<h1>[no_mangle]</h1>
+
+<p>pub unsafe extern &ldquo;avr-interrupt&rdquo; fn _ivr_timer1_compare_a() {</p>
+
+<pre><code>let prev_value = volatile_load(PORTB);
+volatile_store(PORTB, prev_value ^ PINB5);
+</code></pre>
+
+<p>}
+```</p>
+
+<hr />
+
+<p>Now that we are using Cargo, it would be nice if we didn&rsquo;t have to
+directly call <code>avr-gcc</code> ourselves. We can accomplish this with a
+<em>target file</em>. This is JSON configuration that can enhance the Rust
+compiler&rsquo;s knowledge about how to compile a piece of code.</p>
+
+<p>There are many fields that are required (check the <a href="https://github.com/shepmaster/rust-arduino-blink-led-no-core-with-cargo">repository</a>
+for the full reference), but the important one is that we can tell the
+compiler to use <code>avr-gcc</code> as our linker:</p>
+
+<p><code>
+  "linker": "avr-gcc",
+  "pre-link-args": ["-mmcu=atmega328p", "-nostartfiles", "../interrupt_vector.S"],
+  "exe-suffix": ".elf",
+  "post-link-args": ["-Wl,--no-gc-sections"],
+</code></p>
+
+<p>And we can use this JSON target file when compiling:</p>
+
+<p><code>
+cargo build --release --target=./arduino.json
+</code></p>
+
+<p>This will create our ELF file, automatically linking to our interrupt
+vector definition, and ready to be processed with <code>avr-objcopy</code> and
+uploaded to the board. We are getting closer and closer to an
+enjoyable development experience!</p>
+
+<p>As before, the <a href="https://github.com/shepmaster/rust-arduino-blink-led-no-core-with-cargo">complete source</a> is available on Github.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Rust on an Arduino Uno, Part 5]]></title>
+    <link href="http://jakegoulding.com/blog/2016/05/19/rust-on-an-arduino-uno-part-5/"/>
+    <updated>2016-05-19T13:57:04-04:00</updated>
+    <id>http://jakegoulding.com/blog/2016/05/19/rust-on-an-arduino-uno-part-5</id>
+    <content type="html"><![CDATA[<p>Previously, we wrote some code that allowed us to
+<a href="/blog/2016/01/24/rust-on-an-arduino-uno-part-3/">sleep by waiting for a number of cycles to pass</a>. However, we
+had to peek at the disassembly to know how many cycles we were
+spending and adapt our source code to match. While it got us started,
+it&rsquo;s not a very elegant solution.</p>
+
+<!-- more -->
+
+
+<p>The Arduino Uno uses an ATmega328P processor. One of the features of
+this processor are 3 built-in timers that can trigger <em>interrupts</em> at
+certain periods. Interrupts are special bits of code that take over
+control of the processor when something important happens. These are
+often time-critical things that need to be handled quickly.</p>
+
+<p>What would be ideal is if we could rely on the timer feature to
+implement our <code>sleep</code> method. To get started, we are going to need the
+ability to specify the <em>interrupt vector</em>.</p>
+
+<p>The interrupt vector is a table of 26 instructions that must be placed
+at a specific section in memory. Each element in the table corresponds
+to a specific interrupt, and should consist of one instruction that
+jumps to the appropriate interrupt handler.</p>
+
+<p>To do this, we need to write a little bit of assembly:</p>
+
+<p>```
+ivr:</p>
+
+<pre><code>    jmp _ivr_reset
+    jmp _ivr_irq0
+    jmp _ivr_irq1
+    ;; continues for all the rest
+</code></pre>
+
+<p>```</p>
+
+<p>In order to use this, we need to include it when linking all of our
+code together. We also have to disable the existing interrupt vector
+that would be added. This is done via the <code>-nostartfiles</code> flag:</p>
+
+<p><code>
+avr-gcc -mmcu=atmega328p interrupt_vector.S hello.o -nostartfiles -o hello.elf
+</code></p>
+
+<p>If you compile right now, you will get a whole bunch of errors of the
+form:</p>
+
+<p><code>
+temp_file_name.o: In function `ivr':
+(.text+0x0): undefined reference to `_ivr_reset'
+</code></p>
+
+<p>Our interrupt vector is trying to jump to a bunch of symbols that we
+haven&rsquo;t yet defined. We could do the simple thing and define a bunch
+of <code>_ivr_*</code> methods in Rust (and I did, to start with), but that&rsquo;s
+rather annoying. Instead, we can use <em>weak linking</em> to define a kind
+of &ldquo;fallback&rdquo; symbol. We will have one simple handler that just
+returns from the interrupt, and set each handler to use that unless it
+is defined:</p>
+
+<p>```
+_ivr_undefined:</p>
+
+<pre><code>    reti
+</code></pre>
+
+<p>.weak <em>ivr_irq0
+.set  </em>ivr_irq0, _ivr_undefined
+;;; And so on
+```</p>
+
+<p>The only outlier is <code>_ivr_reset</code> which we define to point to our
+<code>main</code> method, avoiding extraneous indirection. At this point, we
+should be compiling again, but not using the interrupts yet. Let&rsquo;s
+change that.</p>
+
+<p>Following <a href="http://www.instructables.com/id/Arduino-Timer-Interrupts/?ALLSTEPS">this guide</a>, we can see all the details of
+setting up the timer. At a high level it&rsquo;s:</p>
+
+<ol>
+<li>Register an interrupt handler.</li>
+<li>Disable interrupts.</li>
+<li>Set a bunch of values as determined by the datasheet and math.</li>
+<li>Enable interrupts.</li>
+</ol>
+
+
+<p>We will copy all of the values and registers from this article to
+setup timer 0, but with a 1kHz rate instead of 2kHz. This matches
+nicer with our <code>sleep_ms</code> method which waits milliseconds.</p>
+
+<p>Let&rsquo;s use a little bit of nice Rust for a change. When we disable
+interrupts, we <em>really</em> want to make sure we enable them again! In a
+language like Rust, we can use a (misleadingly labeled) pattern known
+as Resource Acquisition Is Initialization (RAII). We will create a
+<code>struct</code> that disables interrupts when it is created and enables them
+when the struct is dropped. This means we can never forget to
+re-enable interrupts as the compiler will ensure things are restored!</p>
+
+<p>```
+struct DisableInterrupts(PhantomData&lt;()>);
+impl DisableInterrupts {</p>
+
+<pre><code>fn new() -&gt; DisableInterrupts {
+    unsafe { asm!("CLI") }
+    DisableInterrupts(PhantomData)
+}
+</code></pre>
+
+<p>}</p>
+
+<p>impl Drop for DisableInterrupts {</p>
+
+<pre><code>fn drop(&amp;mut self) {
+    unsafe { asm!("SEI") }
+}
+</code></pre>
+
+<p>}
+```</p>
+
+<p>We can bundle this into a nice wrapper:</p>
+
+<p>```
+fn without_interrupts&lt;F, T>(f: F) &ndash;> T</p>
+
+<pre><code>where F: FnOnce() -&gt; T
+</code></pre>
+
+<p>{</p>
+
+<pre><code>let _disabled = DisableInterrupts::new();
+f()
+</code></pre>
+
+<p>}
+```</p>
+
+<p>And use it like so:</p>
+
+<p>```
+without_interrupts(|| {</p>
+
+<pre><code>volatile_store(TCCR0A, 0);
+</code></pre>
+
+<p>});
+```</p>
+
+<p>To define the interrupt handler, we simply create a method that
+matches the expected name from our assembly file. The method simply
+increments a global variable each time it is triggered:</p>
+
+<p>```
+static mut N_MS_ELAPSED: u8 = 0;</p>
+
+<h1>[no_mangle]</h1>
+
+<p>pub unsafe extern fn _ivr_timer0_compare_a() {</p>
+
+<pre><code>N_MS_ELAPSED += 1;
+</code></pre>
+
+<p>}
+```</p>
+
+<p>And re-implement our <code>sleep_ms</code> function to:</p>
+
+<p>```
+fn sleep_ms(duration_ms: u8) {</p>
+
+<pre><code>unsafe {
+    volatile_store(&amp;mut N_MS_ELAPSED, 0);
+    while volatile_load(&amp;mut N_MS_ELAPSED) &lt; duration_ms {
+        // spin
+    }
+}
+</code></pre>
+
+<p>}
+```</p>
+
+<p>Compile this and load it onto the board, and we are greeted with the
+sight of <em>nothing blinking</em>. It&rsquo;s time to dig into more
+disassembly. Here&rsquo;s what <code>_ivr_timer0_compare_a</code> looks like:</p>
+
+<p><code>
+lds     r24, 0x0000
+inc     r24
+sts     0x0000, r24
+ret
+</code></p>
+
+<p>Checking the instruction set manual and the datasheet, we will notice a few problems:</p>
+
+<ol>
+<li>We use <code>ret</code> (Return from Subroutine) instead of <code>reti</code> (Return from Interrupt).</li>
+<li>We do not save and restore the Status register.</li>
+<li>We do not save and restore the <code>r24</code> register.</li>
+</ol>
+
+
+<p>Let&rsquo;s modify our handler with a bit more assembly to address all three issues:</p>
+
+<p>```</p>
+
+<h1>[no_mangle]</h1>
+
+<p>pub unsafe extern fn _ivr_timer0_compare_a() {</p>
+
+<pre><code>asm!{
+    "PUSH R24
+     IN R24, 0x3F
+     PUSH R24"
+};
+
+N_MS_ELAPSED += 1;
+
+asm!{
+    "POP R24
+     OUT 0x3F, R24
+     POP R24
+     RETI"
+};
+</code></pre>
+
+<p>}
+```</p>
+
+<p>That&rsquo;s certainly a bit longer, but it compiles and works again! And it
+will continue to work, so long as the compiler always decides to use
+<code>r24</code> for the incremented value, something we have no control over. As
+you might guess, there&rsquo;s a better solution.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Rust on an Arduino Uno, Part 4]]></title>
@@ -482,97 +849,6 @@ brew install avrdude
 </code></p>
 
 <p>Continue on to <a href="/blog/2016/01/17/rust-on-an-arduino-uno-part-2/">part 3</a>.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Rust on an Arduino Uno]]></title>
-    <link href="http://jakegoulding.com/blog/2016/01/02/rust-on-an-arduino-uno/"/>
-    <updated>2016-01-02T15:26:54-05:00</updated>
-    <id>http://jakegoulding.com/blog/2016/01/02/rust-on-an-arduino-uno</id>
-    <content type="html"><![CDATA[<p>We have an <a href="https://www.arduino.cc/en/Main/ArduinoBoardUno">Arduino Uno</a> that&rsquo;s been sitting around gathering
-dust for a little while, so I decided to see how <a href="https://www.rust-lang.org/">Rust</a> worked
-on it.</p>
-
-<!-- more -->
-
-
-<p>A bit of searching led to a
-<a href="https://github.com/avr-rust/rust/">fork of Rust with AVR support, AVR-Rust</a>. This is built on
-top of a <a href="https://github.com/avr-llvm/llvm/">fork of LLVM with AVR support, AVR-LLVM</a>. Both of
-these projects are led by <a href="https://github.com/dylanmckay">Dylan McKay</a>.</p>
-
-<p>The current documentation for AVR-Rust is a bit lacking, and it was
-forked from a development version of Rust 1.4. The current development
-version is Rust 1.7, making the fork about 4.5 months old. However,
-the changes to LLVM are in the process of being merged into upstream,
-laying the groundwork for merging the changes into Rust as well.</p>
-
-<p>Let&rsquo;s start out by doing the bare minimum and try to get a version of
-<code>rustc</code> that can target the AVR chip:</p>
-
-<p><code>
-git clone https://github.com/avr-rust/rust.git
-mkdir build &amp;&amp; cd build
-../rust/configure
-make
-</code></p>
-
-<p>You&rsquo;ll note that there&rsquo;s nothing AVR specific here. Every Rust
-compiler is actually a <em>cross-compiler</em>, a compiler that executes on
-one architecture but produces code for another architecture. Because
-this fork of Rust has support files for AVR, it will be able to
-produce the correct executable code.</p>
-
-<p>Unfortunately, I <a href="https://github.com/avr-rust/rust/issues/13">couldn&rsquo;t get a basic file to compile</a>
-out of the box.</p>
-
-<p>So I did what any sane person would do &ndash; I started changing code
-without knowing exactly what the failure was or what the code I was
-changing did.</p>
-
-<p>First I tried updating the branch of LLVM that AVR-Rust uses. There
-are two branches in the repository &ndash; <a href="https://github.com/avr-llvm/llvm/tree/avr-support"><code>avr-support</code></a> is more
-actively updated and <a href="https://github.com/avr-llvm/llvm/tree/avr-rust-support"><code>avr-rust-support</code></a> lags behind.</p>
-
-<p>Merging <code>avr-support</code> into <code>avr-rust-support</code> went smoothly, but the
-Rust LLVM driver code needed to be updated to handle the newer LLVM
-version. I grabbed the diff from the main Rust repository and applied
-that. This seemed to work, but then I got a segfault from the stage 1
-Rust compiler, deep in the internals of LLVM.</p>
-
-<p><code>
-make: *** [x86_64-apple-darwin/stage1/lib/rustlib/x86_64-apple-darwin/lib/stamp.term] Segmentation fault: 11
-</code></p>
-
-<p>So I continued changing more stuff!</p>
-
-<p>I merged current Rust into the AVR fork of Rust and resolved the merge
-conflicts as best I could figure out. After fixing a few new errors
-and some poor merge conflicts, I was on my way. Until I hit the
-segfault again.</p>
-
-<p>That means it&rsquo;s actually time to try to figure out where the segfault
-was coming from. I configured another build with some debug information:</p>
-
-<p><code>
-./configure --enable-debug --disable-docs --enable-llvm-assertions --enable-debug-assertions
-</code></p>
-
-<p>And built. This takes a long time, as nothing gets optimized. And then
-it turns out that doing this also hides the segfault. Ugh.</p>
-
-<p>However, I do get to a new error:</p>
-
-<p><code>
-ld: unknown option: --as-needed
-clang: error: linker command failed with exit code 1 (use -v to see invocation)
-</code></p>
-
-<p>Fortunately, I know where to tweak that in the source. The downside is
-I&rsquo;ll need to wait for another long build cycle&hellip;</p>
-
-<p>Continue on to <a href="/blog/2016/01/17/rust-on-an-arduino-uno-part-2/">part 2</a>.</p>
 ]]></content>
   </entry>
   
