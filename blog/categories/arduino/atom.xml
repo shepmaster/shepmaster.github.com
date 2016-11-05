@@ -4,7 +4,7 @@
   <title><![CDATA[Category: arduino | Jake Goulding]]></title>
   <link href="http://jakegoulding.com/blog/categories/arduino/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2016-05-27T11:15:49-04:00</updated>
+  <updated>2016-11-05T12:16:41-04:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -848,7 +848,7 @@ brew install avr-libc
 brew install avrdude
 </code></p>
 
-<p>Continue on to <a href="/blog/2016/01/17/rust-on-an-arduino-uno-part-2/">part 3</a>.</p>
+<p>Continue on to <a href="/blog/2016/01/24/rust-on-an-arduino-uno-part-3/">part 3</a>.</p>
 ]]></content>
   </entry>
   
