@@ -166,4 +166,4 @@ Continue on to [part 3][].
 [homebrew]: http://brew.sh/
 [my repo]: https://github.com/shepmaster/rust-arduino-blink-led-no-core/tree/part2
 [part1]: /blog/2016/01/02/rust-on-an-arduino-uno/
-[part 3]: /blog/2016/01/17/rust-on-an-arduino-uno-part-2/
+[part 3]: /blog/2016/01/24/rust-on-an-arduino-uno-part-3/
