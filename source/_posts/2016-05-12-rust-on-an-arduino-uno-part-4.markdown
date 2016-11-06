@@ -33,8 +33,11 @@ the `C_FLAGS` and `CXX_FLAGS`). If you are using a different platform,
 you'll need to poke at the Rust build process to see the appropriate
 flags.
 
+Last updated: **2016-11-06**
+
 ```
 cmake ../.. \
+  -DCMAKE_BUILD_TYPE=Debug \
   -DLLVM_TARGETS_TO_BUILD="X86;AVR" \
   -DLLVM_INCLUDE_EXAMPLES=OFF \
   -DLLVM_INCLUDE_TESTS=OFF \
@@ -43,8 +46,8 @@ cmake ../.. \
   -DWITH_POLLY=OFF \
   -DLLVM_ENABLE_TERMINFO=OFF \
   -DLLVM_INSTALL_UTILS=ON \
-  -DCMAKE_C_FLAGS="-ffunction-sections -fdata-sections -m64 -fPIC -stdlib=libc++ -mmacosx-version-min=10.7" \
-  -DCMAKE_CXX_FLAGS="-ffunction-sections -fdata-sections -m64 -fPIC -stdlib=libc++ -mmacosx-version-min=10.7" \
+  -DCMAKE_C_FLAGS="-ffunction-sections -fdata-sections -m64 -fPIC -stdlib=libc++" \
+  -DCMAKE_CXX_FLAGS="-ffunction-sections -fdata-sections -m64 -fPIC -stdlib=libc++" \
   -DCMAKE_INSTALL_PREFIX=..
 ```
 
@@ -90,29 +93,24 @@ Then we build!
 make -j7
 ```
 
-**Hours later**, you will have a fully-built compiler. However, you
-can usually get up-and-running earlier by using the stage 1 compiler,
-located in `debug/build/*/stage1`. This will be available pretty
-quickly, before the build is complete.
+**4 or more hours later**, you will have a fully-built
+compiler. However, you can usually get up-and-running earlier by using
+the stage 1 compiler, located in `debug/build/*/stage1`. This will be
+available pretty quickly, before the entire build is complete.
 
-We then add this build as a [multirust][] toolchain and use it as the
+We then add this build as a [rustup][] toolchain and use it as the
 override compiler in a directory:
 
 ```
-multirust override avr --link-local /path/to/rust/debug/build/*/stage1
+rustup toolchain link avr /path/to/rust/debug/build/*/stage1
+rustup override set avr
 ```
 
-And for convenience, we will copy in a [nightly version of Cargo][cargo].
-
-```
-cp cargo-nightly/cargo/bin/cargo /path/to/rust/debug/build/*/stage1/bin/
-```
-
-Note that this will only produce a cross-compiler, but none of the
+Note that this will only produce a cross-compiler; none of the
 libraries that make things actually work. That's still coming!
 
 [avr-llvm]: https://github.com/avr-llvm/llvm
 [avr-rust]: https://github.com/avr-rust/rust
 [cargo]: https://github.com/rust-lang/cargo#installing-cargo
-[multirust]: https://github.com/brson/multirust
+[rustup]: https://rustup.rs/
 [part3]: /blog/2016/01/24/rust-on-an-arduino-uno-part-3/
