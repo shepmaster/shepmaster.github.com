@@ -4,7 +4,7 @@
   <title><![CDATA[Category: arduino | Jake Goulding]]></title>
   <link href="http://jakegoulding.com/blog/categories/arduino/atom.xml" rel="self"/>
   <link href="http://jakegoulding.com/"/>
-  <updated>2016-11-05T12:16:41-04:00</updated>
+  <updated>2016-11-18T17:45:06-05:00</updated>
   <id>http://jakegoulding.com/</id>
   <author>
     <name><![CDATA[Jake Goulding]]></name>
@@ -413,8 +413,11 @@ the <code>C_FLAGS</code> and <code>CXX_FLAGS</code>). If you are using a differe
 you&rsquo;ll need to poke at the Rust build process to see the appropriate
 flags.</p>
 
+<p>Last updated: <strong>2016-11-06</strong></p>
+
 <p><code>
 cmake ../.. \
+  -DCMAKE_BUILD_TYPE=Debug \
   -DLLVM_TARGETS_TO_BUILD="X86;AVR" \
   -DLLVM_INCLUDE_EXAMPLES=OFF \
   -DLLVM_INCLUDE_TESTS=OFF \
@@ -423,8 +426,8 @@ cmake ../.. \
   -DWITH_POLLY=OFF \
   -DLLVM_ENABLE_TERMINFO=OFF \
   -DLLVM_INSTALL_UTILS=ON \
-  -DCMAKE_C_FLAGS="-ffunction-sections -fdata-sections -m64 -fPIC -stdlib=libc++ -mmacosx-version-min=10.7" \
-  -DCMAKE_CXX_FLAGS="-ffunction-sections -fdata-sections -m64 -fPIC -stdlib=libc++ -mmacosx-version-min=10.7" \
+  -DCMAKE_C_FLAGS="-ffunction-sections -fdata-sections -m64 -fPIC -stdlib=libc++" \
+  -DCMAKE_CXX_FLAGS="-ffunction-sections -fdata-sections -m64 -fPIC -stdlib=libc++" \
   -DCMAKE_INSTALL_PREFIX=..
 </code></p>
 
@@ -470,25 +473,20 @@ directory.</p>
 make -j7
 </code></p>
 
-<p><strong>Hours later</strong>, you will have a fully-built compiler. However, you
-can usually get up-and-running earlier by using the stage 1 compiler,
-located in <code>debug/build/*/stage1</code>. This will be available pretty
-quickly, before the build is complete.</p>
+<p><strong>4 or more hours later</strong>, you will have a fully-built
+compiler. However, you can usually get up-and-running earlier by using
+the stage 1 compiler, located in <code>debug/build/*/stage1</code>. This will be
+available pretty quickly, before the entire build is complete.</p>
 
-<p>We then add this build as a <a href="https://github.com/brson/multirust">multirust</a> toolchain and use it as the
+<p>We then add this build as a <a href="https://rustup.rs/">rustup</a> toolchain and use it as the
 override compiler in a directory:</p>
 
 <p><code>
-multirust override avr --link-local /path/to/rust/debug/build/*/stage1
+rustup toolchain link avr /path/to/rust/debug/build/*/stage1
+rustup override set avr
 </code></p>
 
-<p>And for convenience, we will copy in a <a href="https://github.com/rust-lang/cargo#installing-cargo">nightly version of Cargo</a>.</p>
-
-<p><code>
-cp cargo-nightly/cargo/bin/cargo /path/to/rust/debug/build/*/stage1/bin/
-</code></p>
-
-<p>Note that this will only produce a cross-compiler, but none of the
+<p>Note that this will only produce a cross-compiler; none of the
 libraries that make things actually work. That&rsquo;s still coming!</p>
 ]]></content>
   </entry>
